@@ -2,49 +2,89 @@ package massim;
 
 import java.util.PriorityQueue;
 
+/**
+ * The Multiagent Teamwork Simulator
+ * The main class of the simulator
+ * 
+ * @author Omid Alemi
+ * @version 1.0 2011/10/01
+ * 
+ */
 public class Simulator {
 
-	private int counter;
+	private int simCounter; //change the name 
 	
 	private Board board;
-	private Team[] teams;
-    private PriorityQueue<Event> events;     
+	private Team[] teams;        
+        
+	public static enum SimStepCode {SIMOK, SIMEND, SIMERR}
+	
+    public static SimParams simParams;
     
-    public static Scoring scores;
-    
-	public Simulator() {
+	/**
+	 * Constructor
+	 * 	
+	 * @param teams The array of team to be participated in the simulation
+	 * @param simParams The class holding all the simulator parameters 
+	 * @param initBoard The initial board settings	 
+	 */
+	public Simulator(Team[] teams, SimParams simParams) {
 		
 	}
 	
-	public Simulator(Team[] teams, Scoring scores, int[][] initBoard, Event[] initEvents) {
-		
-	}
-	
-	public void init() {
-		// load the events into the queue
+	/**
+	 * Initializes the simulator.
+	 * Should be called before step() method
+	 * @param initBoard The initial board, defined in the frontend
+	 */
+	public void init(Board initBoard) {
 		// load the initial board state into the board
 		// initialize the teams
 		// set the counter to zero
 	}
 	
-	public int step() {		
-		// increase the counter by 1
-		// apply the changes in the current time step events into the board
-		// refresh the board
+	/**
+	 * Performs one step of the simulation based on the current simulator's 
+	 * counter.
+	 * Should be called by the frontend software
+	 * @param disturbanceLevel The level of desired disturbance on the board 
+	 * @return The proper code from the SimStepCode enum
+	 */
+	public SimStepCode step(double disturbanceLevel) {		
+		// increase the counter by 1		
+		// refresh the board: only add the disturbance 
+		// board.disturb(disturbanceLevel);
 		// for each team in teams[]
-		//      team.cycle()
-		// update the board (shadow -> main)
-		// check if the simulation is over, return END signal
+		//      team.step(board);
+		// return the proper simulation step code
 		
-		return 0;
+		return SimStepCode.SIMOK;
 	}
 	
+	/**
+	 * can be used by a frontend to run the simulator until the end
+	 * without interruption
+	 */
 	public void autoplay() {
-		// run the simulation from current step in a loop until the last step (return code) without user interaction
+		// run the simulation from current step in a loop until the last step 
+		// (determined by the return code) without user interaction
 	}
 	
-	public void finalize() {
+	
+	/*
+	 * NOT SURE IF WE NEED THIS ANYMORE.
+	 * EVERYTHING CAN BE DONE USING THE SIMSTATE and TEAMSTATE CLASSES.
+	public void finish() {
 		// sum the scores
 		// ********
+	}*/
+	
+	
+	/**
+	 * @return The current state of the simulation in a SimState object 
+	 */
+	public SimState getSimulationState() {
+		
+		return null;		
 	}
 }

@@ -2,13 +2,24 @@ package massim;
 
 import java.util.HashMap;
 
+/**
+ * CommMedium.java
+ * Responsible for all the communications within a team of 
+ * agents
+ *
+ * @author Omid Alemi
+ * @version 1.0 2011/10/01
+ */
 public class CommMedium {
 
 	private int numOfAgent;
 	Agent[] agents;
 	HashMap<Agent,String[]> buffers;
 	
-	public CommMedium(Team team) {
+	/**
+	 * The default constructor 
+	 */
+	public CommMedium() {
 		
 	}
 	
@@ -32,7 +43,8 @@ public class CommMedium {
 	}
 
 	/**
-	 * Returns the tuples of the <sender,msg> for all the incoming messages for the receiver agent  
+	 * Returns the tuples of the <sender,msg> for all the incoming 
+	 * messages for the receiver agent  
 	 * @param receiver The receiver agent
 	 * @return Tuples of the <sender,msg>
 	 */
@@ -42,8 +54,10 @@ public class CommMedium {
 	}
 	
 	/**
-	 * To check whether the communication medium is empty. Means there were no communication during the last iteration
-	 * @return true if all the buffers for all the agents are empty. false otherwise
+	 * To check whether the communication medium is empty. Means there 
+	 * were no communication during the last iteration
+	 * @return true if all the buffers for all the agents are empty. 
+	 * 		   false otherwise
 	 */
 	public boolean isEmpty() {
 		 

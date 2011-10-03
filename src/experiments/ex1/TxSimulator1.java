@@ -13,12 +13,12 @@ public class TxSimulator1 {
 		Agent[] MAPAgents;
 		Team[] teams;
 		Team MAPTeam;
-		Scoring scores = new Ex1Scoring();
+		Board initBoard;
+		SimParams simParams = new Ex1Params();
 		Simulator sim;
 		
-		// set the score values as desired, possibly load from a file -> score
+		// set the parameters values as desired, possibly load from a file -> simParams
 		// load the initial board setting from a text file into an array -> initBoard
-		// lead the script file into a list of events -> scriptEvents
 		
 		// for each Agent a in MAPAgents 
 		//     a = new MAPAgent();
@@ -27,21 +27,25 @@ public class TxSimulator1 {
 		
 		// teams.add(MAPTeam);
 		
-		// sim = new Simulator (teams, scores,initBoard, scriptEvents);
+		// initBoard = Board.randomBoard(); 
 		
+		// sim = new Simulator (teams, simParams);
+		
+				
 		// 1.
+		// sim.init(initBoard);
 		// sim.autoplay();		
-		// simState = sim.getSimState();		
-		// results = simState.getTeamResult();
+		// simState = sim.getSimulationState();		
+		// results = simState.teamStates();
 		// display the results
 		
 		// OR
 		
 		// 2.
-		// 
+		// sim.init(initBoard);
 		// code = sim.step();
-		// simState = sim.getSimState();		
-		// results = simState.getTeamResult();
+		// simState = sim.getSimulationState();		
+		// results = simState.teamStates();
 		// display the results
 		// if code != SIMEND then repeat
 	}

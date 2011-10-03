@@ -1,0 +1,21 @@
+1. For communication, should the agents call the communication medium's send 
+method from the team object or the send method provided by the team class so 
+that the communication medium will be transparent to the agents.
+
+
+2. Possibly there can be a Message class, which gets the message string and 
+decodes it into its fields, or vice versa. The question is how efficient is
+that.
+
+3. As during the simulator itself, we don't need the concept of color, and
+the enums in Java are not interpreted as ints, it might be better to use
+int to represent the color of the cells, so that we can use simpler data
+structures. Just in the frontend and for presentation, we can map these
+ints to colors.
+The downside to this is that use of int may lead to accidental programming
+errors, as the value of the cell can be practically any int, which may not
+necessarily represent a color.
+
+
+
+ 

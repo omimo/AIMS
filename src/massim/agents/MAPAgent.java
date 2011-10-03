@@ -6,6 +6,9 @@ public class MAPAgent extends Agent {
 
 	// should have refrences to its teammates
 	
+	/**
+	 * The MAP agents perform their 'move' action here  
+	 */
 	@Override
 	public int act() {
 		
