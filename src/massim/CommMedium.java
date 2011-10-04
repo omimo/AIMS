@@ -14,31 +14,38 @@ public class CommMedium {
 
 	private int numOfAgent;
 	Agent[] agents;
-	HashMap<Agent,String[]> buffers;
+	String[][] buffers;
 	
 	/**
-	 * The default constructor 
+	 * The default constructor
+	 * @param n number of agents 
 	 */
-	public CommMedium() {
-		
+	public CommMedium(int n) {
+		numOfAgent = n;
+					
+		// Initializing all the buffers
+		buffers = new String[n][n-1];
+		for (int i=0;i<n;i++)
+			for (int j=0;j<n-1;j++)
+				buffers[i][j]="";
 	}
 	
 	/**
 	 * Puts the msg into the receiver's special buffer for the sender
-	 * @param sender The sender agent
-	 * @param receiver The receiver agent
+	 * @param sender The sender agent's id
+	 * @param receiver The receiver agent's id
 	 * @param msg The message
 	 */
-	public void send(Agent sender, Agent receiver, String msg) {
+	public void send(int sender, int receiver, String msg) {
 		
 	}
 	
 	/**
 	 * Puts the msg into all the agent's special buffer for the sender
-	 * @param sender The sender agent
+	 * @param sender The sender agent's id
 	 * @param msg The message
 	 */
-	public void broadcast(Agent sender, String msg) {
+	public void broadcast(int sender, String msg) {
 		
 	}
 
@@ -48,7 +55,7 @@ public class CommMedium {
 	 * @param receiver The receiver agent
 	 * @return Tuples of the <sender,msg>
 	 */
-	public HashMap<Agent,String> receive(Agent receiver) {
+	public String[] receive(int receiver) {
 		 
 		return null;
 	}
