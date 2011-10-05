@@ -10,10 +10,14 @@ package massim;
  */
 public abstract class Agent {
 
+	private int id;
 	private RowCol pos;
 	private Team team;
+		
 	
-	private RowCol[] myPath;  // Or possibly of type Path
+	private Path path;  // Or possibly of type Path
+	private int points = 0;
+	private int resources = 0;
 	
 	/**
 	 * Default constructor
@@ -30,8 +34,7 @@ public abstract class Agent {
 		setTeam(t);
 		
 	}
-	
-			
+				
 	/**
 	 * Where agent performs its action
 	 * @return 0 if it was successful, -1 for error (might not 
@@ -44,14 +47,17 @@ public abstract class Agent {
 	}
 	
 		
-	/**
-	 * Called by the Team in order to enable the agent to update 
+    /**
+     * Called by the Team in order to enable the agent to update 
 	 * its information about the environment
-	 * @param board The current state of the board
-	 * @param agentsPos The current position of the agent's teammates 
-	 *        on the board
-	 */
-	public void perceive(Board board, RowCol[] agentsPos) {
+	 * 
+     * @param board The current state of the board
+     * @param costVerctor The cost verctor of this agent
+     * @param goals The goal for this agent
+     * @param agentsPos the current position of all the agents within
+     *        the team
+     */
+	public void perceive(Board board, int []costVerctor, Goal goals, RowCol[] agentsPos) {
 		// Keep the necessary information private 
 	}
 	
@@ -78,4 +84,61 @@ public abstract class Agent {
 	public void setTeam(Team t) {
 		team = t;
 	}
+	
+	/**
+	 * 
+	 * @return The id attribute of the class
+	 */
+	public int id() {
+		return id;
+	}
+	
+	/**
+	 * 
+	 * @return The amount of points the agent has earned
+	 */
+	public int points() {
+		return points;
+	}
+	
+	/**
+	 * 
+	 * @return The amount of resources that the agent owns
+	 */
+	public int resources() {
+		return resources;
+	}
+	
+	/**
+	 * Increases the points by the specified amount
+	 * @param amount
+	 */
+	public void incPoints(int amount) {
+		points += amount;
+	}
+	
+	/**
+	 * Decreases the points by the specified amount
+	 * @param amount
+	 */
+	public void decPoints(int amount) {
+		points -= amount;
+	}
+	
+	/**
+	 * Increases the resources by the specified amount
+	 * @param amount
+	 */
+	public void incResources(int amount) {
+		resources += amount;
+	}
+	
+	/**
+	 * Decreases the resources by the specified amount
+	 * @param amount
+	 */
+	public void decResources(int amount) {
+		resources -= amount;
+	}
+	
 }
