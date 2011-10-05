@@ -38,7 +38,7 @@ public class Team {
 		// this.agents = agents
 		
 		// for each agent a
-		//     a.init(thisjjjj)
+		//     a.init(this)
 		
 		// Set all the results to the initial values
 	}
@@ -47,12 +47,12 @@ public class Team {
 	 * Called by the simulator in each step of simulation
 	 * @return ENDSIM code if the simulation is over
 	 */
-	public int step(Board board) {
+	public int step(SimState simState) {
 		
-		// 0. Update Agents Percepts
-		// agPos[] = position of all the agents in the team
-		// for each agent a in agents[]	
-		//     a.perceive(board, agPos[])
+		// 0. Update Agents Percepts		
+		// for each agent a_i in agents[]
+		//     a_i.perceive(simSt.board(), simSt.costVerctor(i), simSt.goal(i), ts.agPositions());
+		
 		
 		
 		// 1. Communication Phase
@@ -88,6 +88,7 @@ public class Team {
 	 */
 	public TeamState getTeamState() {
 		
+		
 		return null;
 	}
 	
@@ -98,7 +99,9 @@ public class Team {
 	 * @param msg The message
 	 */
 	public void send(Agent sender, Agent receiver, String msg) {
-		communicationMeduim.send(sender, receiver, msg);
+		//Map from sender object to its integer id
+		
+		communicationMeduim.send(sender.id(), receiver.id(), msg);
 		//or if the communicationMedium deals with the integers
 		//instead of objects, the sender and receiver objects
 		//can be mapped to their integer indices before calling
@@ -110,12 +113,12 @@ public class Team {
 	 * @param receiver The receiver agent
 	 * @return The list of all incoming messages for the receiver agent
 	 */
-	public HashMap<Agent,String> receive(Agent receiver) {
+	public String[] receive(Agent receiver) {
 		//or if the communicationMedium deals with the integers
 		//instead of objects, the receiver objects
 		//can be mapped to its integer indices before calling
 		//the method in communicationMedium
-		return communicationMeduim.receive(receiver);		
+		return communicationMeduim.receive(receiver.id());		
 	}
 	
 }
