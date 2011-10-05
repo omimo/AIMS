@@ -24,9 +24,9 @@ public class CommMedium {
 		numOfAgent = n;
 					
 		// Initializing all the buffers
-		buffers = new String[n][n-1];
+		buffers = new String[n][n];
 		for (int i=0;i<n;i++)
-			for (int j=0;j<n-1;j++)
+			for (int j=0;j<n;j++)
 				buffers[i][j]="";
 	}
 	
@@ -36,8 +36,10 @@ public class CommMedium {
 	 * @param receiver The receiver agent's id
 	 * @param msg The message
 	 */
-	public void send(int sender, int receiver, String msg) {
-		
+	public void send(int sender, int receiver, String msg) {	
+		// Might add the sender,receiver info to the head of msg
+		// which will be used while decoding by a Message class
+		buffers[receiver][sender] = msg;
 	}
 	
 	/**
@@ -46,7 +48,10 @@ public class CommMedium {
 	 * @param msg The message
 	 */
 	public void broadcast(int sender, String msg) {
-		
+		// Might add the sender,receiver info to the head of msg
+		// which will be used while decoding by a Message class
+		for (int i=0;i<numOfAgent;i++)		
+			buffers[i][sender] = msg;		
 	}
 
 	/**
@@ -56,8 +61,8 @@ public class CommMedium {
 	 * @return Tuples of the <sender,msg>
 	 */
 	public String[] receive(int receiver) {
-		 
-		return null;
+		
+		return buffers[receiver];
 	}
 	
 	/**
@@ -67,8 +72,12 @@ public class CommMedium {
 	 * 		   false otherwise
 	 */
 	public boolean isEmpty() {
-		 
-		return false;
+		
+		for (int i=0;i<numOfAgent;i++)
+			for (int j=0;j<numOfAgent;j++)
+				if (buffers[i][j] != "")
+					return false;
+		return true;
 	}
 	
 }
