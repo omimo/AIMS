@@ -13,8 +13,8 @@ import java.util.PriorityQueue;
 public class Simulator {
 
 	private int simCounter; //change the name 
+	private SimState simState;
 	
-	private Board board;
 	private Team[] teams;        
         
 	public static enum SimStepCode {SIMOK, SIMEND, SIMERR}
@@ -39,6 +39,8 @@ public class Simulator {
 	 */
 	public void init(Board initBoard) {
 		// load the initial board state into the board
+		// put the goals on the board
+		// generate the cost vectors
 		// initialize the teams
 		// set the counter to zero
 	}
@@ -55,7 +57,7 @@ public class Simulator {
 		// refresh the board: only add the disturbance 
 		// board.disturb(disturbanceLevel);
 		// for each team in teams[]
-		//      team.step(board);
+		//      team.step(simState);
 		// return the proper simulation step code
 		
 		return SimStepCode.SIMOK;
@@ -85,6 +87,6 @@ public class Simulator {
 	 */
 	public SimState getSimulationState() {
 		
-		return null;		
+		return simState;		
 	}
 }
