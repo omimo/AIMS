@@ -1,5 +1,7 @@
 package massim;
 
+import java.util.ArrayList;
+
 /**
  * The class to hold the board settings
  * @author Omid Alemi
@@ -10,8 +12,9 @@ public class Board {
 	private int[][] mainBoard;
 		
 	private final int rows;
-	private final int cols;
-	 
+	private final int cols;	
+	
+
 	
 	/**
 	 * Constructor 1: just with the size
@@ -90,4 +93,5 @@ public class Board {
 		// same internal representation 
 		return null;
 	}
+		
 }
