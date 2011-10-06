@@ -5,15 +5,25 @@ package massim;
  * resources, points, etc. This class is used by the frontends for
  * representation and post-processing purposes only.
  * 
+ * Can be used to initial the team as well as to get the final state of the
+ * team
+ * 
  * @author Omid Alemi
  * @version 1.0
  */
-public class TeamState {
+public class TeamContext {
 
 	private Agent[] agents;
-
-	public TeamState(Agent[] agents) {
-		// this.agents <- agents
+	private RowCol[] agentsPosition;
+	
+	
+	/**
+	 * The constructor
+	 * @param agents
+	 */
+	public TeamContext(Agent[] agents) {
+		for (int i=0;i<agents.length;i++)
+			this.agents[i] = agents[i];
 	}
 
 	/**
@@ -49,15 +59,24 @@ public class TeamState {
 	 * 
 	 * @return An array of agents positions
 	 */
-	public RowCol[] agPositions() {
-		return null;
+	public RowCol[] agentsPosition() {			
+		
+		return agentsPosition;
 	}
 
+	/**
+	 * To get the agents (by the Team)
+	 * @return An array of agents
+	 */
+	public Agent[] agents() {
+		return agents;
+	}
+	
 	/**
 	 * Creates a clone of the object
 	 */
 	@Override
-	public TeamState clone() {
+	public TeamContext clone() {
 		return null;
 	}
 

@@ -12,8 +12,9 @@ public class Goal {
 		this.pos = pos;
 	}
 	
-	public Goal() {
-		id = nextID++;				
+	public Goal(int row, int col) {
+		id = nextID++;		
+		pos = new RowCol(row,col);			
 	}
 	
 	public int id() {

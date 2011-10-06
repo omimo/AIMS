@@ -11,43 +11,39 @@ import java.util.HashMap;
  */
 public class Team {
 
-	private Agent[] agents;
-	private CommMedium communicationMeduim;
+//	private Agent[] agents;	
+	private CommMedium communicationMeduim;  
+	private TeamContext teamState;
+	
+	public static enum TeamStepCode {OK, DONE, ERR}
 	
 	/**
 	 * Default constructor
 	 */
 	public Team() {
-		
+		communicationMeduim = new CommMedium(Simulator.simParams.numOfAgentsPerTeam);
 	}
 	
-	/** 
-	 * Constructor, getting a set of agents as the members of the team
-	 * @param agents An array of agents
-	 */
-	public Team(Agent[] agents) {
-		init(agents);		
-	}
 	
 	/**
 	 * Initializes the team object
 	 * @param agents Array of initial agents 
 	 */
-	public void init(Agent[] agents) {
-		// communicationMeduim = new CommMedium();
-		// this.agents = agents
+	public void init(TeamContext ts) {
+		// Set all the results to the initial values (if any)
 		
-		// for each agent a
-		//     a.init(this)
+		teamState = ts;		
 		
-		// Set all the results to the initial values
+				
+		for (Agent a : teamState.agents())
+			a.init(this);
 	}
 	
 	/**
 	 * Called by the simulator in each step of simulation
 	 * @return ENDSIM code if the simulation is over
 	 */
-	public int step(SimState simState) {
+	public TeamStepCode step(SimState simState) {
 		
 		// 0. Update Agents Percepts		
 		// for each agent a_i in agents[]
@@ -77,7 +73,7 @@ public class Team {
 		// for each agent a in agents[]
 		//     a.act()
 		
-		return 0;
+		return TeamStepCode.OK;
 	}
 	
 	/**
@@ -86,10 +82,9 @@ public class Team {
 	 * position, resources, etc. 
 	 * @return
 	 */
-	public TeamState getTeamState() {
+	public TeamContext teamState() {		
 		
-		
-		return null;
+		return teamState;
 	}
 	
 	/**
@@ -109,6 +104,39 @@ public class Team {
 	}
 	
 	/**
+	 * Calls the send method of the communication medium
+	 * @param sender The sender Agent
+	 * @param receiver The reciever Agent
+	 * @param msg The message
+	 */
+	public void send(int sender, int receiver, String msg) {
+		
+		
+		communicationMeduim.send(sender, receiver, msg);
+		//or if the communicationMedium deals with the integers
+		//instead of objects, the sender and receiver objects
+		//can be mapped to their integer indices before calling
+		//the method in communicationMedium
+	}
+	
+	
+	/**
+	 * Calls the send method of the communication medium
+	 * @param sender The sender Agent
+	 * @param receiver The reciever Agent
+	 * @param msg The message
+	 */
+	public void broadcast(int sender, String msg) {
+		
+		
+		communicationMeduim.broadcast(sender, msg);
+		//or if the communicationMedium deals with the integers
+		//instead of objects, the sender and receiver objects
+		//can be mapped to their integer indices before calling
+		//the method in communicationMedium
+	}
+	
+	/**
 	 * Calls the receive method of the communication medium.
 	 * @param receiver The receiver agent
 	 * @return The list of all incoming messages for the receiver agent
@@ -121,4 +149,16 @@ public class Team {
 		return communicationMeduim.receive(receiver.id());		
 	}
 	
+	/**
+	 * Calls the receive method of the communication medium.
+	 * @param receiver The receiver agent
+	 * @return The list of all incoming messages for the receiver agent
+	 */
+	public String[] receive(int receiver) {
+		//or if the communicationMedium deals with the integers
+		//instead of objects, the receiver objects
+		//can be mapped to its integer indices before calling
+		//the method in communicationMedium
+		return communicationMeduim.receive(receiver);		
+	}
 }

@@ -1,6 +1,7 @@
 package massim;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * The class to hold the board settings
@@ -25,18 +26,39 @@ public class Board {
 	public Board(int r, int c) { 
 		rows = r;
 		cols = c;
+		mainBoard = new int[rows][cols];
 	}
 	
 	/**
-	 * Constructor 2: get the board setting
+	 * Constructor 2: get the board setting and creating an exact copy
 	 * @param board The 2dim array, representing the board's initial
 	 *        setting
 	 */
-	public Board(int[][] board) {
-		rows = board.length;
-		cols = board[0].length;
-		// board -> mainBoard
+	public Board(Board board) {
+		rows = board.rows();
+		cols = board.cols();
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				this.mainBoard[i][j] = board.mainBoard[i][j];
 	}	
+	
+	/**
+	 * 
+	 * @return The number of rows of the board
+	 */
+	public int rows() {
+		return rows;
+	}
+	
+	/**
+	 * 
+	 * @return The number of columns of the board
+	 */
+	public int cols() {
+		return cols;
+	}
+	
 	
 	/**
 	 * Sets the board setting to the inputBoard
@@ -69,8 +91,16 @@ public class Board {
 	 * Returns a board with randomly filled values (colors).
 	 * @return A new instance of the Board class
 	 */
-	public static Board randomBoard() {
-		return null;
+	public static Board randomBoard(int rows, int cols, int startValue, int range ) {
+		Board b = new Board(rows, cols);
+		
+		Random rnd = new Random();
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				b.mainBoard[i][j] = startValue + rnd.nextInt(range);
+		
+		return b;
 	}
 	
 	/**
@@ -83,6 +113,8 @@ public class Board {
 		
 	}
 	
+	
+	
 	/**
 	 * The overridden clone() method.
 	 * would be used to create a new copy of the current board's representation.
@@ -92,6 +124,20 @@ public class Board {
 		// Creates a new instance of the Board class with the 
 		// same internal representation 
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		String out = "";
+		
+		for (int i=0;i<rows;i++)
+		{
+			for (int j=0;j<cols;j++)
+				out += mainBoard[i][j]+ " ";
+			out +="\n";
+		}
+				
+		return out;
 	}
 		
 }

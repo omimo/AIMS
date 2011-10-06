@@ -14,9 +14,9 @@ import java.util.List;
  */
 public class SimState {
 
-	TeamState[] teamsState;
-	int simStep;
-	Board board;
+	private TeamContext[] teamsState;
+	private int simStep;
+	private Board board;
 	
 	private Goal[] goals;
 	int costVerctors[][]; //cost vectors for each agent
@@ -35,7 +35,7 @@ public class SimState {
 	 * Adds a team state to the simulation's state
 	 * @param ts The team state
 	 */
-	public void addTeamState(TeamState ts) {
+	public void addTeamState(TeamContext ts) {
 		
 	}
 	
@@ -61,7 +61,7 @@ public class SimState {
 	 * @return The list of teamState object for all the teams 
 	 * in the simulator.
 	 */
-	public TeamState[] teamsState() {
+	public TeamContext[] teamsState() {
 		return teamsState;
 	}
 	
@@ -71,7 +71,7 @@ public class SimState {
 	 * @param i
 	 * @return
 	 */
-	public TeamState teamState(int i) {
+	public TeamContext teamState(int i) {
 		return teamsState[i];
 	}
 

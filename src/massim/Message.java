@@ -8,7 +8,9 @@ package massim;
  */
 public interface Message {
 	
-	@Override
 	public String toString();
-		
+	
+	public void parse(String msg) throws Exception;
+	
+	public void pack();
 }

@@ -2,6 +2,8 @@ package massim;
 
 import java.util.PriorityQueue;
 
+import massim.Team.TeamStepCode;
+
 /**
  * The Multiagent Teamwork Simulator
  * The main class of the simulator
@@ -29,7 +31,8 @@ public class Simulator {
 	 * @param initBoard The initial board settings	 
 	 */
 	public Simulator(Team[] teams, SimParams simParams) {
-		
+		System.arraycopy(teams, 0, this.teams, 0, teams.length);
+		Simulator.simParams = simParams;
 	}
 	
 	/**
@@ -37,12 +40,17 @@ public class Simulator {
 	 * Should be called before step() method
 	 * @param initBoard The initial board, defined in the frontend
 	 */
-	public void init(Board initBoard) {
-		// load the initial board state into the board
-		// put the goals on the board
-		// generate the cost vectors
+	public void init(SimState ss) {		
+		// set the simulation state to the input one
 		// initialize the teams
 		// set the counter to zero
+				
+		simState = ss;
+		
+		/*for (Team t : teams)
+			t.init();*/
+		
+		simCounter = 0;
 	}
 	
 	/**
@@ -60,16 +68,45 @@ public class Simulator {
 		//      team.step(simState);
 		// return the proper simulation step code
 		
-		return SimStepCode.SIMOK;
+		// increase the counter
+		simCounter++;
+		
+		// Add disturbance to the board
+		simState.board().distrub(disturbanceLevel);
+		
+		// Execute each team
+		boolean allDone = false;
+		for (Team t : teams)
+		{
+			TeamStepCode tsc;
+			
+			tsc = t.step(simState);
+			
+			if (tsc == TeamStepCode.OK)
+				allDone = false;
+			else 
+				allDone = true;						
+		}
+		
+		// Check the simulation's status at the step
+		if (allDone)
+			return SimStepCode.SIMEND;
+		else
+			return SimStepCode.SIMOK;		
 	}
 	
 	/**
 	 * can be used by a frontend to run the simulator until the end
 	 * without interruption
+	 * @return The final step's code, to be used to determine any error
 	 */
-	public void autoplay() {
+	public SimStepCode autoplay(double disturbanceLevel) {
 		// run the simulation from current step in a loop until the last step 
 		// (determined by the return code) without user interaction
+		SimStepCode ssc = SimStepCode.SIMOK;
+		while (ssc == SimStepCode.SIMOK)		
+			ssc = step(disturbanceLevel);
+		return ssc;		
 	}
 	
 	
