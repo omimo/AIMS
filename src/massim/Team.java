@@ -11,33 +11,19 @@ import java.util.HashMap;
  */
 public class Team {
 
-//	private Agent[] agents;	
-	private CommMedium communicationMeduim;  
-	private TeamContext teamState;
+	private Agent[] agents;	
+	private Environment env;
 	
 	public static enum TeamStepCode {OK, DONE, ERR}
 	
 	/**
 	 * Default constructor
 	 */
-	public Team() {
-		communicationMeduim = new CommMedium(Simulator.simParams.numOfAgentsPerTeam);
+	public Team(int teamSize) {
+		
 	}
 	
 	
-	/**
-	 * Initializes the team object
-	 * @param agents Array of initial agents 
-	 */
-	public void init(TeamContext ts) {
-		// Set all the results to the initial values (if any)
-		
-		teamState = ts;		
-		
-				
-		for (Agent a : teamState.agents())
-			a.init(this);
-	}
 	
 	/**
 	 * Called by the simulator in each step of simulation
@@ -76,89 +62,5 @@ public class Team {
 		return TeamStepCode.OK;
 	}
 	
-	/**
-	 * Returns the team state, for the frontend usages.
-	 * team state should consist all the information about the agents' 
-	 * position, resources, etc. 
-	 * @return
-	 */
-	public TeamContext teamState() {		
-		
-		return teamState;
-	}
-	
-	/**
-	 * Calls the send method of the communication medium
-	 * @param sender The sender Agent
-	 * @param receiver The reciever Agent
-	 * @param msg The message
-	 */
-	public void send(Agent sender, Agent receiver, String msg) {
-		//Map from sender object to its integer id
-		
-		communicationMeduim.send(sender.id(), receiver.id(), msg);
-		//or if the communicationMedium deals with the integers
-		//instead of objects, the sender and receiver objects
-		//can be mapped to their integer indices before calling
-		//the method in communicationMedium
-	}
-	
-	/**
-	 * Calls the send method of the communication medium
-	 * @param sender The sender Agent
-	 * @param receiver The reciever Agent
-	 * @param msg The message
-	 */
-	public void send(int sender, int receiver, String msg) {
-		
-		
-		communicationMeduim.send(sender, receiver, msg);
-		//or if the communicationMedium deals with the integers
-		//instead of objects, the sender and receiver objects
-		//can be mapped to their integer indices before calling
-		//the method in communicationMedium
-	}
-	
-	
-	/**
-	 * Calls the send method of the communication medium
-	 * @param sender The sender Agent
-	 * @param receiver The reciever Agent
-	 * @param msg The message
-	 */
-	public void broadcast(int sender, String msg) {
-		
-		
-		communicationMeduim.broadcast(sender, msg);
-		//or if the communicationMedium deals with the integers
-		//instead of objects, the sender and receiver objects
-		//can be mapped to their integer indices before calling
-		//the method in communicationMedium
-	}
-	
-	/**
-	 * Calls the receive method of the communication medium.
-	 * @param receiver The receiver agent
-	 * @return The list of all incoming messages for the receiver agent
-	 */
-	public String[] receive(Agent receiver) {
-		//or if the communicationMedium deals with the integers
-		//instead of objects, the receiver objects
-		//can be mapped to its integer indices before calling
-		//the method in communicationMedium
-		return communicationMeduim.receive(receiver.id());		
-	}
-	
-	/**
-	 * Calls the receive method of the communication medium.
-	 * @param receiver The receiver agent
-	 * @return The list of all incoming messages for the receiver agent
-	 */
-	public String[] receive(int receiver) {
-		//or if the communicationMedium deals with the integers
-		//instead of objects, the receiver objects
-		//can be mapped to its integer indices before calling
-		//the method in communicationMedium
-		return communicationMeduim.receive(receiver);		
-	}
+
 }

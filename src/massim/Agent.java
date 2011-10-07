@@ -1,5 +1,7 @@
 package massim;
 
+import javax.naming.CommunicationException;
+
 /**
  * Agent.java
  * An abstract class for all the agents to be used in the 
@@ -11,16 +13,16 @@ package massim;
 public abstract class Agent {
 
 	private int id;
-	private Team team;
-		
+	private CommMedium commMedium;
+	
+	private int[] costVector;		
 		
 	// *** The beliefs
 	// Personal beliefs (mental notes)
-	private int points = 0;
-	private int resources = 0;	
-	// Percepts
-	private int[] costVector;
-	private Path path;  // Or possibly of type Path
+	private int resourcePoints = 0;
+	private int rewardPoints = 0;	
+	// Percepts	
+	private Path path;  
 	private RowCol pos;
 	private Goal myGoal;
 	private RowCol[] agPos;
@@ -30,39 +32,40 @@ public abstract class Agent {
 	/**
 	 * Default constructor
 	 */
-	public Agent(int id) {
+	public Agent(int id,CommMedium commMedium) {
 		this.id = id;
+		this.commMedium = commMedium;
 	}
 	
 	/** 
-	 * Initializes the agent
+	 * Resets the agent's internals
 	 */
-	public void init(Team t) {
+	public void start(int[] costVector) {
 
-		setTeam(t);
-		points = 0;
-		resources = 0;
+		rewardPoints = 0;
+		resourcePoints = 0;
 		path = new Path();
 		
-		costVector = new int[Simulator.simParams.numOfAbilitiesPerAgent];
+		this.costVector = new int[Simulator.simParams.numOfAbilitiesPerAgent];
 		for (int i=0;i<Simulator.simParams.numOfAbilitiesPerAgent;i++)
-			costVector[i] = -1;
+			this.costVector[i] = costVector[i];
 		
-		// init the agents positions
+		// reset the agents positions
 		agPos = new RowCol[Simulator.simParams.numOfAgentsPerTeam];
 		for (int i=0;i<Simulator.simParams.numOfAgentsPerTeam;i++)
 			this.agPos[i] = new RowCol(-1,-1);
 		
-		// init the own positions
+		// reset the own positions
 		pos = new RowCol(-1, -1);
 		
-		// init the agent's  goal
+		// reset the agent's  goal
 		myGoal = null;
 		
 	}
 				
 	/**
 	 * Where agent performs its action
+	 * 
 	 * @return 0 if it was successful, -1 for error (might not 
 	 *           be the right place for this)
 	 */
@@ -121,14 +124,7 @@ public abstract class Agent {
 		// nothing as default
 	}
 	
-	/**
-	 * Sets the team that the agent belongs to
-	 * @param t The reference to the team
-	 */
-	public void setTeam(Team t) {
-		team = t;
-	}
-	
+		
 	/**
 	 * 
 	 * @return The id attribute of the class
@@ -141,55 +137,56 @@ public abstract class Agent {
 	 * 
 	 * @return The amount of points the agent has earned
 	 */
-	public int points() {
-		return points;
+	public int rewardPoints() {
+		return rewardPoints;
 	}
 	
 	/**
 	 * 
 	 * @return The amount of resources that the agent owns
 	 */
-	public int resources() {
-		return resources;
+	public int resourcePoints() {
+		return resourcePoints;
 	}
 	
 	/**
 	 * Increases the points by the specified amount
+	 * 
 	 * @param amount
 	 */
-	public void incPoints(int amount) {
-		points += amount;
+	public void incRewardPoints(int amount) {
+		rewardPoints += amount;
 	}
 	
 	/**
 	 * Decreases the points by the specified amount
+	 * 
 	 * @param amount
 	 */
-	public void decPoints(int amount) {
-		points -= amount;
+	public void decRewardPoints(int amount) {
+		rewardPoints -= amount;
 	}
 	
 	/**
 	 * Increases the resources by the specified amount
+	 * 
 	 * @param amount
 	 */
-	public void incResources(int amount) {
-		resources += amount;
+	public void incResourcePoints(int amount) {
+		resourcePoints += amount;
 	}
 	
 	/**
 	 * Decreases the resources by the specified amount
+	 * 
 	 * @param amount
 	 */
-	public void decResources(int amount) {
-		resources -= amount;
+	public void decResourcePoints(int amount) {
+		resourcePoints -= amount;
 	}
 	
 	public RowCol pos() {
 		return pos;
 	}
-
-	public Team team() {
-		return team;
-	}
+	
 }
