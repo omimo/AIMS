@@ -9,15 +9,17 @@ import massim.Agent.AGCODE;
  * 
  *
  * @author Omid Alemi
- * @version 1.0 2011/10/01
+ * @version 1.1 2011/10/06
  */
 public class Team {
 
 	public static int teamSize;
 	public static int calculationCost;
-	public static int communicationCost;
+	public static int unicastCost;
 	public static int achievementReward;
 	public static int helpOverhead;
+	public static int cellReward;
+	public static int broadcastCost;
 	
 	private Agent[] agents;
 	private Environment env;
@@ -30,27 +32,33 @@ public class Team {
 	 * Default constructor
 	 */
 	public Team() {		
-		env = new Environment(teamSize);
-		actionCostMatrix = new int[teamSize][Environment.numOfColors];
-		
+		env = new Environment();
+		actionCostMatrix = new int[teamSize][Environment.numOfColors];		
 	}
 	
-	public void reset(RowCol[] agentsPos, int[][]actionCostsMatrix) {
+	/**
+	 * Prepares the team for a new run by resetting its internal values
+	 * 
+	 * @param agentsPos				The array of agents positions (initial positions)
+	 * @param actionCostMatrix		The matrix of action costs for all the agents
+	 */
+	public void reset(RowCol[] agentsPos, int[][]actionCostMatrix) {
 		
 		for (int i=0;i<teamSize;i++)
 			env.setAgentPosition(i, agentsPos[i]);
 		
 		for (int i=0;i<teamSize;i++)
 			for (int j=0;j<Environment.numOfColors;j++)
-				this.actionCostMatrix[i][j] = actionCostsMatrix[i][j];			
+				this.actionCostMatrix[i][j] = actionCostMatrix[i][j];			
 				
 		for (int i=0;i<teamSize;i++)
-			agents[i].reset(actionCostsMatrix[i]);
+			agents[i].reset(actionCostMatrix[i]);
 	}
 	
 	/**
-	 * Called by the simulator in each step of simulation
-	 * @return ENDSIM code if the simulation is over
+	 * Called by the simulation engine in each step of simulation
+	 * 
+	 * @return ENDSIM 				code if the simulation is over
 	 */
 	public TeamStepCode step() {
 		
@@ -65,15 +73,11 @@ public class Team {
 		int noMsgPass = 1;
 		do {
 			for (int i=0;i<teamSize;i++)
-				agents[i].doSend();
-			
-			//System.out.println("The env after send step: "+env().toString());
+				agents[i].doSend();					
 			
 			for (int i=0;i<teamSize;i++)
-				agents[i].doReceive();
-			
-			//System.out.println("The env after rec step: "+env().toString());
-			
+				agents[i].doReceive();			
+						
 			if (env().communicationMedium().isEmpty())
 				noMsgPass--;			
 			
@@ -81,7 +85,7 @@ public class Team {
 		
 		// 1. Action Phase
 	
-		boolean allDone = true;
+		boolean allDone = true;	// this way of checking is just temporally and for tests
 		for (int i=0;i<agents.length;i++)	
 			if (agents[i].act() != AGCODE.OFF)
 				allDone = false;
@@ -93,18 +97,41 @@ public class Team {
 			return TeamStepCode.OK;
 	}
 	
+	/**
+	 * Enables the customized team classes to access the environment of the team
+	 * 
+	 * @return				The instance of the team's environment
+	 */
 	public Environment env() {
 		return env;
 	}
 	
+	/**
+	 * Enables the customize team classes to create and set their own agent types
+	 * 
+	 * @param agents		The array of customized agent objects
+	 */
 	public void setAgents(Agent[] agents) {
 		this.agents = agents;
 	}
 	
+	/**
+	 * Enables the customized team classes to get access to individual agents of the
+	 * team
+	 * 
+	 * @param agent			The id of the desired agent
+	 * @return				The instance of the agnet object with the specified id
+	 */
 	public Agent agent(int agent) {
 		return agents[agent];
 	}
 	
+	/**
+	 * To get the collective resource points for the team
+	 * 
+	 * @return				The amount of resources points that all the team's agents 
+	 *						own
+	 */
 	public int teamResourcePoints() {
 		int sum = 0;
 		for (Agent a: agents)
@@ -112,6 +139,11 @@ public class Team {
 		return sum;
 	}
 
+	/**
+	 * To get the collective reward points for the team
+	 * 
+	 * @return				The amount of reward points that all the team's agents own
+	 */
 	public int teamRewardPoints() {
 		int sum = 0;
 		for (Agent a: agents)

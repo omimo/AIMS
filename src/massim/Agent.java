@@ -11,14 +11,22 @@ import javax.naming.CommunicationException;
  * simulator
  *
  * @author Omid Alemi
- * @version 1.0 2011/10/01
+ * @version 1.1 2011/10/06
  */
 public abstract class Agent {
 
-	public static enum AGCODE { OK, ERR, DONE, OFF };
+	/**
+	 * Agent Status Return Code AGCODE:
+	 * 
+	 * OK					Normal behavior of the agent while it is moving
+	 * ERR					The sign of internal error within the agent
+	 * DONE					Means the agent has reached the goal, but still is active and able to help 
+	 * OFF					Means the agent is not functioning anymore (no move, no communication, no help)
+	 */
+	public static enum AGCODE { OK, ERR, DONE, OFF }; 
 	
 	private int id;
-	private AgentEnvInterface env;
+	private EnvAgentInterface env;
 	
 	private int[] actionCosts;		
 		
@@ -26,24 +34,28 @@ public abstract class Agent {
 	// Personal beliefs (mental notes)
 	private int resourcePoints = 0;
 	private int rewardPoints = 0;	
-	// Percepts	
-	//private Path path;  
+	// Percepts		
 	private RowCol pos;
 	private RowCol myGoalPos;
 	private RowCol[] agPos;
 	// ****
 	
 	
-	
-	public Agent(int id,AgentEnvInterface env) {
+	/**
+	 * The constructor
+	 * 
+	 */
+	public Agent(int id,EnvAgentInterface env) {
 		this.id = id;
 		this.env = env;		
 	}
 	
 	/** 
-	 * Resets the agent's internals
+	 * Resets the agent's internals to prepare it for a new run
+	 * 
+	 * @param actionCosts				The action cost vector for this agent 
 	 */
-	public void reset(int[] actionCost) {
+	public void reset(int[] actionCosts) {
 		
 		rewardPoints = 0;
 		resourcePoints = 0;
@@ -51,9 +63,12 @@ public abstract class Agent {
 		
 		this.actionCosts = new int[Environment.numOfColors];
 		for (int i=0;i<Environment.numOfColors;i++)
-			this.actionCosts[i] = actionCost[i];
+			this.actionCosts[i] = actionCosts[i];
 		
-		// reset the agents positions
+			
+			
+		
+		// reset the agents positions beliefs
 		agPos = new RowCol[Team.teamSize];
 		for (int i=0;i<Team.teamSize;i++)
 			this.agPos[i] = new RowCol(-1,-1);
@@ -67,35 +82,35 @@ public abstract class Agent {
 	}
 				
 	/**
-	 * Where agent performs its action
-	 * 
-	 * @return 0 if it was successful, -1 for error (might not 
-	 *           be the right place for this)
+	 * Where agent performs its action.
+	 * No defualt action.
+	 * To be implemented by the customized agents.
+	 *	 
+	 * @return 				AGCODE status code of current step
 	 */
 	public AGCODE act() {
-		// just move to the next position in the path as the 
-		// default action, maybe do nothing as default
+
 		return AGCODE.OK;
 	}
 	
 		
     /**
-     * Called by the Team in order to enable the agent to update 
-	 * its information about the environment
+     * Called by the Team in order to enable the agent to update its information 
+     * about the environment.
 	 * 
 	 * We can pass all the information to the agent, but it can filer them
-	 * so that it can have partial observability
+	 * so that it can have partial observability.
 	 * 
-     * @param board The current state of the board
-     * @param costVectors The cost vectors of all the agents
-     * @param goals The goals for all the agents
-     * @param agentsPos the current position of all the agents within
-     *        the team
+     * @param board 				The current state of the board
+     * @param actionCostsMatrix		The action cost vectors of all the agents
+     * @param goals 				The goals for all the agents
+     * @param agentsPos 			The current position of all the agents within
+     *        						the team
      */
 	public void perceive(Board board, int[][] actionCostsMatrix, RowCol[] goals, RowCol[] agentsPos) {
-		// Keep the necessary information private
+
 		
-		// Update the cost vector		
+		// Update the action cost vector		
 		for (int i=0;i<actionCostsMatrix[id].length;i++)
 			this.actionCosts[i] = actionCostsMatrix[id][i];
 		
@@ -107,8 +122,7 @@ public abstract class Agent {
 		pos = agPos[id];
 		
 		// Update the agent's  goal
-		myGoalPos = new RowCol(goals[id].row,goals[id].col);
-		
+		myGoalPos = new RowCol(goals[id].row,goals[id].col);		
 	}
 	
 	/**
@@ -130,76 +144,100 @@ public abstract class Agent {
 		
 	/**
 	 * 
-	 * @return The id attribute of the class
+	 * @return 				The id of the class
 	 */
 	public int id() {
 		return id;
 	}
 	
 	/**
+	 * Returns the amount of reward points the agent owns at the moment
 	 * 
-	 * @return The amount of points the agent has earned
+	 * @return 				The amount of points the agent owns at the moment
 	 */
 	public int rewardPoints() {
 		return rewardPoints;
 	}
 	
 	/**
+	 * The amount of resource points that the agent owns at the moment
 	 * 
-	 * @return The amount of resources that the agent owns
+	 * @return 				The amount of resource points that the agent owns at the moment
 	 */
 	public int resourcePoints() {
 		return resourcePoints;
 	}
 	
 	/**
-	 * Increases the points by the specified amount
+	 * Increases the reward points by the specified amount
 	 * 
-	 * @param amount
+	 * @param amount		The desired amount of points to be added
 	 */
 	public void incRewardPoints(int amount) {
 		rewardPoints += amount;
 	}
 	
 	/**
-	 * Decreases the points by the specified amount
+	 * Decreases the award points by the specified amount
 	 * 
-	 * @param amount
+	 * @param amount		The desired amount of points to be subtracted
 	 */
 	public void decRewardPoints(int amount) {
 		rewardPoints -= amount;
 	}
 	
 	/**
-	 * Increases the resources by the specified amount
+	 * Increases the resource points by the specified amount
 	 * 
-	 * @param amount
+	 * @param amount		The desired amount of points to be added
 	 */
 	public void incResourcePoints(int amount) {
 		resourcePoints += amount;
 	}
 	
 	/**
-	 * Decreases the resources by the specified amount
+	 * Decreases the resource points by the specified amount
 	 * 
-	 * @param amount
+	 * @param amount		The desired amount of points to be subtracted
 	 */
 	public void decResourcePoints(int amount) {
 		resourcePoints -= amount;
 	}
 	
+	/**
+	 * Enables the customized agents to get their position
+	 * 
+	 * @return				The current position of the agent
+	 */
 	public RowCol pos() {
 		return pos;
 	}
 	
-	public AgentEnvInterface env() {
+	/**
+	 * Enables the customized agents to access to the environment/agent interface
+	 * of the team for communication and action
+	 * 
+	 * @return				The instance of the 
+	 */
+	public EnvAgentInterface env() {
 		return env;
 	}
 	
+	/**
+	 * Enables the customized agents to get the position of their assigned goal
+	 * 
+	 * @return				The positon of the goal
+	 */
 	public RowCol goalPos() {
 		return myGoalPos;
 	}
 
+	
+	/**
+	 * Enables the customized agents to access their action costs vector
+	 * 
+	 * @return				The action costs vector of the agent
+	 */
 	public int[] actionCosts() {
 		
 		return actionCosts; 

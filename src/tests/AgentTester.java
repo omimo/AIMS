@@ -7,9 +7,7 @@ import massim.*;
 
 public class AgentTester {
 
-	/**
-	 * @param args
-	 */
+	
 	public static void main(String[] args) {
 					
 // Simulation-wide settings
@@ -24,7 +22,8 @@ public class AgentTester {
 				
 // Experiment-wide settings		
 		Board board = Board.randomBoard(5, 5);
-		RowCol[] goals = new RowCol[Team.teamSize];			
+		
+		RowCol[] goals = new RowCol[Team.teamSize];  // can be assigned randomized, etc;			
 		goals[0] = new RowCol(4,4);
 		goals[1] = new RowCol(0,4);
 		goals[2] = new RowCol(4,0);
@@ -33,12 +32,12 @@ public class AgentTester {
 		Environment.setBoard(board);
 		Environment.setGoals(goals);
 		
-		int[][] actionCostsMatrix = {{20,10,10,15,50}, 
+		int[][] actionCostsMatrix = {{20,10,10,15,50}, // can be assigned randomized, etc; 
 									 {10,10,50,20,10},
 									 {10,10,50,15,30},
 									 {15,30,20,10,10}};   
 			
-		RowCol[] agentsPos = {new RowCol(0,0), 
+		RowCol[] agentsPos = {new RowCol(0,0), // can be assigned randomized, etc;
 							  new RowCol(4,0), 
 							  new RowCol(0,4),
 							  new RowCol(2,2)};

@@ -1,46 +1,60 @@
-package tests;
+package massim.agents;
 
 import massim.Message;
 
 /**
- * 
- * "sender,receiver,protocol,cmd:arg1:arg2:..."
+ * NOTE: These class should extend another class later
  * 
  * @author Omid Alemi
  *
  */
-public class DummyMessage implements Message {
+public class MAPBidMessage implements Message { 
+
 
 	String mainDelim = ",";
 	String cmdDelim = ":";
 	
 	int sender;
-	int receiver; // -1 for broadcast	
-	int amount = 0;
-	String protocol = "dummy";
-	String cmd = "";
+	int receiver; 
+	int amount;	
+	
+	static String protocol = "map";
+	static String cmd = "bid";
 	String msg; 
 	
-	public DummyMessage(int sender, int receiver, int amount) {
+	public MAPBidMessage(int sender, int receiver, int amount) {
 		this.sender = sender;
 		this.receiver = receiver;
-		this.amount = amount;
+		this.amount = amount;		
+		System.out.println(")))))))))))ag"+ sender+"created a bid msg");
 	}
+	
+	public MAPBidMessage(String msg) {
+		try {
+			parse(msg);
+		} catch (Exception e) {
+			System.err.println("Error in parsing the message");
+		}
+	}
+	
+	public static boolean isInstanceOf(String s) {
+		return s.contains(cmd);
+	}
+	
 	@Override
 	public void parse(String msg) throws Exception {
 	
 		this.msg = msg;
 		String[] list = msg.split(mainDelim);
 		if (list.length != 4)
-			throw new Exception("Erro parsing the message");
+			throw new Exception("Error in parsing the message");
 			
 		sender = Integer.parseInt(list[0]);
 		receiver = Integer.parseInt(list[1]);
 		protocol = list[2];
 		cmd = list[3];
 		
-		String[] args = cmd.split(cmdDelim);
-		
+		String[] args = cmd.split(cmdDelim);				
 		amount = Integer.parseInt(args[1]);		
 	}
 	
@@ -50,12 +64,13 @@ public class DummyMessage implements Message {
 		return msg;
 	}
 
-
+	
 	private void pack() {
 		cmd = "";
-		cmd += "helpme";
+		cmd += cmd;
 		cmd += cmdDelim;
 		cmd += Integer.toString(amount);
+		
 			
 		msg = "";
 		msg += Integer.toString(sender);

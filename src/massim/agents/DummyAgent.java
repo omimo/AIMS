@@ -2,7 +2,7 @@ package massim.agents;
 
 import tests.DummyMessage;
 import massim.Agent;
-import massim.AgentEnvInterface;
+import massim.EnvAgentInterface;
 import massim.Board;
 import massim.Environment;
 import massim.Goal;
@@ -19,7 +19,7 @@ public class DummyAgent extends Agent {
 	boolean shouldAck = false;
 	boolean reachedThere = false;
 	
-	public DummyAgent(int id, AgentEnvInterface env) {
+	public DummyAgent(int id, EnvAgentInterface env) {
 		super(id,env);
 		System.out.println("Hello from DummyAgent " + id());
 	}
@@ -45,8 +45,7 @@ public class DummyAgent extends Agent {
 	
 	public int getCellCost(RowCol cell) {
 		
-		int [] colorRange = env().colorRange();
-		//System.arraycopy(env().actionCostRange(), 0, actionCostRange, 0, env().actionCostRange().length);
+		int [] colorRange = env().colorRange();		
 		int index = 0;
 		for (int i=0;i<colorRange.length;i++)
 		{
@@ -54,7 +53,7 @@ public class DummyAgent extends Agent {
 			if (color == colorRange[i])
 				index = i;						
 		}
-		System.out.println(">>>"+actionCosts()[index]);
+		
 		return actionCosts()[index];			
 	}
 	
@@ -78,12 +77,7 @@ public class DummyAgent extends Agent {
 		{
 			code = AGCODE.OFF;
 		}
-		
-		
-		/*if (shouldAck)
-		{
-			System.out.println("Agent " + id() +": should act to help someone!");
-		}*/
+			
 		
 		return code;
 	}
@@ -92,46 +86,19 @@ public class DummyAgent extends Agent {
 	@Override	
 	public void doSend() {
 		
-		/*if (resourcePoints() < 200 && !sentHelpReq)
-		{
 		
-			sentHelpReq = true;
-			DummyMessage dhrm = new DummyMessage(this.id(),-1,resourcePoints());
-			dhrm.pack();
-			env().communicationMedium().broadcast(this.id(), dhrm.toString());
-		}
-		
-		if (shouldAck)
-		{
-			String msg = Integer.toString(id())+",0,ack";
-			env().communicationMedium().send(this.id(),0,msg);
-		}*/
 	}
 	
 	@Override
 	public void doReceive() {		
-		/*String msg = env().communicationMedium().receive(this.id());						
 		
-		
-		if (msg.contains("helpme") )
-		{
-			System.out.println("dorec>>>>>"+id());
-			System.out.println("Agent " + id() +": received a helpreq");
-			recHelpReq = true;
-			shouldAck = true;
-		}		
-		
-		if (msg.contains("ack"))
-		{
-			System.out.println("Agent " + id() +": received an ack for help");
-		}*/
 		
 	}
 	
 	private void findPath() {
 		System.out.println("Agent " + id() +": Does not have a path, finding one ...");
 		
-		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 10).get(0);
+		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 1).get(0);
 		
 		System.out.println("Agent " + id() +": My path will be: " + path);
 	}

@@ -1,31 +1,42 @@
-package tests;
+package massim.agents;
 
 import massim.Message;
+import massim.RowCol;
 
-/**
- * 
- * "sender,receiver,protocol,cmd:arg1:arg2:..."
- * 
- * @author Omid Alemi
- *
- */
-public class DummyMessage implements Message {
+public class MAPAckMessage implements Message {
+
 
 	String mainDelim = ",";
 	String cmdDelim = ":";
 	
 	int sender;
-	int receiver; // -1 for broadcast	
-	int amount = 0;
-	String protocol = "dummy";
-	String cmd = "";
+	int receiver;	
+	int benefit;
+	int row;
+	int col;
+	
+	static String protocol = "map";
+	static String cmd = "ack";
 	String msg; 
 	
-	public DummyMessage(int sender, int receiver, int amount) {
-		this.sender = sender;
+	public MAPAckMessage(int sender, int receiver) {
+		this.sender = sender;		
 		this.receiver = receiver;
-		this.amount = amount;
 	}
+	
+	public MAPAckMessage(String msg) {
+		try {
+			parse(msg);
+		} catch (Exception e) {
+			System.err.println("Error in parsing the message");
+		}
+		
+	}
+	
+	public static boolean isInstanceOf(String s) {
+		return s.contains(cmd);
+	}
+	
 	@Override
 	public void parse(String msg) throws Exception {
 	
@@ -41,7 +52,8 @@ public class DummyMessage implements Message {
 		
 		String[] args = cmd.split(cmdDelim);
 		
-		amount = Integer.parseInt(args[1]);		
+		
+		
 	}
 	
 	@Override
@@ -50,13 +62,12 @@ public class DummyMessage implements Message {
 		return msg;
 	}
 
-
+	
 	private void pack() {
 		cmd = "";
-		cmd += "helpme";
-		cmd += cmdDelim;
-		cmd += Integer.toString(amount);
-			
+		cmd += cmd;
+	
+		
 		msg = "";
 		msg += Integer.toString(sender);
 		msg += mainDelim;

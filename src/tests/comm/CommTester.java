@@ -2,6 +2,7 @@ package tests.comm;
 
 
 import massim.CommMedium;
+import massim.Team;
 /**
  * Test class for the communication medium (CommMedium.java)
  * 
@@ -12,7 +13,8 @@ public class CommTester {
 	
 	public static void main(String[] args) {
 		
-		CommMedium commMedium = new CommMedium(4);
+		Team.teamSize = 4;
+		CommMedium commMedium = new CommMedium();
 		String msg1 = "Hello";
 		String msg2 = "2,3,map,bid,234";
 		
@@ -20,13 +22,14 @@ public class CommTester {
 			System.out.println("THE COMM MED IS EMPTY!");
 		
 		System.out.println("The channels for Agent 3:");
-		printBuffer(commMedium.receive(3));
+		
+		System.out.println(commMedium);
 		
 		System.out.println("Agent 2 sends a message to Agent 3");
 		commMedium.send(2, 3, msg2);
 		
 		System.out.println("The channels for Agent 3:");
-		printBuffer(commMedium.receive(3));
+		System.out.println(commMedium);
 		
 		//
 		System.out.println("Agent 1 broadcast a message");
@@ -34,16 +37,16 @@ public class CommTester {
 				
 		
 		System.out.println("The channels for Agent 0:");
-		printBuffer(commMedium.receive(0));
+		System.out.println(commMedium);
 		
 		System.out.println("The channels for Agent 1:");
-		printBuffer(commMedium.receive(1));
+		System.out.println(commMedium);
 		
 		System.out.println("The channels for Agent 2:");
-		printBuffer(commMedium.receive(2));
+		System.out.println(commMedium);
 		
 		System.out.println("The channels for Agent 3:");
-		printBuffer(commMedium.receive(3));
+		System.out.println(commMedium);
 		
 		if (commMedium.isEmpty())
 			System.out.println("THE COMM MED IS EMPTY!");
