@@ -165,6 +165,24 @@ public class Path implements Comparable {
 		return false;
 	}
 
+	public static Path getShortestPath2(RowCol start, RowCol end, int[][] board, int[] actionCosts) {
+		Path path = new Path();
+		
+		int r1 = start.row;
+		int c1 = start.col;
+		
+		int r2 = end.row;
+		int c2 = end.col;
+		
+		int ri
+		int
+		
+		
+		
+		return path;
+	}
+	
+	
 	public static ArrayList<Path> getShortestPaths(RowCol start, RowCol end, int[][] board, int[] actionCosts, int maxPathNum) {
 		ArrayList<Path> paths = new ArrayList<Path>();
 		PriorityQueue<Path> queue = new PriorityQueue<Path>();

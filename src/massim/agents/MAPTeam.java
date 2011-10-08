@@ -23,7 +23,7 @@ public class MAPTeam extends Team {
 		super.reset(agentsPos, actionCostsMatrix);
 		
 		for(int i=0;i<teamSize;i++)
-			agent(i).incResourcePoints(initResCoef*12);		
+			agent(i).incResourcePoints(initResCoef*20);		
 	}
 	
 	public int pointsEarned(){

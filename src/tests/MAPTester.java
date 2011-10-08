@@ -37,7 +37,8 @@ public class MAPTester {
 		RowCol[] goals = new RowCol[Team.teamSize];			
 		
 		for (int i=0;i<Team.teamSize;i++)
-			goals[i] = randomPos(boardh, boardw);
+			//goals[i] = randomPos(boardh, boardw);
+			goals[i] = new RowCol(9,9);
 			
 		
 		Environment.setBoard(board);
@@ -54,7 +55,8 @@ public class MAPTester {
 			
 		RowCol[] agentsPos = new RowCol[Team.teamSize];					
 		for (int i=0;i<Team.teamSize;i++)
-			agentsPos[i] = randomPos(boardh, boardw);
+			//agentsPos[i] = randomPos(boardh, boardw);
+			agentsPos[i] = new RowCol(0,0);
 									
 // Run-wide settings		
 		

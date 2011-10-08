@@ -84,7 +84,7 @@ public class MAPAgent extends Agent {
 			reachedThere = true;
 		
 		if (reachedThere)
-			return AGCODE.OFF;
+			return AGCODE.DONE;
 		
 		RowCol nextCell = path.getNextPoint(pos());
 		int cost = getCellCost(nextCell);
@@ -120,33 +120,7 @@ public class MAPAgent extends Agent {
 			}			
 		}
 		
-		/*if(cost == MAPTeam.colorPenalty && state1 == MAPState1.NORMAL) // or resourcePoints() < cost
-		{
-			
-			log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
-			state1 = MAPState1.SHOULD_REQ;					
 		
-		} 
-		else if (state1 == MAPState1.DO_IT_MYSELF)
-		{
-			if (resourcePoints() >= cost) 
-			{
-				log("Doint it by myself");
-				move();
-				state1 = MAPState1.NORMAL;
-			}
-			else
-				forfeit = true;
-		} 
-		else if (resourcePoints() >= cost) 
-		{
-			move();
-			state1 = MAPState1.NORMAL;
-		} 			
-		else 
-		{
-			forfeit = true;
-		}*/
 		
 
 		return code;
@@ -267,7 +241,7 @@ public class MAPAgent extends Agent {
 	private void findPath() {
 		System.out.println("Agent " + id() +": Does not have a path, finding one ...");
 		
-		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 1).get(0);
+		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 5).get(0);
 		
 		System.out.println("Agent " + id() +": My path will be: " + path);
 	}
