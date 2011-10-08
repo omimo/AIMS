@@ -17,14 +17,13 @@ public class MAPHelpReqMessage implements Message {
 	
 	static String protocol = "map";
 	static String cmd = "helpreq";
-	String msg; 
+	String stringMsg; 
 	
 	public MAPHelpReqMessage(int sender, int benefit, RowCol cell) {
 		this.sender = sender;		
 		this.benefit = benefit;
 		this.row = cell.row;
 		this.col = cell.col;
-		System.out.println(")))))))))))ag"+ sender+"created a req msg");
 	}
 	
 	public MAPHelpReqMessage(String msg) {
@@ -42,8 +41,7 @@ public class MAPHelpReqMessage implements Message {
 	
 	@Override
 	public void parse(String msg) throws Exception {
-	
-		this.msg = msg;
+			
 		String[] list = msg.split(mainDelim);
 		if (list.length != 4)
 			throw new Exception("Erro parsing the message");
@@ -51,9 +49,9 @@ public class MAPHelpReqMessage implements Message {
 		sender = Integer.parseInt(list[0]);
 		receiver = Integer.parseInt(list[1]);
 		protocol = list[2];
-		cmd = list[3];
+		String cmdstr = list[3];
 		
-		String[] args = cmd.split(cmdDelim);
+		String[] args = cmdstr.split(cmdDelim);
 		
 		
 		benefit = Integer.parseInt(args[1]);
@@ -64,28 +62,28 @@ public class MAPHelpReqMessage implements Message {
 	@Override
 	public String toString() {
 		pack();
-		return msg;
+		return stringMsg;
 	}
 
 	
 	private void pack() {
-		cmd = "";
-		cmd += cmd;
-		cmd += cmdDelim;
-		cmd += Integer.toString(benefit);
-		cmd += cmdDelim;
-		cmd += Integer.toString(row);
-		cmd += cmdDelim;
-		cmd += Integer.toString(col);
+		String cmdstr = "";
+		cmdstr += cmd;
+		cmdstr += cmdDelim;
+		cmdstr += Integer.toString(benefit);
+		cmdstr += cmdDelim;
+		cmdstr += Integer.toString(row);
+		cmdstr += cmdDelim;
+		cmdstr += Integer.toString(col);
 		
-		msg = "";
-		msg += Integer.toString(sender);
-		msg += mainDelim;
-		msg += Integer.toString(receiver);
-		msg += mainDelim;
-		msg += protocol;
-		msg += mainDelim;
-		msg += cmd;
+		stringMsg = "";
+		stringMsg += Integer.toString(sender);
+		stringMsg += mainDelim;
+		stringMsg += Integer.toString(receiver);
+		stringMsg += mainDelim;
+		stringMsg += protocol;
+		stringMsg += mainDelim;
+		stringMsg += cmdstr;
 		
 	}
 	

@@ -20,13 +20,12 @@ public class MAPBidMessage implements Message {
 	
 	static String protocol = "map";
 	static String cmd = "bid";
-	String msg; 
+	String stringMsg; 
 	
 	public MAPBidMessage(int sender, int receiver, int amount) {
 		this.sender = sender;
 		this.receiver = receiver;
-		this.amount = amount;		
-		System.out.println(")))))))))))ag"+ sender+"created a bid msg");
+		this.amount = amount;				
 	}
 	
 	public MAPBidMessage(String msg) {
@@ -44,7 +43,7 @@ public class MAPBidMessage implements Message {
 	@Override
 	public void parse(String msg) throws Exception {
 	
-		this.msg = msg;
+		this.stringMsg = msg;
 		String[] list = msg.split(mainDelim);
 		if (list.length != 4)
 			throw new Exception("Error in parsing the message");
@@ -52,34 +51,34 @@ public class MAPBidMessage implements Message {
 		sender = Integer.parseInt(list[0]);
 		receiver = Integer.parseInt(list[1]);
 		protocol = list[2];
-		cmd = list[3];
+		String cmdstr = list[3];
 		
-		String[] args = cmd.split(cmdDelim);				
+		String[] args = cmdstr.split(cmdDelim);				
 		amount = Integer.parseInt(args[1]);		
 	}
 	
 	@Override
 	public String toString() {
 		pack();
-		return msg;
+		return stringMsg;
 	}
 
 	
 	private void pack() {
-		cmd = "";
-		cmd += cmd;
-		cmd += cmdDelim;
-		cmd += Integer.toString(amount);
+		String cmdstr = "";
+		cmdstr += cmd;
+		cmdstr += cmdDelim;
+		cmdstr += Integer.toString(amount);
 		
 			
-		msg = "";
-		msg += Integer.toString(sender);
-		msg += mainDelim;
-		msg += Integer.toString(receiver);
-		msg += mainDelim;
-		msg += protocol;
-		msg += mainDelim;
-		msg += cmd;
+		stringMsg = "";
+		stringMsg += Integer.toString(sender);
+		stringMsg += mainDelim;
+		stringMsg += Integer.toString(receiver);
+		stringMsg += mainDelim;
+		stringMsg += protocol;
+		stringMsg += mainDelim;
+		stringMsg += cmdstr;
 		
 	}
 	

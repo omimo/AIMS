@@ -72,9 +72,11 @@ public class Team {
 
 		int noMsgPass = 1;
 		do {
+			System.out.println("---- sendings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doSend();					
 			
+			System.out.println("---- receivings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doReceive();			
 						
@@ -85,6 +87,7 @@ public class Team {
 		
 		// 1. Action Phase
 	
+		System.out.println("---- actions ----");
 		boolean allDone = true;	// this way of checking is just temporally and for tests
 		for (int i=0;i<agents.length;i++)	
 			if (agents[i].act() != AGCODE.OFF)

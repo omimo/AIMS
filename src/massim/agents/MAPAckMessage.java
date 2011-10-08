@@ -15,9 +15,9 @@ public class MAPAckMessage implements Message {
 	int row;
 	int col;
 	
-	static String protocol = "map";
-	static String cmd = "ack";
-	String msg; 
+	static final String protocol = "map";
+	static final String cmd = "ack";
+	String stringMsg; 
 	
 	public MAPAckMessage(int sender, int receiver) {
 		this.sender = sender;		
@@ -40,42 +40,36 @@ public class MAPAckMessage implements Message {
 	@Override
 	public void parse(String msg) throws Exception {
 	
-		this.msg = msg;
+		stringMsg = msg;
 		String[] list = msg.split(mainDelim);
 		if (list.length != 4)
 			throw new Exception("Erro parsing the message");
 			
 		sender = Integer.parseInt(list[0]);
 		receiver = Integer.parseInt(list[1]);
-		protocol = list[2];
-		cmd = list[3];
-		
-		String[] args = cmd.split(cmdDelim);
-		
-		
-		
+				
 	}
 	
 	@Override
 	public String toString() {
 		pack();
-		return msg;
+		return stringMsg;
 	}
 
 	
 	private void pack() {
-		cmd = "";
-		cmd += cmd;
+		String cmdstr = "";
+		cmdstr += cmd;
 	
 		
-		msg = "";
-		msg += Integer.toString(sender);
-		msg += mainDelim;
-		msg += Integer.toString(receiver);
-		msg += mainDelim;
-		msg += protocol;
-		msg += mainDelim;
-		msg += cmd;
+		stringMsg = "";
+		stringMsg += Integer.toString(sender);
+		stringMsg += mainDelim;
+		stringMsg += Integer.toString(receiver);
+		stringMsg += mainDelim;
+		stringMsg += protocol;
+		stringMsg += mainDelim;
+		stringMsg += cmdstr;
 		
 	}
 	

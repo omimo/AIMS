@@ -70,6 +70,14 @@ public class Path implements Comparable {
 		return currentPoint;
 	}
 	
+	public int getIndexOf(RowCol point) {
+		
+		for (int i=0;i<pathPoints.size();i++)
+			if (pathPoints.get(i).equals(point))
+				return i;
+		return -1;
+	}
+	
 	public LinkedList<RowCol> getPoints() {
 		LinkedList<RowCol> list = new LinkedList<RowCol>();
 		

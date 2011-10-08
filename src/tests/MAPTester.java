@@ -14,20 +14,20 @@ public class MAPTester {
 // Simulation-wide settings		
 		SimulationEngine.numOfTeams =1;
 		Team.teamSize = 8;							
-		Environment.numOfColors = 5;			
-		Environment.colorRange = new int[] {10,11,12,13,14};
-		Environment.actionCostRange = new int[] {10,50,200,300,500,500,500};
+		Environment.numOfColors = 6;			
+		Environment.colorRange = new int[] {10,11,12,13,14,15};
+		Environment.actionCostRange = new int[] {10,50,200,250,500,500,500,500};
 
 		Team.unicastCost = 10;
 		Team.calculationCost = 10;
 		Team.achievementReward = 2000;
 		Team.cellReward = 100;
-		Team.broadcastCost = Team.unicastCost*Team.teamSize;			
+		Team.broadcastCost = Team.unicastCost*(Team.teamSize-1);			
 		MAPTeam.colorPenalty = 500;
 		
 		
-		int boardw = 6;
-		int boardh = 6;
+		int boardw = 10;
+		int boardh = 10;
 		
 		MAPTeam mt = new MAPTeam();
 				
@@ -49,16 +49,8 @@ public class MAPTester {
 		
 		for (int i=0;i<Team.teamSize;i++)
 			for (int j=0;j<Environment.numOfColors;j++)
-				actionCostsMatrix[i][j]= Environment.actionCostRange[rnd.nextInt(Environment.numOfColors)];
+				actionCostsMatrix[i][j]= Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length)];
 		
-/*		int[][] actionCostsMatrix = {{20,10,10,15,50}, // can be assigned randomized, etc; 
-									 {10,10,50,20,10},
-									 {10,10,50,15,30},
-									 {15,30,20,10,10},
-									 {20,10,10,15,50},  
-									 {10,10,50,20,10},
-									 {10,10,50,15,30},
-									 {15,30,20,10,10}};   */
 			
 		RowCol[] agentsPos = new RowCol[Team.teamSize];					
 		for (int i=0;i<Team.teamSize;i++)
@@ -81,9 +73,7 @@ public class MAPTester {
 		}
 						
 		System.out.println("The final team's resources = "+mt.teamResourcePoints());
-		
-		
-		
+		System.out.println("The final team's earned points = "+mt.pointsEarned());
 		
 	}
 

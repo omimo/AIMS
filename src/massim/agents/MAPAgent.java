@@ -1,6 +1,7 @@
 package massim.agents;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.Board;
@@ -20,17 +21,19 @@ public class MAPAgent extends Agent {
 	private boolean reachedThere = false;
 	private boolean debuging = true;
 	
-	private enum MAPState1 {NORMAL, SHOULD_REQ, WAIT_FOR_BIDS, SHOULD_ACK };
-	private enum MAPState2 {WAIT_FOR_REQ, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP};
+	private enum MAPState1 {NORMAL, SHOULD_REQ, WAIT_FOR_BIDS, SHOULD_ACK, DO_IT_MYSELF };
+	private enum MAPState2 {ACCEPT_REQS, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP};
 	
 	MAPState1 state1 = MAPState1.NORMAL;
-	MAPState2 state2 = MAPState2.WAIT_FOR_REQ;
+	MAPState2 state2 = MAPState2.ACCEPT_REQS;
 	
 	private int helperAgent = -1;
 	
 	private int agentToHelp = -1;
 	private int teamCostIfHelp = 0;
 	private RowCol agentToHelpPos = null;
+	
+	private int waitForBidsPass = 2;
 	
 	public MAPAgent(int id, EnvAgentInterface env) {
 		super(id,env);
@@ -74,7 +77,7 @@ public class MAPAgent extends Agent {
 		if (state2 == MAPState2.SHOULD_DO_HELP)
 		{
 			helpMove();
-			state2 = MAPState2.WAIT_FOR_REQ;
+			state2 = MAPState2.ACCEPT_REQS;
 		}
 		
 		if (pos().equals(path.getEndPoint()))
@@ -86,20 +89,64 @@ public class MAPAgent extends Agent {
 		RowCol nextCell = path.getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 		
-		if(cost == MAPTeam.colorPenalty) // or resourcePoints() < cost
-		{ 			
+		
+		if (state1 == MAPState1.NORMAL)
+		{
+			if(cost == MAPTeam.colorPenalty) // or resourcePoints() < cost
+			{				
+				log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
+				state1 = MAPState1.SHOULD_REQ;								
+			} 
+			else if (resourcePoints() >= cost) 
+			{
+				move();
+				state1 = MAPState1.NORMAL;
+			} 			
+			else 
+			{
+				forfeit = true;
+			}			
+		}		
+		else if (state1 == MAPState1.DO_IT_MYSELF)
+		{
+			if (resourcePoints() >= cost) 
+			{
+				move();
+				state1 = MAPState1.NORMAL;
+			} 			
+			else 
+			{
+				forfeit = true;
+			}			
+		}
+		
+		/*if(cost == MAPTeam.colorPenalty && state1 == MAPState1.NORMAL) // or resourcePoints() < cost
+		{
+			
 			log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
 			state1 = MAPState1.SHOULD_REQ;					
 		
 		} 
-		else if (resourcePoints() >= cost) {
+		else if (state1 == MAPState1.DO_IT_MYSELF)
+		{
+			if (resourcePoints() >= cost) 
+			{
+				log("Doint it by myself");
+				move();
+				state1 = MAPState1.NORMAL;
+			}
+			else
+				forfeit = true;
+		} 
+		else if (resourcePoints() >= cost) 
+		{
 			move();
 			state1 = MAPState1.NORMAL;
-		} 
+		} 			
 		else 
 		{
 			forfeit = true;
-		}
+		}*/
 		
 
 		return code;
@@ -118,6 +165,7 @@ public class MAPAgent extends Agent {
 			int noHelp = projectPoints(pos(),resourcePoints());
 			int benefit = withHelp - noHelp;
 			log("with= "+ withHelp+"   nohelp="+noHelp);
+			
 			requestHelp(benefit, nextCell);
 			
 			state1=MAPState1.WAIT_FOR_BIDS;
@@ -125,14 +173,13 @@ public class MAPAgent extends Agent {
 		else if (state1 == MAPState1.SHOULD_ACK)
 		{
 			log("Sending ack to the winner: Agent "+helperAgent);
-			ackHelp();
+			ackHelp(helperAgent);
 			helperAgent = -1;
 			state1 = MAPState1.NORMAL;
 		}
 		
 		if (state2 == MAPState2.SHOULD_BID)
-		{
-			log("bidding for Agent "+agentToHelp);
+		{						
 			bid(agentToHelp, teamCostIfHelp);
 			state2=MAPState2.WAIT_FOR_ACK;
 		}
@@ -150,6 +197,7 @@ public class MAPAgent extends Agent {
 		
 		while (!msg.equals(""))
 		{
+			log(":::::::::::"+msg);
 			if (MAPHelpReqMessage.isInstanceOf(msg)) // msg is a help request			
 				requestMsgs.add(new MAPHelpReqMessage(msg));
 			else if (MAPBidMessage.isInstanceOf(msg)) // msg is a bid		
@@ -163,10 +211,18 @@ public class MAPAgent extends Agent {
 				
 		
 		if (state1 == MAPState1.WAIT_FOR_BIDS)
-		{						
-			
+		{													
+						
 			int min_bid = Integer.MAX_VALUE;
 			int min_agent = -1;
+			
+			if (waitForBidsPass < 2)
+			{
+				log("any bids?"+ bidMsgs.size());
+				java.util.Scanner s = new Scanner(System.in);
+				//s.nextLine();
+				
+			}
 			
 			for (int i=0;i<bidMsgs.size();i++)		
 				if (bidMsgs.get(i).amount> 0 && bidMsgs.get(i).amount < min_bid)
@@ -180,18 +236,25 @@ public class MAPAgent extends Agent {
 				state1 = MAPState1.SHOULD_ACK;
 				helperAgent = min_agent;
 			}
+			else if (waitForBidsPass <= 0 )
+			{
+				waitForBidsPass = 2;
+				state1 = MAPState1.DO_IT_MYSELF;
+			}
+			
+			waitForBidsPass--;
 		}
 		
-		if (state2 == MAPState2.WAIT_FOR_REQ)  // or could be anything
+		if (state2 == MAPState2.ACCEPT_REQS)  // or could be anything
 		{
-			log(">>>>>"+requestMsgs.size());
+		
 			for (int i=0;i<requestMsgs.size();i++) // here it helps just the last one!
 			{
 				agentToHelpPos = new RowCol(requestMsgs.get(i).row,requestMsgs.get(i).col);
 				teamCostIfHelp = calculateTeamCost(requestMsgs.get(i).benefit, agentToHelpPos);
 				agentToHelp = requestMsgs.get(i).sender;
 				state2 = MAPState2.SHOULD_BID;
-				log("some one needs help!");
+				log("some one needs help!");				
 			}
 		}
 		else if (state2 == MAPState2.WAIT_FOR_ACK)		
@@ -226,9 +289,10 @@ public class MAPAgent extends Agent {
 	
 	private int calculateTeamBenefitWithHelp()
 	{
-		if (!canBroadcast())
+		if (!canCalc())
 			return -1;
 			
+		decResourcePoints(Team.calculationCost);
 		RowCol nextCell = path.getNextPoint(pos());
 		int benefit = projectPoints(nextCell,resourcePoints());
 		
@@ -258,7 +322,7 @@ public class MAPAgent extends Agent {
 					
 		
 		if(i.equals(path.getEndPoint()))
-			benefit += Team.achievementReward;
+			benefit += points;
 
 		return benefit;
 	}
@@ -280,10 +344,14 @@ public class MAPAgent extends Agent {
 	}
 	
 
-	private void ackHelp()
+	private void ackHelp(int receiver)
 	{
-		MAPAckMessage ackMsg = new MAPAckMessage(id(), agentToHelp);
-		env().communicationMedium().send(id(), agentToHelp, ackMsg.toString());
+		if (!canSend())
+			return;
+		decResourcePoints(Team.unicastCost);
+		
+		MAPAckMessage ackMsg = new MAPAckMessage(id(), receiver);
+		env().communicationMedium().send(id(), receiver, ackMsg.toString());
 	}
 	
 	private boolean move() {
@@ -352,7 +420,25 @@ public class MAPAgent extends Agent {
 	}
 	
 	private void bid(int agent, int teamCost) {
+		if (!canSend())
+			return;
+		
+		decResourcePoints(Team.unicastCost);
+		
 		MAPBidMessage bid_msg = new MAPBidMessage(id(), agent, teamCost);
 		env().communicationMedium().send(id(), agent, bid_msg.toString());
+	}
+	
+	/**
+	 *JUST COPIED FROM OLD SIMULATIONS 
+	 * @return
+	 */
+	public int pointsEarned() {
+		
+				
+		int totalPoints = path.getIndexOf(pos()) * Team.cellReward;
+		if(reachedThere)
+			totalPoints = Team.achievementReward + resourcePoints();
+		return totalPoints;
 	}
 }
