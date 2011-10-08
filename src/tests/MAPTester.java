@@ -16,14 +16,15 @@ public class MAPTester {
 		Team.teamSize = 8;							
 		Environment.numOfColors = 6;			
 		Environment.colorRange = new int[] {10,11,12,13,14,15};
-		Environment.actionCostRange = new int[] {10,50,200,250,500,500,500,500};
+		Environment.actionCostRange = new int[] {10,50,200,250,300,500};
 
 		Team.unicastCost = 10;
 		Team.calculationCost = 10;
 		Team.achievementReward = 2000;
 		Team.cellReward = 100;
 		Team.broadcastCost = Team.unicastCost*(Team.teamSize-1);			
-		MAPTeam.colorPenalty = 500;
+		//MAPTeam.colorPenalty = 500;
+		MAPTeam.costThreshold = 299;
 		
 		
 		int boardw = 10;
@@ -57,7 +58,11 @@ public class MAPTester {
 		for (int i=0;i<Team.teamSize;i++)
 			//agentsPos[i] = randomPos(boardh, boardw);
 			agentsPos[i] = new RowCol(0,0);
-									
+					
+		int numOfRuns = 1000;
+		int[] res = new int[numOfRuns];
+		for (int r=0;r<numOfRuns;r++)
+		{
 // Run-wide settings		
 		
 		mt.reset(agentsPos,actionCostsMatrix);
@@ -76,7 +81,14 @@ public class MAPTester {
 						
 		System.out.println("The final team's resources = "+mt.teamResourcePoints());
 		System.out.println("The final team's earned points = "+mt.pointsEarned());
+		res[r]=mt.pointsEarned();
+		}
 		
+		int sum = 0;
+		for (int r=0;r<numOfRuns;r++)
+			sum+=res[r];
+		
+		System.out.println("The average of runs = "+sum/numOfRuns);
 	}
 
 	

@@ -6,7 +6,8 @@ import massim.Team;
 public class MAPTeam extends Team {
 
 	public int initResCoef = 200;
-	public static int colorPenalty; // as in the old simulations
+	//public static int colorPenalty; // as in the old simulations
+	public static int costThreshold;
 	
 	public MAPTeam() {
 		super();

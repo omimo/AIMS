@@ -19,7 +19,7 @@ public class Team {
 	public static int achievementReward;
 	public static int helpOverhead;
 	public static int cellReward;
-	public static int broadcastCost;
+	public static int broadcastCost;	
 	
 	private Agent[] agents;
 	private Environment env;
@@ -70,16 +70,18 @@ public class Team {
 		
 		// 1. Communication Phase
 
-		int noMsgPass = 1;
+		int noMsgPass = 2;
 		do {
-			System.out.println("---- sendings ----");
-			for (int i=0;i<teamSize;i++)
-				agents[i].doSend();					
 			
 			System.out.println("---- receivings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doReceive();			
 						
+			
+			System.out.println("---- sendings ----");
+			for (int i=0;i<teamSize;i++)
+				agents[i].doSend();								
+			
 			if (env().communicationMedium().isEmpty())
 				noMsgPass--;			
 			
@@ -90,10 +92,15 @@ public class Team {
 		System.out.println("---- actions ----");
 		boolean allDone = true;	// this way of checking is just temporally and for tests
 		for (int i=0;i<agents.length;i++)	
-			if (agents[i].act() != AGCODE.OFF)
+		{
+			AGCODE c = agents[i].act();
+			System.out.println("agent "+i+" is "+c);
+			if ( c != AGCODE.DONE)
 				allDone = false;
+		}	
 			
-			
+		//(new java.util.Scanner(System.in)).nextLine();
+		
 		if (allDone)			
 			return TeamStepCode.DONE;
 		else 

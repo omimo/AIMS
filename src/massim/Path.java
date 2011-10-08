@@ -174,10 +174,14 @@ public class Path implements Comparable {
 		int r2 = end.row;
 		int c2 = end.col;
 		
-		int ri
-		int
+		int ri = r1;
+		int ci = c1;
 		
+		for (ri=r1;ri<r2;ri++)		
+			path.addPathPoint(new RowCol(ri,c1));
 		
+		for (ci=c1;ci<=c2;ci++)		
+			path.addPathPoint(new RowCol(r2,ci));				
 		
 		return path;
 	}

@@ -33,7 +33,7 @@ public class MAPAgent extends Agent {
 	private int teamCostIfHelp = 0;
 	private RowCol agentToHelpPos = null;
 	
-	private int waitForBidsPass = 2;
+	private int waitForBidsPass = 1;
 	
 	public MAPAgent(int id, EnvAgentInterface env) {
 		super(id,env);
@@ -84,7 +84,16 @@ public class MAPAgent extends Agent {
 			reachedThere = true;
 		
 		if (reachedThere)
+		{
+			log("GOT THERE!!!!");
 			return AGCODE.DONE;
+		}
+		
+		if (forfeit)
+		{
+			log("Forfeited :(");
+			return AGCODE.DONE;
+		}
 		
 		RowCol nextCell = path.getNextPoint(pos());
 		int cost = getCellCost(nextCell);
@@ -92,7 +101,7 @@ public class MAPAgent extends Agent {
 		
 		if (state1 == MAPState1.NORMAL)
 		{
-			if(cost == MAPTeam.colorPenalty) // or resourcePoints() < cost
+			if(cost > MAPTeam.costThreshold || resourcePoints() < cost) // or resourcePoints() < cost
 			{				
 				log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
 				state1 = MAPState1.SHOULD_REQ;								
@@ -102,10 +111,10 @@ public class MAPAgent extends Agent {
 				move();
 				state1 = MAPState1.NORMAL;
 			} 			
-			else 
+			/*else 
 			{
 				forfeit = true;
-			}			
+			}*/			
 		}		
 		else if (state1 == MAPState1.DO_IT_MYSELF)
 		{
@@ -154,6 +163,7 @@ public class MAPAgent extends Agent {
 		
 		if (state2 == MAPState2.SHOULD_BID)
 		{						
+			log("Bidding to help agent " +agentToHelp + " with the value: "+ teamCostIfHelp);
 			bid(agentToHelp, teamCostIfHelp);
 			state2=MAPState2.WAIT_FOR_ACK;
 		}
@@ -170,8 +180,7 @@ public class MAPAgent extends Agent {
 		String msg = env().communicationMedium().receive(id());
 		
 		while (!msg.equals(""))
-		{
-			log(":::::::::::"+msg);
+		{			
 			if (MAPHelpReqMessage.isInstanceOf(msg)) // msg is a help request			
 				requestMsgs.add(new MAPHelpReqMessage(msg));
 			else if (MAPBidMessage.isInstanceOf(msg)) // msg is a bid		
@@ -192,10 +201,7 @@ public class MAPAgent extends Agent {
 			
 			if (waitForBidsPass < 2)
 			{
-				log("any bids?"+ bidMsgs.size());
-				java.util.Scanner s = new Scanner(System.in);
-				//s.nextLine();
-				
+				log("any bids?"+ bidMsgs.size());				
 			}
 			
 			for (int i=0;i<bidMsgs.size();i++)		
@@ -212,7 +218,7 @@ public class MAPAgent extends Agent {
 			}
 			else if (waitForBidsPass <= 0 )
 			{
-				waitForBidsPass = 2;
+				waitForBidsPass = 1;
 				state1 = MAPState1.DO_IT_MYSELF;
 			}
 			
@@ -241,8 +247,8 @@ public class MAPAgent extends Agent {
 	private void findPath() {
 		System.out.println("Agent " + id() +": Does not have a path, finding one ...");
 		
-		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 5).get(0);
-		
+		path = Path.getShortestPath2(pos(), goalPos(), theBoard.getBoard(), actionCosts());
+	
 		System.out.println("Agent " + id() +": My path will be: " + path);
 	}
 
