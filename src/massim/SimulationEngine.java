@@ -5,23 +5,25 @@ import java.util.PriorityQueue;
 import massim.Team.TeamStepCode;
 
 /**
- * The Multiagent Teamwork Simulator
+ * The Multiagent Teamwork SimulationEngine
  * The main class of the simulator
  * 
  * @author Omid Alemi
  * @version 1.0 2011/10/01
  * 
  */
-public class Simulator {
+public class SimulationEngine {
 
+	public static int numOfTeams;
+	
+	
 	private int simCounter; //change the name 
-	private SimState simState;
+	
 	
 	private Team[] teams;        
         
 	public static enum SimStepCode {SIMOK, SIMEND, SIMERR}
-	
-    public static SimParams simParams;
+	    
     
 	/**
 	 * Constructor
@@ -30,9 +32,9 @@ public class Simulator {
 	 * @param simParams The class holding all the simulator parameters 
 	 * @param initBoard The initial board settings	 
 	 */
-	public Simulator(Team[] teams, SimParams simParams) {
+	public SimulationEngine(Team[] teams) {
 		System.arraycopy(teams, 0, this.teams, 0, teams.length);
-		Simulator.simParams = simParams;
+		
 	}
 	
 	/**
@@ -40,12 +42,12 @@ public class Simulator {
 	 * Should be called before step() method
 	 * @param initBoard The initial board, defined in the frontend
 	 */
-	public void init(SimState ss) {		
+	public void init() {		
 		// set the simulation state to the input one
 		// initialize the teams
 		// set the counter to zero
 				
-		simState = ss;
+		
 		
 		/*for (Team t : teams)
 			t.init();*/
@@ -72,7 +74,7 @@ public class Simulator {
 		simCounter++;
 		
 		// Add disturbance to the board
-		simState.board().distrub(disturbanceLevel);
+		//simState.board().distrub(disturbanceLevel);
 		
 		// Execute each team
 		boolean allDone = false;
@@ -80,7 +82,7 @@ public class Simulator {
 		{
 			TeamStepCode tsc;
 			
-			tsc = t.step(simState);
+			tsc = t.step();
 			
 			if (tsc == TeamStepCode.OK)
 				allDone = false;
@@ -119,11 +121,5 @@ public class Simulator {
 	}*/
 	
 	
-	/**
-	 * @return The current state of the simulation in a SimState object 
-	 */
-	public SimState getSimulationState() {
-		
-		return simState;		
-	}
+	
 }

@@ -1,10 +1,14 @@
 package massim.agents;
 
 import massim.Agent;
+import massim.AgentEnvInterface;
 
 public class MAPAgent extends Agent {
 
-	// should have refrences to its teammates
+	
+	public MAPAgent(int id,AgentEnvInterface env) {
+		super(id, env);
+	}
 	
 	/**
 	 * The MAP agents perform their 'move' action here  

@@ -1,71 +1,139 @@
 package massim.agents;
 
-import tests.DummyHelpReqMessage;
+import tests.DummyMessage;
 import massim.Agent;
+import massim.AgentEnvInterface;
 import massim.Board;
+import massim.Environment;
 import massim.Goal;
+import massim.Path;
 import massim.RowCol;
 
 public class DummyAgent extends Agent {
 
 	private Board theBoard;
+	private Path path;
 	
-	public DummyAgent(int id) {
-		super(id);
-		// TODO Auto-generated constructor stub
+	boolean sentHelpReq = false;
+	boolean recHelpReq = false;
+	boolean shouldAck = false;
+	boolean reachedThere = false;
+	
+	public DummyAgent(int id, AgentEnvInterface env) {
+		super(id,env);
+		System.out.println("Hello from DummyAgent " + id());
 	}
 	
 	
 	@Override
-	public void perceive(Board board, int[][] costVectors, Goal[] goals, RowCol[] agentsPos) {
+	public void perceive(Board board, int[][] costVectors, RowCol[] goals, RowCol[] agentsPos) {
+						
 		super.perceive(board, costVectors, goals, agentsPos);
+		
 		theBoard = board;
+		System.out.println("Agent " + id() +" New Percepts:");
+		System.out.println("Agent " + id() +": resourcePoints = "+ resourcePoints());
+		System.out.println("Agent " + id() +": my pos = "+ pos() 
+				+": my goal's pos = "+ goalPos());
+		
+		if (path == null && goals[id()] != null)		
+			findPath();
+		
+		if (pos().equals(goalPos()))
+			reachedThere = true;
+	}
+	
+	public int getCellCost(RowCol cell) {
+		
+		int [] colorRange = env().colorRange();
+		//System.arraycopy(env().actionCostRange(), 0, actionCostRange, 0, env().actionCostRange().length);
+		int index = 0;
+		for (int i=0;i<colorRange.length;i++)
+		{
+			int color = theBoard.getBoard()[cell.row][cell.col];
+			if (color == colorRange[i])
+				index = i;						
+		}
+		System.out.println(">>>"+actionCosts()[index]);
+		return actionCosts()[index];			
 	}
 	
 	@Override
-	public int act() {
-		System.out.println("Agent " + id() +": resources = "+ resources());
-		System.out.println("Agent " + id() +": my pos = "+ pos().row + " , " + pos().col);
+	public AGCODE act() {
+		AGCODE code = AGCODE.OK;;
+		
+		if (!reachedThere)
+		{
+			RowCol nextPos = path.getNextPoint(pos());
+			if (env().move(id(), nextPos))
+				{
+					System.out.println("Agent " + id() +": moving to " + nextPos );
+					
+					decResourcePoints(getCellCost(nextPos));
+				}
+			else 
+				System.out.println("Agent " + id() +": failed to move to " + nextPos );
+		}
+		else
+		{
+			code = AGCODE.OFF;
+		}
 		
 		
+		/*if (shouldAck)
+		{
+			System.out.println("Agent " + id() +": should act to help someone!");
+		}*/
 		
-		return 0;
+		return code;
 	}
 	
 	
 	@Override	
 	public void doSend() {
-		if (resources() < 200)
+		
+		/*if (resourcePoints() < 200 && !sentHelpReq)
 		{
-			DummyHelpReqMessage dhrm = new DummyHelpReqMessage(this.id(),-1,resources());
+		
+			sentHelpReq = true;
+			DummyMessage dhrm = new DummyMessage(this.id(),-1,resourcePoints());
 			dhrm.pack();
-			team().broadcast(this.id(), dhrm.toString());
+			env().communicationMedium().broadcast(this.id(), dhrm.toString());
 		}
 		
+		if (shouldAck)
+		{
+			String msg = Integer.toString(id())+",0,ack";
+			env().communicationMedium().send(this.id(),0,msg);
+		}*/
 	}
 	
 	@Override
-	public void doReceive() {
-		String[] incoming = team().receive(this.id());
-		System.out.println("Agent " + id() +": buffers: ");
-		printBuffer(incoming);
+	public void doReceive() {		
+		/*String msg = env().communicationMedium().receive(this.id());						
 		
-		for(String msg : incoming)
+		
+		if (msg.contains("helpme") )
 		{
-			if (msg=="")
-				continue;
-			
-			if (msg.startsWith("helpme"))
-				System.out.println("Agent " + id() +": received a helpreq");
-				//remember to help;			
-		}
-	}
-
-	public static void printBuffer(String[] buffer) {		
-		for (int i=0;i<buffer.length;i++)
+			System.out.println("dorec>>>>>"+id());
+			System.out.println("Agent " + id() +": received a helpreq");
+			recHelpReq = true;
+			shouldAck = true;
+		}		
+		
+		if (msg.contains("ack"))
 		{
-			System.out.print("Agent "+ i+ " : ");
-			System.out.println(buffer[i]);
-		}
+			System.out.println("Agent " + id() +": received an ack for help");
+		}*/
+		
 	}
+	
+	private void findPath() {
+		System.out.println("Agent " + id() +": Does not have a path, finding one ...");
+		
+		path = Path.getShortestPaths(pos(), goalPos(), theBoard.getBoard(), actionCosts(), 10).get(0);
+		
+		System.out.println("Agent " + id() +": My path will be: " + path);
+	}
+	
 }

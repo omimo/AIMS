@@ -1,5 +1,8 @@
 package massim;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.naming.CommunicationException;
 
 /**
@@ -12,54 +15,54 @@ import javax.naming.CommunicationException;
  */
 public abstract class Agent {
 
-	private int id;
-	private CommMedium commMedium;
+	public static enum AGCODE { OK, ERR, DONE, OFF };
 	
-	private int[] costVector;		
+	private int id;
+	private AgentEnvInterface env;
+	
+	private int[] actionCosts;		
 		
 	// *** The beliefs
 	// Personal beliefs (mental notes)
 	private int resourcePoints = 0;
 	private int rewardPoints = 0;	
 	// Percepts	
-	private Path path;  
+	//private Path path;  
 	private RowCol pos;
-	private Goal myGoal;
+	private RowCol myGoalPos;
 	private RowCol[] agPos;
 	// ****
 	
 	
-	/**
-	 * Default constructor
-	 */
-	public Agent(int id,CommMedium commMedium) {
+	
+	public Agent(int id,AgentEnvInterface env) {
 		this.id = id;
-		this.commMedium = commMedium;
+		this.env = env;		
 	}
 	
 	/** 
 	 * Resets the agent's internals
 	 */
-	public void start(int[] costVector) {
-
+	public void reset(int[] actionCost) {
+		
 		rewardPoints = 0;
 		resourcePoints = 0;
-		path = new Path();
+		//path = new Path();
 		
-		this.costVector = new int[Simulator.simParams.numOfAbilitiesPerAgent];
-		for (int i=0;i<Simulator.simParams.numOfAbilitiesPerAgent;i++)
-			this.costVector[i] = costVector[i];
+		this.actionCosts = new int[Environment.numOfColors];
+		for (int i=0;i<Environment.numOfColors;i++)
+			this.actionCosts[i] = actionCost[i];
 		
 		// reset the agents positions
-		agPos = new RowCol[Simulator.simParams.numOfAgentsPerTeam];
-		for (int i=0;i<Simulator.simParams.numOfAgentsPerTeam;i++)
+		agPos = new RowCol[Team.teamSize];
+		for (int i=0;i<Team.teamSize;i++)
 			this.agPos[i] = new RowCol(-1,-1);
 		
 		// reset the own positions
 		pos = new RowCol(-1, -1);
 		
 		// reset the agent's  goal
-		myGoal = null;
+		myGoalPos = null;
 		
 	}
 				
@@ -69,10 +72,10 @@ public abstract class Agent {
 	 * @return 0 if it was successful, -1 for error (might not 
 	 *           be the right place for this)
 	 */
-	public int act() {
+	public AGCODE act() {
 		// just move to the next position in the path as the 
 		// default action, maybe do nothing as default
-		return 0;
+		return AGCODE.OK;
 	}
 	
 		
@@ -89,12 +92,12 @@ public abstract class Agent {
      * @param agentsPos the current position of all the agents within
      *        the team
      */
-	public void perceive(Board board, int[][] costVectors, Goal[] goals, RowCol[] agentsPos) {
+	public void perceive(Board board, int[][] actionCostsMatrix, RowCol[] goals, RowCol[] agentsPos) {
 		// Keep the necessary information private
 		
 		// Update the cost vector		
-		for (int i=0;i<costVectors[id].length;i++)
-			this.costVector[i] = costVectors[id][i];
+		for (int i=0;i<actionCostsMatrix[id].length;i++)
+			this.actionCosts[i] = actionCostsMatrix[id][i];
 		
 		// Update the agents positions
 		for (int i=0;i<agentsPos.length;i++)
@@ -104,7 +107,7 @@ public abstract class Agent {
 		pos = agPos[id];
 		
 		// Update the agent's  goal
-		myGoal = goals[id];
+		myGoalPos = new RowCol(goals[id].row,goals[id].col);
 		
 	}
 	
@@ -189,4 +192,16 @@ public abstract class Agent {
 		return pos;
 	}
 	
+	public AgentEnvInterface env() {
+		return env;
+	}
+	
+	public RowCol goalPos() {
+		return myGoalPos;
+	}
+
+	public int[] actionCosts() {
+		
+		return actionCosts; 
+	}
 }

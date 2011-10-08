@@ -15,7 +15,7 @@ public class TxSimulator1 {
 		Team MAPTeam;
 		Board initBoard;
 		SimParams simParams = new Ex1Params();
-		Simulator sim;
+		SimulationEngine sim;
 		
 		// set the parameters values as desired, possibly load from a file -> simParams
 		// load the initial board setting from a text file into an array -> initBoard
@@ -23,13 +23,13 @@ public class TxSimulator1 {
 		// for each Agent a in MAPAgents 
 		//     a = new MAPAgent();
 		
-		// MAPTeam = new Team (MAPAgents);
+		// DummyTeam = new Team (MAPAgents);
 		
-		// teams.add(MAPTeam);
+		// teams.add(DummyTeam);
 		
 		// initBoard = Board.randomBoard(); 
 		
-		// sim = new Simulator (teams, simParams);
+		// sim = new SimulationEngine (teams, simParams);
 		
 				
 		// 1.

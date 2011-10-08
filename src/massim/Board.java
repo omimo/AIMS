@@ -15,7 +15,6 @@ public class Board {
 	private final int rows;
 	private final int cols;	
 	
-
 	
 	/**
 	 * Constructor 1: just with the size
@@ -37,6 +36,7 @@ public class Board {
 	public Board(Board board) {
 		rows = board.rows();
 		cols = board.cols();
+		mainBoard = new int[rows][cols];
 		
 		for (int i=0;i<rows;i++)
 			for (int j=0;j<cols;j++)
@@ -91,14 +91,16 @@ public class Board {
 	 * Returns a board with randomly filled values (colors).
 	 * @return A new instance of the Board class
 	 */
-	public static Board randomBoard(int rows, int cols, int startValue, int range ) {
+	//public static Board randomBoard(int rows, int cols, int startValue, int range ) {
+	public static Board randomBoard(int rows, int cols ) {
 		Board b = new Board(rows, cols);
 		
 		Random rnd = new Random();
 		
 		for (int i=0;i<rows;i++)
 			for (int j=0;j<cols;j++)
-				b.mainBoard[i][j] = startValue + rnd.nextInt(range);
+				b.mainBoard[i][j] = Environment.colorRange[rnd.nextInt(Environment.numOfColors)];
+				//b.mainBoard[i][j] = startValue + rnd.nextInt(range);
 		
 		return b;
 	}
