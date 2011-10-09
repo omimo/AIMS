@@ -77,7 +77,7 @@ public class MAPAgent extends Agent {
 	
 	@Override
 	public AGCODE act() {
-		AGCODE code = AGCODE.OK;;
+		AGCODE code = AGCODE.OK;
 		
 		//--------
 		
@@ -113,8 +113,7 @@ public class MAPAgent extends Agent {
 			} 
 			else if (resourcePoints() >= cost) 
 			{
-				move();
-				state1 = MAPState1.NORMAL;
+				move();				
 			} 			
 			else 
 			{
@@ -276,7 +275,6 @@ public class MAPAgent extends Agent {
 	}
 	
 
-	
 	// ------------- MAP Specific Methods
 	
 	private boolean canCalc() {
@@ -322,8 +320,7 @@ public class MAPAgent extends Agent {
 			{
 				break;
 			}
-		}
-					
+		}					
 		
 		if(i.equals(path().getEndPoint()))
 			benefit += resPoints;
@@ -362,6 +359,41 @@ public class MAPAgent extends Agent {
 		
 		MAPAckMessage ackMsg = new MAPAckMessage(id(), receiver);
 		env().communicationMedium().send(id(), receiver, ackMsg.toString());
+	}	
+	
+	private int calculateTeamCost(int benefit, RowCol cell)
+	{				
+		if(!canCalc()) 
+		{			
+//			forfeit = true;
+			return -1; // Not enough points to calculate
+		}
+		
+		decResourcePoints(Team.calculationCost);
+			
+		int cost = getCellCost(cell) + Team.helpOverhead;					
+		int remaining = resourcePoints() - cost;	
+		if(remaining < 0)
+			return -1; // Refuse to do work
+		
+		int yes = projectPoints(pos(), remaining);
+		int no = projectPoints(pos(), resourcePoints());
+		
+		if (no-yes > benefit)
+			return -1;
+		else						
+			return no - yes;
+		
+	}
+	
+	private void bid(int agent, int teamCost) {
+		if (!canSend())
+			return;
+		
+		decResourcePoints(Team.unicastCost);
+		
+		MAPBidMessage bid_msg = new MAPBidMessage(id(), agent, teamCost);
+		env().communicationMedium().send(id(), agent, bid_msg.toString());
 	}
 	
 	private boolean move() {
@@ -403,42 +435,6 @@ public class MAPAgent extends Agent {
 		if (debuging )
 		System.out.println("[MAPAgent "+id()+":] "+s);
 	}
-	
-	private int calculateTeamCost(int benefit, RowCol cell)
-	{				
-		if(!canCalc()) 
-		{			
-//			forfeit = true;
-			return -1; // Not enough points to calculate
-		}
-		
-		decResourcePoints(Team.calculationCost);
-			
-		int cost = getCellCost(cell) + Team.helpOverhead;					
-		int remaining = resourcePoints() - cost;	
-		if(remaining < 0)
-			return -1; // Refuse to do work
-		
-		int yes = projectPoints(pos(), remaining);
-		int no = projectPoints(pos(), resourcePoints());
-		
-		if (no-yes > benefit)
-			return -1;
-		else						
-			return no - yes;
-		
-	}
-	
-	private void bid(int agent, int teamCost) {
-		if (!canSend())
-			return;
-		
-		decResourcePoints(Team.unicastCost);
-		
-		MAPBidMessage bid_msg = new MAPBidMessage(id(), agent, teamCost);
-		env().communicationMedium().send(id(), agent, bid_msg.toString());
-	}
-	
 	/**
 	 *JUST COPIED FROM OLD SIMULATIONS 
 	 * @return

@@ -260,6 +260,20 @@ public abstract class Agent {
 		return actionCosts()[index];			
 	}	
 	
+	protected int getCellCost(RowCol cell, int[] actCost) {
+		
+		int [] colorRange = env().colorRange();		
+		int index = 0;
+		for (int i=0;i<colorRange.length;i++)
+		{
+			int color = theBoard.getBoard()[cell.row][cell.col];
+			if (color == colorRange[i])
+				index = i;			
+		}
+		
+		return actCost[index];			
+	}	
+
 	public Board theBoard() {
 		return theBoard;
 	}

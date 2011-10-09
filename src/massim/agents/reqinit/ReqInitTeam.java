@@ -1,22 +1,18 @@
-package massim.agents.classicmap;
+package massim.agents.reqinit;
 
 import massim.Environment;
 import massim.RowCol;
 import massim.Team;
 
-public class MAPTeam extends Team {
-
+public class ReqInitTeam extends Team {
 	
-	//public static int colorPenalty; // as in the old simulations
-	
-	
-	public MAPTeam() {
+	public ReqInitTeam() {
 		super();
 		
-		MAPAgent[] agents = new MAPAgent[teamSize];
+		ReqInitAgent[] agents = new ReqInitAgent[teamSize];
 		
 		for (int i=0;i<teamSize;i++)
-			agents[i] = new MAPAgent(i,env());
+			agents[i] = new ReqInitAgent(i,env());
 		
 		setAgents(agents);
 	}
@@ -32,9 +28,8 @@ public class MAPTeam extends Team {
 		int sum = 0;
 		
 		for (int i=0;i<teamSize;i++)
-			sum += ((MAPAgent)agent(i)).pointsEarned();
+			sum += ((ReqInitAgent)agent(i)).pointsEarned();
 		
 		return sum;
 	}
 }
-

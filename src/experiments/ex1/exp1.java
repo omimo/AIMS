@@ -16,7 +16,7 @@ public class exp1 {
 	public static void main(String[] args) {
 
 		// Simulation-wide settings
-		int numOfRuns = 200;
+		int numOfRuns = 100;
 		int numOfExp = 10;
 
 		SimulationEngine.numOfTeams = 2;
@@ -38,9 +38,10 @@ public class exp1 {
 			Team.achievementReward = 2000;
 			Team.cellReward = 100;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);		
-			MAPTeam.costThreshold = 299;
+			Team.costThreshold = 299;
 			Team.helpOverhead = 20;
 			
+			Environment.awarenessProb = 1.0;
 			Environment.disturbanceLevel = exp * 0.1;
 			
 			int boardw = 5;
@@ -73,15 +74,14 @@ public class exp1 {
 
 				for (int i = 0; i < Team.teamSize; i++)
 					for (int j = 0; j < Environment.numOfColors; j++)						
-						actionCostsMatrix[i][j] = 
-							Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length)];
+						actionCostsMatrix[i][j] = Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length)];
 						/*if (j<Environment.numOfColors/2)
 							actionCostsMatrix[i][j] = 
 								Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length/2)];
 						else
 							actionCostsMatrix[i][j] = 
-								Environment.actionCostRange[Environment.actionCostRange.length/2+rnd.nextInt(Environment.actionCostRange.length/2)];*/
-
+								Environment.actionCostRange[Environment.actionCostRange.length/2+rnd.nextInt(Environment.actionCostRange.length/2)];
+*/
 				agentsPos = new RowCol[Team.teamSize];
 				for (int i = 0; i < Team.teamSize; i++)
 					// agentsPos[i] = randomPos(boardh, boardw);
