@@ -1,4 +1,4 @@
-package massim.agents;
+package massim.agents.classicmap;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -19,7 +19,7 @@ public class MAPAgent extends Agent {
 		
 	private boolean forfeit = false;
 	private boolean reachedThere = false;
-	private boolean debuging = true;
+	private boolean debuging = false;
 	
 	private enum MAPState1 {NORMAL, SHOULD_REQ, WAIT_FOR_BIDS, SHOULD_ACK, DO_IT_MYSELF };
 	private enum MAPState2 {ACCEPT_REQS, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP};
@@ -33,13 +33,32 @@ public class MAPAgent extends Agent {
 	private int teamCostIfHelp = 0;
 	private RowCol agentToHelpPos = null;
 	
-	private int waitForBidsPass = 1;
+	private int waitForBidsPass = 3;
+	private int waitForAckPass = 3;
 	
 	public MAPAgent(int id, EnvAgentInterface env) {
 		super(id,env);
-		System.out.println("Hello from MAPAgent " + id());
+		log("Hello");
 	}
 	
+	@Override 
+	public void reset(int[] actionCosts) {
+		super.reset(actionCosts);
+		
+		forfeit = false;
+		reachedThere = false;
+		
+		state1 = MAPState1.NORMAL;
+		state2 = MAPState2.ACCEPT_REQS;
+		
+		helperAgent = -1;
+		agentToHelp = -1;
+		teamCostIfHelp = 0;
+		agentToHelpPos = null;
+		
+		waitForBidsPass = 3;
+		waitForAckPass = 3;
+	}
 	
 	@Override
 	public void perceive(Board board, int[][] costVectors, RowCol[] goals, RowCol[] agentsPos) {
@@ -80,9 +99,7 @@ public class MAPAgent extends Agent {
 			state2 = MAPState2.ACCEPT_REQS;
 		}
 		
-		if (pos().equals(path.getEndPoint()))
-			reachedThere = true;
-		
+				
 		if (reachedThere)
 		{
 			log("GOT THERE!!!!");
@@ -149,9 +166,12 @@ public class MAPAgent extends Agent {
 			int benefit = withHelp - noHelp;
 			log("with= "+ withHelp+"   nohelp="+noHelp);
 			
+			state1 = MAPState1.WAIT_FOR_BIDS;
+			waitForBidsPass = 3;
+			
 			requestHelp(benefit, nextCell);
 			
-			state1=MAPState1.WAIT_FOR_BIDS;
+			
 		}
 		else if (state1 == MAPState1.SHOULD_ACK)
 		{
@@ -165,6 +185,7 @@ public class MAPAgent extends Agent {
 		{						
 			log("Bidding to help agent " +agentToHelp + " with the value: "+ teamCostIfHelp);
 			bid(agentToHelp, teamCostIfHelp);
+			waitForAckPass = 3;
 			state2=MAPState2.WAIT_FOR_ACK;
 		}
 		
@@ -199,10 +220,9 @@ public class MAPAgent extends Agent {
 			int min_bid = Integer.MAX_VALUE;
 			int min_agent = -1;
 			
-			if (waitForBidsPass < 2)
-			{
-				log("any bids?"+ bidMsgs.size());				
-			}
+			log(waitForBidsPass+ " )any bids?"+ bidMsgs.size());
+				//(new Scanner(System.in)).nextLine();
+			
 			
 			for (int i=0;i<bidMsgs.size();i++)		
 				if (bidMsgs.get(i).amount> 0 && bidMsgs.get(i).amount < min_bid)
@@ -218,7 +238,7 @@ public class MAPAgent extends Agent {
 			}
 			else if (waitForBidsPass <= 0 )
 			{
-				waitForBidsPass = 1;
+				waitForBidsPass = 3;
 				state1 = MAPState1.DO_IT_MYSELF;
 			}
 			
@@ -228,28 +248,49 @@ public class MAPAgent extends Agent {
 		if (state2 == MAPState2.ACCEPT_REQS)  // or could be anything
 		{
 		
-			for (int i=0;i<requestMsgs.size();i++) // here it helps just the last one!
-			{
-				agentToHelpPos = new RowCol(requestMsgs.get(i).row,requestMsgs.get(i).col);
-				teamCostIfHelp = calculateTeamCost(requestMsgs.get(i).benefit, agentToHelpPos);
-				agentToHelp = requestMsgs.get(i).sender;
+			int max_req = Integer.MIN_VALUE;
+			int max_agent = -1;
+			RowCol max_agent_pos = null; 
+			
+			if (requestMsgs.size() > 0) {
+				for (int i = 0; i < requestMsgs.size(); i++)
+					// here it helps just the max one!
+					if (requestMsgs.get(i).benefit > max_req) {
+						max_req = requestMsgs.get(i).benefit;
+						max_agent = requestMsgs.get(i).sender;
+						max_agent_pos = new RowCol(requestMsgs.get(i).row,
+								requestMsgs.get(i).col);
+					}
+
+				agentToHelpPos = new RowCol(max_agent_pos.row,
+						max_agent_pos.col);
+				teamCostIfHelp = calculateTeamCost(max_req, agentToHelpPos);
+				agentToHelp = max_agent;
 				state2 = MAPState2.SHOULD_BID;
-				log("some one needs help!");				
+				log("some one needs help!");
 			}
 		}
 		else if (state2 == MAPState2.WAIT_FOR_ACK)		
 			if (ackMsg != null)
 				state2 = MAPState2.SHOULD_DO_HELP;
-		
+			else 
+			{
+				if (waitForAckPass<=0)
+				{
+					state2 = MAPState2.ACCEPT_REQS;
+					waitForAckPass = 3;
+				}
+				waitForAckPass--;
+			}
 
 	}
 	
 	private void findPath() {
-		System.out.println("Agent " + id() +": Does not have a path, finding one ...");
+		log("Does not have a path, finding one ...");
 		
 		path = Path.getShortestPath2(pos(), goalPos(), theBoard.getBoard(), actionCosts());
 	
-		System.out.println("Agent " + id() +": My path will be: " + path);
+		log("My path will be: " + path);
 	}
 
 	
@@ -270,16 +311,16 @@ public class MAPAgent extends Agent {
 	private int calculateTeamBenefitWithHelp()
 	{
 		if (!canCalc())
-			return -1;
-			
+			return -1;	
 		decResourcePoints(Team.calculationCost);
+		
 		RowCol nextCell = path.getNextPoint(pos());
 		int benefit = projectPoints(nextCell,resourcePoints());
 		
 		return benefit+Team.cellReward;
 	}
 	
-	private int projectPoints(RowCol start, int points)
+	private int projectPoints(RowCol start, int resPoints)
 	{		
 		RowCol i = new RowCol(start.row,start.col);
 		int benefit = 0;
@@ -288,9 +329,9 @@ public class MAPAgent extends Agent {
 		{
 			int cost = getCellCost(i); 				
 			
-			if(points >= cost) 
+			if(resPoints >= cost) 
 			{
-				points -= cost;
+				resPoints -= cost;
 				i = new RowCol(path.getNextPoint(i).row,path.getNextPoint(i).col);
 				benefit += Team.cellReward;				
 			} 
@@ -302,7 +343,7 @@ public class MAPAgent extends Agent {
 					
 		
 		if(i.equals(path.getEndPoint()))
-			benefit += points;
+			benefit += resPoints;
 
 		return benefit;
 	}
@@ -311,12 +352,18 @@ public class MAPAgent extends Agent {
 	{
 		
 		if(benefit <= 0)
+		{
+			state1 = MAPState1.DO_IT_MYSELF;
 			return; // Don't ask for help
+		}
+		
 		if (!canBroadcast())
-			{
-				log("Don't have enough resources to broadcast :(");	
-				return;
-			}
+		{
+			log("Don't have enough resources to broadcast :(");
+			state1 = MAPState1.DO_IT_MYSELF;
+			return;
+		}
+		
 		log("Broadcasting help...!");
 		MAPHelpReqMessage req = new MAPHelpReqMessage(id(), benefit, nextCell);
 		env().communicationMedium().broadcast(id(), req.toString());
@@ -415,7 +462,6 @@ public class MAPAgent extends Agent {
 	 */
 	public int pointsEarned() {
 		
-				
 		int totalPoints = path.getIndexOf(pos()) * Team.cellReward;
 		if(reachedThere)
 			totalPoints = Team.achievementReward + resourcePoints();

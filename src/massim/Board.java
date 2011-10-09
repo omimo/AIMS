@@ -113,6 +113,13 @@ public class Board {
 	 */
 	public void distrub(double disturbanceLevel) {
 		
+		Random rndColor = new Random();
+		Random rndChange = new Random();
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				if (rndChange.nextDouble() < disturbanceLevel)
+					mainBoard[i][j] = Environment.colorRange[rndColor.nextInt(Environment.numOfColors)];
 	}
 	
 	

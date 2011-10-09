@@ -3,7 +3,7 @@ package tests;
 import java.util.Random;
 
 import massim.Team.TeamStepCode;
-import massim.agents.MAPTeam;
+import massim.agents.classicmap.MAPTeam;
 import massim.*;
 
 public class MAPTester {

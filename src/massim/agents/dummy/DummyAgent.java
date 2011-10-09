@@ -1,4 +1,4 @@
-package massim.agents;
+package massim.agents.dummy;
 
 import tests.DummyMessage;
 import massim.Agent;

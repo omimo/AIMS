@@ -64,9 +64,7 @@ public abstract class Agent {
 		this.actionCosts = new int[Environment.numOfColors];
 		for (int i=0;i<Environment.numOfColors;i++)
 			this.actionCosts[i] = actionCosts[i];
-		
-			
-			
+	
 		
 		// reset the agents positions beliefs
 		agPos = new RowCol[Team.teamSize];

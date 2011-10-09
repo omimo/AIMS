@@ -1,4 +1,4 @@
-package massim.agents;
+package massim.agents.dummy;
 
 import massim.RowCol;
 import massim.Team;

@@ -1,8 +1,8 @@
 package tests;
 
 import massim.Team.TeamStepCode;
-import massim.agents.DummyAgent;
-import massim.agents.DummyTeam;
+import massim.agents.dummy.DummyAgent;
+import massim.agents.dummy.DummyTeam;
 import massim.*;
 
 public class AgentTester {

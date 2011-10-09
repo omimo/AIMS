@@ -126,7 +126,7 @@ public class Environment implements EnvAgentInterface {
 		if (!RowCol.areNeighbors(agentsPosition[agent], newPos))
 				return false;					
 		
-		agentsPosition[agent] = newPos;
+		agentsPosition[agent] = new RowCol(newPos.row,newPos.col);
 					
 		return true;
 	}

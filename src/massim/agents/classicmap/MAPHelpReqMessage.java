@@ -1,4 +1,4 @@
-package massim.agents;
+package massim.agents.classicmap;
 
 import massim.Message;
 import massim.RowCol;

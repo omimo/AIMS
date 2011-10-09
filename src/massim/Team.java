@@ -21,6 +21,8 @@ public class Team {
 	public static int cellReward;
 	public static int broadcastCost;	
 	
+	public static int initResCoef;
+	
 	private Agent[] agents;
 	private Environment env;
 	
@@ -53,6 +55,8 @@ public class Team {
 				
 		for (int i=0;i<teamSize;i++)
 			agents[i].reset(actionCostMatrix[i]);
+		
+		//(new java.util.Scanner(System.in)).nextLine();
 	}
 	
 	/**
@@ -70,15 +74,15 @@ public class Team {
 		
 		// 1. Communication Phase
 
-		int noMsgPass = 2;
+		int noMsgPass = 4;
 		do {
 			
-			System.out.println("---- receivings ----");
+		//	System.out.println("---- receivings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doReceive();			
 						
 			
-			System.out.println("---- sendings ----");
+//			System.out.println("---- sendings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doSend();								
 			
@@ -89,12 +93,12 @@ public class Team {
 		
 		// 1. Action Phase
 	
-		System.out.println("---- actions ----");
+//		System.out.println("---- actions ----");
 		boolean allDone = true;	// this way of checking is just temporally and for tests
 		for (int i=0;i<agents.length;i++)	
 		{
 			AGCODE c = agents[i].act();
-			System.out.println("agent "+i+" is "+c);
+		//	System.out.println("agent "+i+" is "+c);
 			if ( c != AGCODE.DONE)
 				allDone = false;
 		}	

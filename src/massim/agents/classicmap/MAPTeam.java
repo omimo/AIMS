@@ -1,11 +1,12 @@
-package massim.agents;
+package massim.agents.classicmap;
 
+import massim.Environment;
 import massim.RowCol;
 import massim.Team;
 
 public class MAPTeam extends Team {
 
-	public int initResCoef = 200;
+	
 	//public static int colorPenalty; // as in the old simulations
 	public static int costThreshold;
 	
@@ -24,7 +25,7 @@ public class MAPTeam extends Team {
 		super.reset(agentsPos, actionCostsMatrix);
 		
 		for(int i=0;i<teamSize;i++)
-			agent(i).incResourcePoints(initResCoef*20);		
+			agent(i).incResourcePoints(initResCoef*(Environment.board().rows()+Environment.board().cols()));		
 	}
 	
 	public int pointsEarned(){
