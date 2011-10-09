@@ -16,7 +16,7 @@ public class Environment implements EnvAgentInterface {
 	
 	
 	public static double disturbanceLevel;
-	public static double awarenessProb;
+	public static double mutualAwareness;
 	
 	private static Board mainBoard;
 	private static RowCol[] goals;

@@ -14,7 +14,7 @@ public class ReqInitAgent extends Agent {
 
 	private boolean debuging = false;
 	
-	private enum RIState1 {NORMAL, SEND_REQ, WAIT_FOR_WILLINGS, SEND_ACK, DO_IT_MYSELF, WAIT_FOR_HELP, DONE, FORFEIT};
+	private enum RIState1 {NORMAL, SEND_REQ, WAIT_FOR_WILLINGS, SEND_ACK, DO_IT_MYSELF, WAIT_FOR_HELP, DONE, BLOCKED};
 	private enum RIState2 {ACCEPT_REQ, SEND_WILL, WAIT_FOR_ACK, DO_HELP, IGNORE};
 	
 	private RIState1 state1;
@@ -108,8 +108,7 @@ public class ReqInitAgent extends Agent {
 			helpMove();
 			state2=RIState2.ACCEPT_REQ;
 		}
-				
-		
+						
 		if (state1 == RIState1.NORMAL)
 		{
 			if (cost > Team.costThreshold)
@@ -125,7 +124,7 @@ public class ReqInitAgent extends Agent {
 			else
 			{
 				log("No more hope! forfeiting...");
-				state1 = RIState1.FORFEIT;
+				state1 = RIState1.BLOCKED;
 			}
 		}
 		else if (state1 == RIState1.DO_IT_MYSELF)
@@ -137,11 +136,11 @@ public class ReqInitAgent extends Agent {
 			else
 			{
 				log("No more hope! forfeiting...");
-				state1 = RIState1.FORFEIT;
+				state1 = RIState1.BLOCKED;
 			}
 		}		
 				
-		if (state1 == RIState1.DONE || state1 == RIState1.FORFEIT)
+		if (state1 == RIState1.DONE || state1 == RIState1.BLOCKED)
 			code = AGCODE.DONE;
 		
 		return code;
@@ -393,9 +392,11 @@ public class ReqInitAgent extends Agent {
 	 */
 	public int pointsEarned() {
 		
-		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
+		int totalPoints;
 		if(state1 == RIState1.DONE)
-			totalPoints += Team.achievementReward + resourcePoints();
+			totalPoints = Team.achievementReward + resourcePoints();
+		else 
+			totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
 		return totalPoints;
 	}
 }

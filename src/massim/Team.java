@@ -79,7 +79,7 @@ public class Team {
 			Random rnd2 = new Random();
 			for (int p = 0; p < Team.teamSize; p++)
 				for (int q = 0; q < Environment.numOfColors; q++)						
-					if (rnd1.nextDouble() < Environment.awarenessProb || p==i)						
+					if (rnd1.nextDouble() < Environment.mutualAwareness || p==i)						
 						probActionCostMatrix[p][q] = actionCostMatrix[p][q];						
 					else							
 						probActionCostMatrix[p][q] = Environment.actionCostRange[rnd2.nextInt(Environment.actionCostRange.length)];
@@ -89,22 +89,24 @@ public class Team {
 		
 		// 1. Communication Phase
 
-		int noMsgPass = 4;
+		int noMsgPass = 8;
 		do {
+			
+//			System.out.println("---- sendings ----");
+			for (int i=0;i<teamSize;i++)
+				agents[i].doSend();		
 			
 		//	System.out.println("---- receivings ----");
 			for (int i=0;i<teamSize;i++)
 				agents[i].doReceive();			
-						
+												
 			
-//			System.out.println("---- sendings ----");
-			for (int i=0;i<teamSize;i++)
-				agents[i].doSend();								
-			
-			if (env().communicationMedium().isEmpty())
+			//if (env().communicationMedium().isEmpty())
 				noMsgPass--;			
 			
-		} while (!env().communicationMedium().isEmpty() || noMsgPass > 0);
+		} while(noMsgPass > 0);
+			
+		//while (!env().communicationMedium().isEmpty() || noMsgPass > 0);
 		
 		// 1. Action Phase
 	
@@ -113,7 +115,7 @@ public class Team {
 		for (int i=0;i<agents.length;i++)	
 		{
 			AGCODE c = agents[i].act();
-		//	System.out.println("agent "+i+" is "+c);
+		
 			if ( c != AGCODE.DONE)
 				allDone = false;
 		}	

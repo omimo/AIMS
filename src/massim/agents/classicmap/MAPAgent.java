@@ -18,7 +18,7 @@ public class MAPAgent extends Agent {
 	private boolean reachedThere = false;
 	private boolean debuging = false;
 	
-	private enum MAPState1 {NORMAL, SHOULD_REQ, WAIT_FOR_BIDS, SHOULD_ACK, DO_IT_MYSELF };
+	private enum MAPState1 {NORMAL, SEND_REQ, WAIT_FOR_BIDS, SEND_ACK, DO_IT_MYSELF,BLOCKED, WAIT_FOR_HELP };
 	private enum MAPState2 {ACCEPT_REQS, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP, IGNORE};
 	
 	MAPState1 state1;
@@ -72,6 +72,8 @@ public class MAPAgent extends Agent {
 		
 		if (pos().equals(goalPos()))
 			reachedThere = true;
+		
+		log("MY POINTS= "+ pointsEarned());
 	}
 		
 	
@@ -80,12 +82,6 @@ public class MAPAgent extends Agent {
 		AGCODE code = AGCODE.OK;
 		
 		//--------
-		
-		if (state2 == MAPState2.SHOULD_DO_HELP)
-		{
-			helpMove();
-			state2 = MAPState2.ACCEPT_REQS;
-		}
 		
 				
 		if (reachedThere)
@@ -109,7 +105,7 @@ public class MAPAgent extends Agent {
 			if(cost > MAPTeam.costThreshold ) // or resourcePoints() < cost
 			{				
 				log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
-				state1 = MAPState1.SHOULD_REQ;								
+				state1 = MAPState1.SEND_REQ;								
 			} 
 			else if (resourcePoints() >= cost) 
 			{
@@ -132,6 +128,11 @@ public class MAPAgent extends Agent {
 				forfeit = true;
 			}			
 		}
+		if (state2 == MAPState2.SHOULD_DO_HELP)
+		{
+			helpMove();
+			state2 = MAPState2.ACCEPT_REQS;
+		}
 		
 		
 		
@@ -143,7 +144,7 @@ public class MAPAgent extends Agent {
 	@Override	
 	public void doSend() {
 		
-		if (state1==MAPState1.SHOULD_REQ)
+		if (state1==MAPState1.SEND_REQ)
 		{			
 		
 			RowCol nextCell = path().getNextPoint(pos());
@@ -160,7 +161,7 @@ public class MAPAgent extends Agent {
 			
 			
 		}
-		else if (state1 == MAPState1.SHOULD_ACK)
+		else if (state1 == MAPState1.SEND_ACK)
 		{
 			log("Sending ack to the winner: Agent "+helperAgent);
 			ackHelp(helperAgent);
@@ -220,7 +221,7 @@ public class MAPAgent extends Agent {
 			
 			if (min_agent != -1)
 			{
-				state1 = MAPState1.SHOULD_ACK;
+				state1 = MAPState1.SEND_ACK;
 				helperAgent = min_agent;
 			}
 			else if (waitForBidsPass <= 0 )
@@ -309,7 +310,7 @@ public class MAPAgent extends Agent {
 	
 	private int projectPoints(RowCol start, int resPoints)
 	{		
-		RowCol i = new RowCol(start.row,start.col);
+		RowCol i = new RowCol(start);
 		int benefit = 0;
 		
 		while(!i.equals(path().getEndPoint())) 
@@ -319,7 +320,7 @@ public class MAPAgent extends Agent {
 			if(resPoints >= cost) 
 			{
 				resPoints -= cost;
-				i = new RowCol(path().getNextPoint(i).row,path().getNextPoint(i).col);
+				i = new RowCol(path().getNextPoint(i));
 				benefit += Team.cellReward;				
 			} 
 			else 
@@ -329,7 +330,7 @@ public class MAPAgent extends Agent {
 		}					
 		
 		if(i.equals(path().getEndPoint()))
-			benefit += resPoints;
+			benefit += resPoints + Team.achievementReward;
 
 		return benefit;
 	}
@@ -447,9 +448,12 @@ public class MAPAgent extends Agent {
 	 */
 	public int pointsEarned() {
 		
-		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
+		int totalPoints;
 		if(reachedThere)
-			totalPoints += Team.achievementReward + resourcePoints();
+			totalPoints = Team.achievementReward + resourcePoints();
+		else 
+			totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
+		
 		return totalPoints;
 	}
 }

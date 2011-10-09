@@ -125,7 +125,7 @@ public abstract class Agent {
 		// Update the agent's  goal
 		myGoalPos = new RowCol(goals[id].row,goals[id].col);	
 		
-		theBoard = board;
+		theBoard = new Board(board);
 	}
 	
 	/**

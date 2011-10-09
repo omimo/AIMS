@@ -118,11 +118,11 @@ public class Board {
 		//System.out.println("-----!");
 		for (int i=0;i<rows;i++)
 			for (int j=0;j<cols;j++)
-				if (rndChange.nextDouble() < disturbanceLevel)
-				{
-					//System.out.println("change!");
+				if (rndChange.nextDouble() < disturbanceLevel)						
 					mainBoard[i][j] = Environment.colorRange[rndColor.nextInt(Environment.numOfColors)];
-				}
+					//mainBoard[i][j] = Environment.colorRange[Environment.numOfColors/2+rndColor.nextInt(Environment.numOfColors/2)];
+					
+				
 					//mainBoard[i][j] = Environment.colorRange[Environment.numOfColors/2+rndColor.nextInt(Environment.numOfColors/2)];
 		//System.out.println("-----!");
 	}

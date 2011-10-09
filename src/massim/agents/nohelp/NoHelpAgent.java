@@ -21,7 +21,7 @@ public class NoHelpAgent extends Agent {
 	
 	public NoHelpAgent(int id, EnvAgentInterface env) {
 		super(id,env);
-		log("Hello");
+		log("Hello");		
 	}
 	
 	@Override 
@@ -115,10 +115,13 @@ public class NoHelpAgent extends Agent {
 	 * @return
 	 */
 	public int pointsEarned() {
-						
-		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
+		
+		int totalPoints;
 		if(reachedThere)
-			totalPoints += Team.achievementReward + resourcePoints();
+			totalPoints = Team.achievementReward + resourcePoints();
+		else 
+			totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
+		
 		return totalPoints;
 	}
 	

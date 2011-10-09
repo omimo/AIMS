@@ -26,6 +26,7 @@ public class exp1 {
 		Environment.numOfColors = 6;
 		Environment.colorRange = new int[] { 10, 11, 12, 13, 14, 15 };
 		Environment.actionCostRange = new int[] { 10, 20, 30, 40, 50, 100, 300, 350, 400, 450, 500 };
+		
 
 		Team[] teams = new Team[SimulationEngine.numOfTeams];
 		teams[0] = new MAPTeam();
@@ -41,10 +42,10 @@ public class exp1 {
 			Team.cellReward = 100;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);		
 			Team.costThreshold = 299;
-			Team.helpOverhead = 200;
+			Team.helpOverhead = 20;
 			
-			Environment.awarenessProb = 0.1 * exp;
-			Environment.disturbanceLevel = 0.4;
+			Environment.mutualAwareness = 0.1  *exp;
+			Environment.disturbanceLevel = 0.3;
 			
 			int boardw = 5;
 			int boardh = 5;
@@ -64,8 +65,7 @@ public class exp1 {
 
 				goals = new RowCol[Team.teamSize];
 
-				for (int i = 0; i < Team.teamSize; i++)
-					// goals[i] = randomPos(boardh, boardw);
+				for (int i = 0; i < Team.teamSize; i++)				
 					goals[i] = new RowCol(boardh-1, boardw-1);
 
 				Environment.setBoard(board);
@@ -73,22 +73,15 @@ public class exp1 {
 
 				Random rnd = new Random();
 				actionCostsMatrix = new int[Team.teamSize][Environment.numOfColors];
-
 				for (int i = 0; i < Team.teamSize; i++)
 					for (int j = 0; j < Environment.numOfColors; j++)						
 						actionCostsMatrix[i][j] = Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length)];
-						/*if (j<Environment.numOfColors/2)
-							actionCostsMatrix[i][j] = 
-								Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length/2)];
-						else
-							actionCostsMatrix[i][j] = 
-								Environment.actionCostRange[Environment.actionCostRange.length/2+rnd.nextInt(Environment.actionCostRange.length/2)];
-*/
+						
 				agentsPos = new RowCol[Team.teamSize];
 				for (int i = 0; i < Team.teamSize; i++)
-					// agentsPos[i] = randomPos(boardh, boardw);
 					agentsPos[i] = new RowCol(0, 0);
 
+				
 				for (Team t : teams)
 					t.reset(agentsPos, actionCostsMatrix);
 
@@ -98,25 +91,19 @@ public class exp1 {
 
 				while (!allDone) {
 					allDone = true;
-					// Step
-					Environment.board().distrub(Environment.disturbanceLevel);
+					// Step					
 					for (Team t : teams) {
 						TeamStepCode tsc;
 						tsc = t.step();
 						if (tsc == TeamStepCode.OK)
 							allDone = false;
 					}
+					Environment.board().distrub(Environment.disturbanceLevel);
 					//
 				}
 
 				
-			//	System.out.println(r+" ==============================================================="); 
-//				 System.out.println("Team 0 = "+((MAPTeam)
-//				 teams[0]).pointsEarned());
-//				 System.out.println("Team 1 = "+((NoHelpTeam)
-//				 teams[1]).pointsEarned());
-				 
-				// (new Scanner(System.in)).nextLine();
+			//System.out.println(r+" ===========================================");(new Scanner(System.in)).nextLine();
 
 				res[0][r] = ((MAPTeam) teams[0]).pointsEarned();
 				res[1][r] = ((NoHelpTeam) teams[1]).pointsEarned();
@@ -124,7 +111,7 @@ public class exp1 {
 
 			}
 
-			System.out.printf("%1.1f", Environment.awarenessProb);
+			System.out.printf("%1.1f,%1.1f", Environment.mutualAwareness,Environment.disturbanceLevel);
 			for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
 				int sum = 0;
 				for (int r = 0; r < numOfRuns; r++)
