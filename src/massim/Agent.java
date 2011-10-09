@@ -1,5 +1,6 @@
 package massim;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,9 @@ public abstract class Agent {
 	private EnvAgentInterface env;
 	
 	private int[] actionCosts;		
-		
+	private Board theBoard;
+	private Path path;
+	
 	// *** The beliefs
 	// Personal beliefs (mental notes)
 	private int resourcePoints = 0;
@@ -59,7 +62,7 @@ public abstract class Agent {
 		
 		rewardPoints = 0;
 		resourcePoints = 0;
-		//path = new Path();
+		path = null;
 		
 		this.actionCosts = new int[Environment.numOfColors];
 		for (int i=0;i<Environment.numOfColors;i++)
@@ -120,7 +123,9 @@ public abstract class Agent {
 		pos = agPos[id];
 		
 		// Update the agent's  goal
-		myGoalPos = new RowCol(goals[id].row,goals[id].col);		
+		myGoalPos = new RowCol(goals[id].row,goals[id].col);	
+		
+		theBoard = board;
 	}
 	
 	/**
@@ -240,4 +245,52 @@ public abstract class Agent {
 		
 		return actionCosts; 
 	}
+	
+	public int getCellCost(RowCol cell) {
+		
+		int [] colorRange = env().colorRange();		
+		int index = 0;
+		for (int i=0;i<colorRange.length;i++)
+		{
+			int color = theBoard.getBoard()[cell.row][cell.col];
+			if (color == colorRange[i])
+				index = i;			
+		}
+		
+		return actionCosts()[index];			
+	}	
+	
+	public Board theBoard() {
+		return theBoard;
+	}
+	
+	public void findPath() {
+		//log("Does not have a path, finding one ...");
+		
+		ArrayList<Path> paths =  Path.getShortestPaths(pos(), goalPos(), theBoard().getBoard(),10);
+		
+		int minCost = Integer.MAX_VALUE;
+		Path minPath = new Path();
+		
+		for (Path pp : paths)
+		{
+			int cost = pp.totalPathCost(theBoard().getBoard(), actionCosts());
+			
+			if (cost < minCost)
+				{
+					minPath = pp;
+					minCost = cost; 
+				}
+		}
+		
+
+		path = new Path(minPath);
+		//log("My path will be: " + path);
+	}
+	
+	protected Path path() {
+		return path;
+	}
 }
+
+

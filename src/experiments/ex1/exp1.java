@@ -16,7 +16,7 @@ public class exp1 {
 	public static void main(String[] args) {
 
 		// Simulation-wide settings
-		int numOfRuns = 100;
+		int numOfRuns = 200;
 		int numOfExp = 10;
 
 		SimulationEngine.numOfTeams = 2;
@@ -32,19 +32,19 @@ public class exp1 {
 
 		for (int exp = 0; exp < numOfExp; exp++) {
 			// Experiment-wide settings
-			Team.initResCoef = 200;
-			Team.unicastCost = 10;
-			Team.calculationCost = 10;
+			Team.initResCoef = 100;
+			Team.unicastCost = 5;
+			Team.calculationCost = 5;
 			Team.achievementReward = 2000;
 			Team.cellReward = 100;
-			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);
-			// MAPTeam.colorPenalty = 500;
+			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);		
 			MAPTeam.costThreshold = 299;
-
+			Team.helpOverhead = 20;
+			
 			Environment.disturbanceLevel = exp * 0.1;
 			
-			int boardw = 10;
-			int boardh = 10;
+			int boardw = 5;
+			int boardh = 5;
 
 			Board board;
 
@@ -63,7 +63,7 @@ public class exp1 {
 
 				for (int i = 0; i < Team.teamSize; i++)
 					// goals[i] = randomPos(boardh, boardw);
-					goals[i] = new RowCol(9, 9);
+					goals[i] = new RowCol(boardh-1, boardw-1);
 
 				Environment.setBoard(board);
 				Environment.setGoals(goals);
@@ -72,9 +72,15 @@ public class exp1 {
 				actionCostsMatrix = new int[Team.teamSize][Environment.numOfColors];
 
 				for (int i = 0; i < Team.teamSize; i++)
-					for (int j = 0; j < Environment.numOfColors; j++)
-						actionCostsMatrix[i][j] = Environment.actionCostRange[rnd
-								.nextInt(Environment.actionCostRange.length)];
+					for (int j = 0; j < Environment.numOfColors; j++)						
+						actionCostsMatrix[i][j] = 
+							Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length)];
+						/*if (j<Environment.numOfColors/2)
+							actionCostsMatrix[i][j] = 
+								Environment.actionCostRange[rnd.nextInt(Environment.actionCostRange.length/2)];
+						else
+							actionCostsMatrix[i][j] = 
+								Environment.actionCostRange[Environment.actionCostRange.length/2+rnd.nextInt(Environment.actionCostRange.length/2)];*/
 
 				agentsPos = new RowCol[Team.teamSize];
 				for (int i = 0; i < Team.teamSize; i++)
@@ -109,7 +115,7 @@ public class exp1 {
 //				 teams[1]).pointsEarned());
 				 
 
-				 //(new Scanner(System.in)).nextLine();
+//				 (new Scanner(System.in)).nextLine();
 
 				res[0][r] = ((MAPTeam) teams[0]).pointsEarned();
 				res[1][r] = ((NoHelpTeam) teams[1]).pointsEarned();

@@ -147,10 +147,21 @@ public class Path implements Comparable {
 				
 	}
 	
-	public int totalPathCost(int[][] board, Map<Integer,Integer> actionCosts) {
+	public int totalPathCost(int[][] board, int[] actionCosts) {
 		int cost = 0;
+		int [] colorRange = Environment.colorRange;
+		
 		for (RowCol p : pathPoints)
-			cost += actionCosts.get(board[p.row][p.col]);
+		{		
+			int index = 0;
+			for (int i=0;i<colorRange.length;i++)
+			{
+				int color = board[p.row][p.col];
+				if (color == colorRange[i])
+					index = i;			
+			}
+			cost += actionCosts[index];
+		}
 		
 		return cost;
 	}
@@ -164,7 +175,8 @@ public class Path implements Comparable {
 		}
 		return false;
 	}
-
+	
+	
 	public static Path getShortestPath2(RowCol start, RowCol end, int[][] board, int[] actionCosts) {
 		Path path = new Path();
 		
@@ -187,7 +199,8 @@ public class Path implements Comparable {
 	}
 	
 	
-	public static ArrayList<Path> getShortestPaths(RowCol start, RowCol end, int[][] board, int[] actionCosts, int maxPathNum) {
+	
+	public static ArrayList<Path> getShortestPaths(RowCol start, RowCol end, int[][] board, int maxPathNum) {
 		ArrayList<Path> paths = new ArrayList<Path>();
 		PriorityQueue<Path> queue = new PriorityQueue<Path>();
 		

@@ -120,6 +120,7 @@ public class Board {
 			for (int j=0;j<cols;j++)
 				if (rndChange.nextDouble() < disturbanceLevel)
 					mainBoard[i][j] = Environment.colorRange[rndColor.nextInt(Environment.numOfColors)];
+					//mainBoard[i][j] = Environment.colorRange[Environment.numOfColors/2+rndColor.nextInt(Environment.numOfColors/2)];
 	}
 	
 	
@@ -146,6 +147,30 @@ public class Board {
 			out +="\n";
 		}
 				
+		return out;
+	}
+	
+	public String boardCostsToString(int actionCosts[]) {
+		String out = "";
+		int [] colorRange = Environment.colorRange;
+		
+		for (int i=0;i<rows;i++)
+		{
+			for (int j=0;j<cols;j++)
+				{
+				int index = 0;
+				for (int k=0;k<colorRange.length;k++)
+				{
+					int color = mainBoard[i][j];
+					if (color == colorRange[k])
+						index = k;			
+				}
+				out += actionCosts[index]+ "\t";;	
+				
+				}
+			out +="\n";
+		}
+								
 		return out;
 	}
 		

@@ -1,8 +1,11 @@
 package massim.agents.nohelp;
 
+import java.util.ArrayList;
+import java.util.Scanner;
+
 import massim.Agent;
-import massim.EnvAgentInterface;
 import massim.Board;
+import massim.EnvAgentInterface;
 import massim.Path;
 import massim.RowCol;
 import massim.Team;
@@ -10,9 +13,6 @@ import massim.Team;
 
 
 public class NoHelpAgent extends Agent {
-
-	private Board theBoard;
-	private Path path;
 		
 	private boolean forfeit = false;
 	private boolean reachedThere = false;
@@ -29,8 +29,7 @@ public class NoHelpAgent extends Agent {
 		super.reset(actionCosts);
 		
 		forfeit = false;
-		reachedThere = false;			
-		
+		reachedThere = false;						
 	}
 	
 	@Override
@@ -38,26 +37,12 @@ public class NoHelpAgent extends Agent {
 						
 		super.perceive(board, costVectors, goals, agentsPos);
 		
-		theBoard = board;			
-		if (path == null && goals[id()] != null)		
+			
+		if (path() == null && goals[id()] != null)		
 			findPath();
 		
 		if (pos().equals(goalPos()))
 			reachedThere = true;
-	}
-	
-	public int getCellCost(RowCol cell) {
-		
-		int [] colorRange = env().colorRange();		
-		int index = 0;
-		for (int i=0;i<colorRange.length;i++)
-		{
-			int color = theBoard.getBoard()[cell.row][cell.col];
-			if (color == colorRange[i])
-				index = i;			
-		}
-		
-		return actionCosts()[index];			
 	}
 	
 	@Override
@@ -76,7 +61,7 @@ public class NoHelpAgent extends Agent {
 			return AGCODE.DONE;
 		}
 		
-		RowCol nextCell = path.getNextPoint(pos());
+		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 							
 		if (resourcePoints() >= cost) 
@@ -98,35 +83,11 @@ public class NoHelpAgent extends Agent {
 	@Override
 	public void doReceive() {		
 		
-		// ignorance 
-	}
-	
-	private void findPath() {
-		log("Does not have a path, finding one ...");
-		
-		path = Path.getShortestPath2(pos(), goalPos(), theBoard.getBoard(), actionCosts());
-	
-		log("My path will be: " + path);
-	}
-
-	
-	// ------------- MAP Specific Methods
-	
-	private boolean canCalc() {
-		return (resourcePoints()-Team.calculationCost >= 0);
-	}
-	
-	private boolean canSend() {
-		return (resourcePoints()-Team.unicastCost >= 0);
-	}
-	
-	private boolean canBroadcast() {
-		return (resourcePoints()-Team.broadcastCost >= 0);
-	}
-	
+		// ignore 
+	}		
 	
 	private boolean move() {
-		RowCol nextPos = path.getNextPoint(pos());
+		RowCol nextPos = path().getNextPoint(pos());
 		boolean suc = env().move(id(), nextPos);
 		
 		if (suc)
@@ -155,7 +116,7 @@ public class NoHelpAgent extends Agent {
 	 */
 	public int pointsEarned() {
 						
-		int totalPoints = (path.getIndexOf(pos())+1) * Team.cellReward;
+		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
 		if(reachedThere)
 			totalPoints = Team.achievementReward + resourcePoints();
 		return totalPoints;

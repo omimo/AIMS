@@ -12,39 +12,28 @@ import massim.Agent.AGCODE;
 import massim.Team;
 
 public class MAPAgent extends Agent {
-
-	
-	private Board theBoard;
-	private Path path;
+			
 		
 	private boolean forfeit = false;
 	private boolean reachedThere = false;
 	private boolean debuging = false;
 	
 	private enum MAPState1 {NORMAL, SHOULD_REQ, WAIT_FOR_BIDS, SHOULD_ACK, DO_IT_MYSELF };
-	private enum MAPState2 {ACCEPT_REQS, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP};
+	private enum MAPState2 {ACCEPT_REQS, RECEIVED_REQ, SHOULD_BID, WAIT_FOR_ACK, SHOULD_DO_HELP, IGNORE};
 	
-	MAPState1 state1 = MAPState1.NORMAL;
-	MAPState2 state2 = MAPState2.ACCEPT_REQS;
+	MAPState1 state1;
+	MAPState2 state2;
 	
-	private int helperAgent = -1;
+	private int helperAgent;
 	
-	private int agentToHelp = -1;
-	private int teamCostIfHelp = 0;
-	private RowCol agentToHelpPos = null;
+	private int agentToHelp;
+	private int teamCostIfHelp;
+	private RowCol agentToHelpPos;
 	
-	private int waitForBidsPass = 3;
-	private int waitForAckPass = 3;
+	private int waitForBidsPass;
+	private int waitForAckPass;
 	
-	public MAPAgent(int id, EnvAgentInterface env) {
-		super(id,env);
-		log("Hello");
-	}
-	
-	@Override 
-	public void reset(int[] actionCosts) {
-		super.reset(actionCosts);
-		
+	private void initValues() {
 		forfeit = false;
 		reachedThere = false;
 		
@@ -58,34 +47,33 @@ public class MAPAgent extends Agent {
 		
 		waitForBidsPass = 3;
 		waitForAckPass = 3;
+			
 	}
+	
+	public MAPAgent(int id, EnvAgentInterface env) {
+		super(id,env);
+		log("Hello");
+		initValues();
+	}
+	
+	@Override 
+	public void reset(int[] actionCosts) {
+		super.reset(actionCosts);
+		initValues();
+	}	
 	
 	@Override
 	public void perceive(Board board, int[][] costVectors, RowCol[] goals, RowCol[] agentsPos) {
 						
 		super.perceive(board, costVectors, goals, agentsPos);
-		
-		theBoard = board;			
-		if (path == null && goals[id()] != null)		
+						
+		if (path() == null && goals[id()] != null)		
 			findPath();
 		
 		if (pos().equals(goalPos()))
 			reachedThere = true;
 	}
-	
-	public int getCellCost(RowCol cell) {
 		
-		int [] colorRange = env().colorRange();		
-		int index = 0;
-		for (int i=0;i<colorRange.length;i++)
-		{
-			int color = theBoard.getBoard()[cell.row][cell.col];
-			if (color == colorRange[i])
-				index = i;			
-		}
-		
-		return actionCosts()[index];			
-	}
 	
 	@Override
 	public AGCODE act() {
@@ -112,7 +100,7 @@ public class MAPAgent extends Agent {
 			return AGCODE.DONE;
 		}
 		
-		RowCol nextCell = path.getNextPoint(pos());
+		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 		
 		
@@ -159,7 +147,7 @@ public class MAPAgent extends Agent {
 		if (state1==MAPState1.SHOULD_REQ)
 		{			
 		
-			RowCol nextCell = path.getNextPoint(pos());
+			RowCol nextCell = path().getNextPoint(pos());
 			
 			int withHelp = calculateTeamBenefitWithHelp();			
 			int noHelp = projectPoints(pos(),resourcePoints());
@@ -238,7 +226,7 @@ public class MAPAgent extends Agent {
 			}
 			else if (waitForBidsPass <= 0 )
 			{
-				waitForBidsPass = 3;
+				waitForBidsPass = 4;
 				state1 = MAPState1.DO_IT_MYSELF;
 			}
 			
@@ -262,12 +250,14 @@ public class MAPAgent extends Agent {
 								requestMsgs.get(i).col);
 					}
 
-				agentToHelpPos = new RowCol(max_agent_pos.row,
-						max_agent_pos.col);
-				teamCostIfHelp = calculateTeamCost(max_req, agentToHelpPos);
+				agentToHelpPos = new RowCol(max_agent_pos.row,	max_agent_pos.col);
+				teamCostIfHelp = calculateTeamCost(max_req, agentToHelpPos);								
 				agentToHelp = max_agent;
-				state2 = MAPState2.SHOULD_BID;
-				log("some one needs help!");
+				if (teamCostIfHelp>0)
+				{
+					state2 = MAPState2.SHOULD_BID;
+					log("some one needs help!");
+				}
 			}
 		}
 		else if (state2 == MAPState2.WAIT_FOR_ACK)		
@@ -285,13 +275,6 @@ public class MAPAgent extends Agent {
 
 	}
 	
-	private void findPath() {
-		log("Does not have a path, finding one ...");
-		
-		path = Path.getShortestPath2(pos(), goalPos(), theBoard.getBoard(), actionCosts());
-	
-		log("My path will be: " + path);
-	}
 
 	
 	// ------------- MAP Specific Methods
@@ -314,7 +297,7 @@ public class MAPAgent extends Agent {
 			return -1;	
 		decResourcePoints(Team.calculationCost);
 		
-		RowCol nextCell = path.getNextPoint(pos());
+		RowCol nextCell = path().getNextPoint(pos());
 		int benefit = projectPoints(nextCell,resourcePoints());
 		
 		return benefit+Team.cellReward;
@@ -325,14 +308,14 @@ public class MAPAgent extends Agent {
 		RowCol i = new RowCol(start.row,start.col);
 		int benefit = 0;
 		
-		while(!i.equals(path.getEndPoint())) 
+		while(!i.equals(path().getEndPoint())) 
 		{
 			int cost = getCellCost(i); 				
 			
 			if(resPoints >= cost) 
 			{
 				resPoints -= cost;
-				i = new RowCol(path.getNextPoint(i).row,path.getNextPoint(i).col);
+				i = new RowCol(path().getNextPoint(i).row,path().getNextPoint(i).col);
 				benefit += Team.cellReward;				
 			} 
 			else 
@@ -342,7 +325,7 @@ public class MAPAgent extends Agent {
 		}
 					
 		
-		if(i.equals(path.getEndPoint()))
+		if(i.equals(path().getEndPoint()))
 			benefit += resPoints;
 
 		return benefit;
@@ -382,7 +365,7 @@ public class MAPAgent extends Agent {
 	}
 	
 	private boolean move() {
-		RowCol nextPos = path.getNextPoint(pos());
+		RowCol nextPos = path().getNextPoint(pos());
 		boolean suc = env().move(id(), nextPos);
 		
 		if (suc)
@@ -425,7 +408,7 @@ public class MAPAgent extends Agent {
 	{				
 		if(!canCalc()) 
 		{			
-			forfeit = true;
+//			forfeit = true;
 			return -1; // Not enough points to calculate
 		}
 		
@@ -462,7 +445,7 @@ public class MAPAgent extends Agent {
 	 */
 	public int pointsEarned() {
 		
-		int totalPoints = (path.getIndexOf(pos())+1) * Team.cellReward;
+		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
 		if(reachedThere)
 			totalPoints = Team.achievementReward + resourcePoints();
 		return totalPoints;
