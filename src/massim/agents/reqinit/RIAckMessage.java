@@ -1,9 +1,8 @@
 package massim.agents.reqinit;
 
 import massim.Message;
-import massim.RowCol;
 
-public class RIWillMessage implements Message {
+public class RIAckMessage implements Message {
 
 
 	String mainDelim = ",";
@@ -16,15 +15,15 @@ public class RIWillMessage implements Message {
 	int col;
 	
 	static final String protocol = "reqinit";
-	static final String cmd = "will";
+	static final String cmd = "ack";
 	String stringMsg; 
 	
-	public RIWillMessage(int sender, int receiver) {
+	public RIAckMessage(int sender, int receiver) {
 		this.sender = sender;		
 		this.receiver = receiver;
 	}
 	
-	public RIWillMessage(String msg) {
+	public RIAckMessage(String msg) {
 		try {
 			parse(msg);
 		} catch (Exception e) {
@@ -72,7 +71,4 @@ public class RIWillMessage implements Message {
 		stringMsg += cmdstr;
 		
 	}
-	
-	
-
 }

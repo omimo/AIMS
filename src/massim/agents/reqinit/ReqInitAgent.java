@@ -1,6 +1,7 @@
 package massim.agents.reqinit;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.Board;
@@ -10,10 +11,10 @@ import massim.Team;
 
 public class ReqInitAgent extends Agent {
 	
-	private boolean reachedThere = false;
+
 	private boolean debuging = false;
 	
-	private enum RIState1 {NORMAL, SEND_REQ, WAIT_FOR_WILLINGS, SEND_ACK, DO_IT_MYSELF, DONE, FORFEIT};
+	private enum RIState1 {NORMAL, SEND_REQ, WAIT_FOR_WILLINGS, SEND_ACK, DO_IT_MYSELF, WAIT_FOR_HELP, DONE, FORFEIT};
 	private enum RIState2 {ACCEPT_REQ, SEND_WILL, WAIT_FOR_ACK, DO_HELP, IGNORE};
 	
 	private RIState1 state1;
@@ -21,19 +22,30 @@ public class ReqInitAgent extends Agent {
 	
 	private int[][] actionCostsMatrix;
 	private int waitForWillPass;
-	
-	
+	private int helperAgent;
+	private int agentToHelp;
+	private RowCol agentToHelpPos;
+	private int waitForAckPass;
+	private RowCol troublePos = null;
+	private int waitForHelpPass;
 	
 	private void initValues() {
 		state1 = RIState1.NORMAL;
 		state2 = RIState2.ACCEPT_REQ;
-		waitForWillPass=2;
+		waitForWillPass=3;
+		waitForAckPass=3;
+		helperAgent=-1;
+		agentToHelp=-1;
+		agentToHelpPos=null;
+		actionCostsMatrix=null;
+		waitForHelpPass=3;
 	}
 	
 	public ReqInitAgent(int id, EnvAgentInterface env) {
 		super(id, env);
 		log("Hello");
-		initValues();
+		initValues();	
+		
 	}
 
 	@Override 
@@ -51,11 +63,34 @@ public class ReqInitAgent extends Agent {
 			findPath();
 		
 		if (pos().equals(goalPos()))
-			reachedThere = true;
+		{
+			log("There!");
+			state1 = RIState1.DONE;
+		}
 		
+		if (state1  == RIState1.WAIT_FOR_HELP)		
+		{
+			waitForHelpPass--;
+			if ((troublePos != null &&!pos().equals(troublePos)) 
+					)
+			{
+				troublePos = null;
+				state1 = RIState1.NORMAL;
+				waitForHelpPass=3;
+			}
+			if (waitForHelpPass<=0)
+			{
+				troublePos = null;
+				state1 = RIState1.NORMAL;
+				waitForHelpPass=3;
+				(new Scanner(System.in)).nextLine();
+			}
+		}
+		this.actionCostsMatrix = new int[actionCostsMatrix.length][actionCostsMatrix[0].length];
 		for (int p = 0; p < actionCostsMatrix.length; p++)
 			for (int q = 0; q < actionCostsMatrix[0].length; q++)
 				this.actionCostsMatrix[p][q] = actionCostsMatrix[p][q];
+			
 	}
 		
 	
@@ -65,16 +100,26 @@ public class ReqInitAgent extends Agent {
 		
 		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
+		log(state1.toString());
+		
+		if (state2 == RIState2.DO_HELP)
+		{
+			log("helping "+agentToHelp);
+			helpMove();
+			state2=RIState2.ACCEPT_REQ;
+		}
+				
 		
 		if (state1 == RIState1.NORMAL)
 		{
 			if (cost > Team.costThreshold)
 			{
 				log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
+				troublePos = new RowCol(pos());
 				state1 = RIState1.SEND_REQ;
 			}
 			else if (cost < resourcePoints())
-			{
+			{				
 				move();
 			}
 			else
@@ -83,6 +128,21 @@ public class ReqInitAgent extends Agent {
 				state1 = RIState1.FORFEIT;
 			}
 		}
+		else if (state1 == RIState1.DO_IT_MYSELF)
+		{
+			if (cost < resourcePoints())
+			{
+				move();
+			}
+			else
+			{
+				log("No more hope! forfeiting...");
+				state1 = RIState1.FORFEIT;
+			}
+		}		
+				
+		if (state1 == RIState1.DONE || state1 == RIState1.FORFEIT)
+			code = AGCODE.DONE;
 		
 		return code;
 	}
@@ -98,11 +158,20 @@ public class ReqInitAgent extends Agent {
 			
 			for (int i=0;i<Team.teamSize;i++)
 			{
-				int oc = getCellCost(nextCell,actionCostsMatrix[i]);
-				if (oc < Team.costThreshold)
+				int oc = getCellCost(nextCell,actionCostsMatrix[i])+Team.helpOverhead;
+				if (oc < Team.costThreshold && i != id())
 					{
-						sendReq(i,nextCell);
-						sendCount++;
+						log("Sending help req to agent "+i);
+						if (!canSend())
+						{
+							log("Can not communicate");
+							state1= RIState1.DO_IT_MYSELF;
+						}
+						else
+						{
+							sendReq(i,nextCell);
+							sendCount++;
+						}
 					}
 			}
 			
@@ -111,6 +180,38 @@ public class ReqInitAgent extends Agent {
 			else
 				state1 = RIState1.DO_IT_MYSELF;
 		}
+		else if (state1 == RIState1.SEND_ACK)
+		{
+			if (!canSend())
+			{
+				log("Can not communicate");
+				helperAgent=-1;
+				state1 = RIState1.DO_IT_MYSELF;
+			}
+			else
+			{
+				sendAck(helperAgent);
+				helperAgent=-1;
+				state1 = RIState1.WAIT_FOR_HELP;
+			}
+		}
+		
+		// STATE2
+		
+		if (state2 == RIState2.SEND_WILL)
+		{
+			if (!canSend())
+			{
+				log("Can not communicate");
+				agentToHelp=-1;
+				state2 = RIState2.ACCEPT_REQ;
+			}
+			else
+			{
+				sendWill(agentToHelp);
+				state2 = RIState2.WAIT_FOR_ACK;
+			}
+		}
 	}
 		
 
@@ -118,12 +219,18 @@ public class ReqInitAgent extends Agent {
 	public void doReceive() {	
 		ArrayList<RIWillMessage> willMsgs = new ArrayList<RIWillMessage>();
 		ArrayList<RIHelpReqMessage> helpReqMsgs = new ArrayList<RIHelpReqMessage>();
+		RIAckMessage ackMsg= null;
 		
 		String msg = env().communicationMedium().receive(id());		
 		while (!msg.equals(""))
 		{			
 			if (RIWillMessage.isInstanceOf(msg))
-				willMsgs.add(new RIWillMessage(msg));			
+				willMsgs.add(new RIWillMessage(msg));		
+			else if (RIHelpReqMessage.isInstanceOf(msg))
+				helpReqMsgs.add(new RIHelpReqMessage(msg));
+			else if (RIAckMessage.isInstanceOf(msg))
+				ackMsg = new RIAckMessage(msg);
+			
 			msg = env().communicationMedium().receive(id());
 		}
 		
@@ -136,23 +243,84 @@ public class ReqInitAgent extends Agent {
 				int min_cost = Integer.MAX_VALUE;
 				int min_agent = -1;
 				for(int i=0;i<willMsgs.size();i++)				
-					if (getCellCost(nextCell, actionCostsMatrix[willMsgs.get(i).sender]) < min_cost)
+				{
+					int costForHelper =getCellCost(nextCell, actionCostsMatrix[willMsgs.get(i).sender])+Team.helpOverhead; 					
+					if ( costForHelper < min_cost)
 					{
-						min_cost = getCellCost(nextCell, actionCostsMatrix[willMsgs.get(i).sender]);
-						min_agent = i;
-					}			
-			}
+						min_cost = costForHelper;
+						min_agent = willMsgs.get(i).sender;
+					}					
+					log("Agent "+ willMsgs.get(i).sender+" is willing to help me. I think it would cost her "+costForHelper);
+				}
+				if (min_agent != -1)
+				{
+					state1 = RIState1.SEND_ACK;
+					helperAgent  = min_agent;
+					log("Chose agent "+ helperAgent+" to help me.");
+				}
+			}					
 			else if (waitForWillPass <= 0)
 			{
-				waitForWillPass = 2;
+				waitForWillPass = 3;
 				state1 = RIState1.DO_IT_MYSELF;
 			}
 			else 
 				waitForWillPass--;
 		}
+
+		// STATE2
+		
+		if (state2 == RIState2.ACCEPT_REQ)
+		{
+			if (helpReqMsgs.size() > 0)
+			{
+				int min_cost = Integer.MAX_VALUE;
+				int min_agent = -1;
+				RowCol min_agent_pos = null;
+				for (int i=0;i<helpReqMsgs.size();i++)
+				{
+					int cost = getCellCost(new RowCol (helpReqMsgs.get(i).row,helpReqMsgs.get(i).col))+Team.helpOverhead;					
+					if (cost < min_cost && cost < Team.costThreshold)
+					{
+						min_cost = cost;
+						min_agent = helpReqMsgs.get(i).sender;
+						min_agent_pos = new RowCol (helpReqMsgs.get(i).row,helpReqMsgs.get(i).col);
+					}
+					log("Got help req from agent "+helpReqMsgs.get(i).sender+" it can cost me "+ cost);
+					
+				}
+				if (min_agent != -1)
+				{
+					state2 = RIState2.SEND_WILL;
+					agentToHelp = min_agent;
+					agentToHelpPos = new RowCol(min_agent_pos);
+					log("Chose to help agent "+agentToHelp);
+				}
+			}
+		}
+		else if (state2 == RIState2.WAIT_FOR_ACK)
+		{
+			if (ackMsg != null)
+			{
+				log("Received ack from agent "+ agentToHelp);
+				state2 = RIState2.DO_HELP;
+				waitForAckPass=3;
+			}			
+			else if(waitForAckPass <= 0)
+			{
+				state2 = RIState2.ACCEPT_REQ;
+				agentToHelp = -1;
+				agentToHelpPos = null;
+				waitForAckPass=3;
+			}
+			else 
+				waitForAckPass--;
+		}
 	}
 	
 	private boolean move() {
+		
+		troublePos = null;
 		RowCol nextPos = path().getNextPoint(pos());
 		boolean suc = env().move(id(), nextPos);
 		
@@ -169,20 +337,54 @@ public class ReqInitAgent extends Agent {
 	
 	private boolean helpMove() {
 		
-		boolean suc = true;
-		
+		boolean suc = env().move(agentToHelp, agentToHelpPos);				
+		if (suc)
+			{
+				log("Helping Agent " + agentToHelp +": to move to " + agentToHelpPos );				
+				decResourcePoints(getCellCost(agentToHelpPos)+Team.helpOverhead);
+			}
+		else 
+			log("Failed to help Agent " + agentToHelp +": move to " + agentToHelpPos );
+				
+		agentToHelp = -1;
+		agentToHelpPos = null;	
 		return suc;
+		
 	}
 	
+	private boolean canCalc() {
+		return (resourcePoints()-Team.calculationCost >= 0);
+	}
+	
+	private boolean canSend() {
+		return (resourcePoints()-Team.unicastCost >= 0);
+	}	
+	
 	private void sendReq(int agent, RowCol cell) {
+		
+		decResourcePoints(Team.unicastCost);
 		
 		RIHelpReqMessage helpReqMsg = new RIHelpReqMessage(id(),agent,cell);
 		env().communicationMedium().send(id(), agent, helpReqMsg.toString());
 	}
 	
+	private void sendAck(int agent) {		
+		decResourcePoints(Team.unicastCost);
+		
+		RIAckMessage ackMsg = new RIAckMessage(id(), agent);
+		env().communicationMedium().send(id(), agent, ackMsg.toString());
+	}
+	
+	private void sendWill(int agent) {
+		
+		decResourcePoints(Team.unicastCost);
+		RIWillMessage willMsg = new RIWillMessage(id(), agent);
+		env().communicationMedium().send(id(), agent, willMsg.toString());
+	}
+	
 	private void log(String s) {
-		if (debuging )
-		System.out.println("[HelperInitAgent "+id()+":] "+s);
+		if (debuging)
+			System.out.println("[HelperInitAgent "+id()+":] "+s);
 	}
 	
 	/**
@@ -192,8 +394,8 @@ public class ReqInitAgent extends Agent {
 	public int pointsEarned() {
 		
 		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
-		if(reachedThere)
-			totalPoints = Team.achievementReward + resourcePoints();
+		if(state1 == RIState1.DONE)
+			totalPoints += Team.achievementReward + resourcePoints();
 		return totalPoints;
 	}
 }

@@ -11,6 +11,7 @@ import massim.Team;
 import massim.Team.TeamStepCode;
 import massim.agents.classicmap.MAPTeam;
 import massim.agents.nohelp.NoHelpTeam;
+import massim.agents.reqinit.ReqInitTeam;
 
 public class exp1 {
 	public static void main(String[] args) {
@@ -19,7 +20,7 @@ public class exp1 {
 		int numOfRuns = 100;
 		int numOfExp = 10;
 
-		SimulationEngine.numOfTeams = 2;
+		SimulationEngine.numOfTeams = 3;
 		Team.teamSize = 8;
 		
 		Environment.numOfColors = 6;
@@ -29,6 +30,7 @@ public class exp1 {
 		Team[] teams = new Team[SimulationEngine.numOfTeams];
 		teams[0] = new MAPTeam();
 		teams[1] = new NoHelpTeam();
+		teams[2] = new ReqInitTeam();
 
 		for (int exp = 0; exp < numOfExp; exp++) {
 			// Experiment-wide settings
@@ -39,10 +41,10 @@ public class exp1 {
 			Team.cellReward = 100;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);		
 			Team.costThreshold = 299;
-			Team.helpOverhead = 20;
+			Team.helpOverhead = 200;
 			
-			Environment.awarenessProb = 1.0;
-			Environment.disturbanceLevel = exp * 0.1;
+			Environment.awarenessProb = 0.1 * exp;
+			Environment.disturbanceLevel = 0.4;
 			
 			int boardw = 5;
 			int boardh = 5;
@@ -108,21 +110,21 @@ public class exp1 {
 				}
 
 				
-//				 System.out.println(r+" ==============================================================="); 
+			//	System.out.println(r+" ==============================================================="); 
 //				 System.out.println("Team 0 = "+((MAPTeam)
 //				 teams[0]).pointsEarned());
 //				 System.out.println("Team 1 = "+((NoHelpTeam)
 //				 teams[1]).pointsEarned());
 				 
-
-//				 (new Scanner(System.in)).nextLine();
+				// (new Scanner(System.in)).nextLine();
 
 				res[0][r] = ((MAPTeam) teams[0]).pointsEarned();
 				res[1][r] = ((NoHelpTeam) teams[1]).pointsEarned();
+				res[2][r] = ((ReqInitTeam) teams[2]).pointsEarned();
 
 			}
 
-			System.out.printf("%1.1f", Environment.disturbanceLevel);
+			System.out.printf("%1.1f", Environment.awarenessProb);
 			for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
 				int sum = 0;
 				for (int r = 0; r < numOfRuns; r++)

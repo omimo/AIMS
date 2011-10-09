@@ -2,6 +2,7 @@ package massim;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Scanner;
 
 import massim.Agent.AGCODE;
 
@@ -69,7 +70,7 @@ public class Team {
 	public TeamStepCode step() {
 		
 		// 0. Update Agents Percepts				
-				
+		
 		for (int i=0;i<agents.length;i++)
 		{
 			int[][] probActionCostMatrix = new int[Team.teamSize][Environment.numOfColors];
@@ -78,10 +79,10 @@ public class Team {
 			Random rnd2 = new Random();
 			for (int p = 0; p < Team.teamSize; p++)
 				for (int q = 0; q < Environment.numOfColors; q++)						
-					if (rnd1.nextDouble() < Environment.awarenessProb && p!=i)						
-						probActionCostMatrix[p][q] = Environment.actionCostRange[rnd2.nextInt(Environment.actionCostRange.length)];
+					if (rnd1.nextDouble() < Environment.awarenessProb || p==i)						
+						probActionCostMatrix[p][q] = actionCostMatrix[p][q];						
 					else							
-						probActionCostMatrix[p][q] = actionCostMatrix[p][q];
+						probActionCostMatrix[p][q] = Environment.actionCostRange[rnd2.nextInt(Environment.actionCostRange.length)];
 					                     
 			agents[i].perceive(Environment.board(), probActionCostMatrix, Environment.goals(), env.agentsPosition());
 		}

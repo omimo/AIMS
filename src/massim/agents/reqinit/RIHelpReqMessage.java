@@ -14,12 +14,13 @@ public class RIHelpReqMessage implements Message {
 	int row;
 	int col;
 	
-	static String protocol = "reqinit";
-	static String cmd = "helpreq";
+	static final String protocol = "reqinit";
+	static final String cmd = "helpreq";
 	String stringMsg; 
 	
 	public RIHelpReqMessage(int sender, int receiver, RowCol cell) {
-		this.sender = sender;				
+		this.sender = sender;	
+		this.receiver = receiver;
 		this.row = cell.row;
 		this.col = cell.col;
 	}
@@ -28,7 +29,7 @@ public class RIHelpReqMessage implements Message {
 		try {
 			parse(msg);
 		} catch (Exception e) {
-			System.err.println("Error in parsing the message");
+			System.err.println("Error in parsing the message1");
 		}
 		
 	}
@@ -42,11 +43,10 @@ public class RIHelpReqMessage implements Message {
 			
 		String[] list = msg.split(mainDelim);
 		if (list.length != 4)
-			throw new Exception("Erro parsing the message");
+			throw new Exception("Error parsing the message1");
 			
 		sender = Integer.parseInt(list[0]);
-		receiver = Integer.parseInt(list[1]);
-		protocol = list[2];
+		receiver = Integer.parseInt(list[1]);	
 		String cmdstr = list[3];
 		
 		String[] args = cmdstr.split(cmdDelim);

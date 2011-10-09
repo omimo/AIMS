@@ -15,8 +15,8 @@ public class MAPHelpReqMessage implements Message {
 	int row;
 	int col;
 	
-	static String protocol = "map";
-	static String cmd = "helpreq";
+	static final String protocol = "map";
+	static final String cmd = "helpreq";
 	String stringMsg; 
 	
 	public MAPHelpReqMessage(int sender, int benefit, RowCol cell) {
@@ -48,7 +48,7 @@ public class MAPHelpReqMessage implements Message {
 			
 		sender = Integer.parseInt(list[0]);
 		receiver = Integer.parseInt(list[1]);
-		protocol = list[2];
+		//protocol = list[2];
 		String cmdstr = list[3];
 		
 		String[] args = cmdstr.split(cmdDelim);

@@ -115,12 +115,16 @@ public class Board {
 		
 		Random rndColor = new Random();
 		Random rndChange = new Random();
-		
+		//System.out.println("-----!");
 		for (int i=0;i<rows;i++)
 			for (int j=0;j<cols;j++)
 				if (rndChange.nextDouble() < disturbanceLevel)
+				{
+					//System.out.println("change!");
 					mainBoard[i][j] = Environment.colorRange[rndColor.nextInt(Environment.numOfColors)];
+				}
 					//mainBoard[i][j] = Environment.colorRange[Environment.numOfColors/2+rndColor.nextInt(Environment.numOfColors/2)];
+		//System.out.println("-----!");
 	}
 	
 	

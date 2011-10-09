@@ -118,7 +118,7 @@ public class NoHelpAgent extends Agent {
 						
 		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
 		if(reachedThere)
-			totalPoints = Team.achievementReward + resourcePoints();
+			totalPoints += Team.achievementReward + resourcePoints();
 		return totalPoints;
 	}
 	

@@ -261,15 +261,21 @@ public class MAPAgent extends Agent {
 		}
 		else if (state2 == MAPState2.WAIT_FOR_ACK)		
 			if (ackMsg != null)
+			{
 				state2 = MAPState2.SHOULD_DO_HELP;
+				waitForAckPass = 3;				
+			}
 			else 
 			{
 				if (waitForAckPass<=0)
 				{
 					state2 = MAPState2.ACCEPT_REQS;
-					waitForAckPass = 3;
+					waitForAckPass = 2;
+					agentToHelp=-1;
+					agentToHelpPos=null;
 				}
-				waitForAckPass--;
+				else 
+					waitForAckPass--;
 			}
 
 	}
@@ -443,7 +449,7 @@ public class MAPAgent extends Agent {
 		
 		int totalPoints = (path().getIndexOf(pos())+1) * Team.cellReward;
 		if(reachedThere)
-			totalPoints = Team.achievementReward + resourcePoints();
+			totalPoints += Team.achievementReward + resourcePoints();
 		return totalPoints;
 	}
 }
