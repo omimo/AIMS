@@ -118,7 +118,7 @@ public class MAPAgent extends Agent {
 		
 		if (state1 == MAPState1.NORMAL)
 		{
-			if(cost > MAPTeam.costThreshold || resourcePoints() < cost) // or resourcePoints() < cost
+			if(cost > MAPTeam.costThreshold ) // or resourcePoints() < cost
 			{				
 				log("at "+ pos() + ", going to "+ nextCell +". Need help, should send the request next round");
 				state1 = MAPState1.SHOULD_REQ;								
@@ -128,10 +128,10 @@ public class MAPAgent extends Agent {
 				move();
 				state1 = MAPState1.NORMAL;
 			} 			
-			/*else 
+			else 
 			{
 				forfeit = true;
-			}*/			
+			}			
 		}		
 		else if (state1 == MAPState1.DO_IT_MYSELF)
 		{
@@ -462,7 +462,7 @@ public class MAPAgent extends Agent {
 	 */
 	public int pointsEarned() {
 		
-		int totalPoints = path.getIndexOf(pos()) * Team.cellReward;
+		int totalPoints = (path.getIndexOf(pos())+1) * Team.cellReward;
 		if(reachedThere)
 			totalPoints = Team.achievementReward + resourcePoints();
 		return totalPoints;

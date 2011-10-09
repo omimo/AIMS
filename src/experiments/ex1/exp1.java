@@ -24,7 +24,7 @@ public class exp1 {
 		
 		Environment.numOfColors = 6;
 		Environment.colorRange = new int[] { 10, 11, 12, 13, 14, 15 };
-		Environment.actionCostRange = new int[] { 10, 50, 200, 300, 400, 500 };
+		Environment.actionCostRange = new int[] { 10, 20, 30, 40, 50, 100, 300, 350, 400, 450, 500 };
 
 		Team[] teams = new Team[SimulationEngine.numOfTeams];
 		teams[0] = new MAPTeam();
@@ -101,16 +101,15 @@ public class exp1 {
 					//
 				}
 
-				/*
-				 * System.out.println(r+
-				 * " ==============================================================="
-				 * ); System.out.println("Team 0 = "+((MAPTeam)
-				 * teams[0]).pointsEarned());
-				 * System.out.println("Team 1 = "+((NoHelpTeam)
-				 * teams[1]).pointsEarned());
-				 */
+				
+//				 System.out.println(r+" ==============================================================="); 
+//				 System.out.println("Team 0 = "+((MAPTeam)
+//				 teams[0]).pointsEarned());
+//				 System.out.println("Team 1 = "+((NoHelpTeam)
+//				 teams[1]).pointsEarned());
+				 
 
-				// (new Scanner(System.in)).nextLine();
+				 //(new Scanner(System.in)).nextLine();
 
 				res[0][r] = ((MAPTeam) teams[0]).pointsEarned();
 				res[1][r] = ((NoHelpTeam) teams[1]).pointsEarned();
