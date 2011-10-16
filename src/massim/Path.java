@@ -19,6 +19,12 @@ public class Path implements Comparable {
 		pathPoints.addAll(path);
 	}
 	
+	public Path(RowCol[] points) {
+		
+		for (RowCol l:points)
+			pathPoints.add(new RowCol(l.row,l.col));			
+	}
+	
 	public Path(Path p) {
 		LinkedList<RowCol> points = p.getPoints();
 		
@@ -226,7 +232,7 @@ public class Path implements Comparable {
 				
 				for (RowCol l : neighbors)
 				{
-					if (!p.contains(l))
+					if (!p.contains(l) && (l.row - p.getEndPoint().row >=0 && l.col - p.getEndPoint().col >=0))
 						{
 							Path newPath = new Path(p);
 							newPath.addPathPoint(l);

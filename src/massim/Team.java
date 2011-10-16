@@ -26,6 +26,9 @@ public class Team {
 	
 	public static int initResCoef;
 	
+	private static Random rnd1 = new Random();
+	private static Random rnd2 = new Random();
+	
 	private Agent[] agents;
 	private Environment env;
 	
@@ -75,14 +78,13 @@ public class Team {
 		{
 			int[][] probActionCostMatrix = new int[Team.teamSize][Environment.numOfColors];
 			
-			Random rnd1 = new Random();
-			Random rnd2 = new Random();
+		
 			for (int p = 0; p < Team.teamSize; p++)
 				for (int q = 0; q < Environment.numOfColors; q++)						
 					if (rnd1.nextDouble() < Environment.mutualAwareness || p==i)						
 						probActionCostMatrix[p][q] = actionCostMatrix[p][q];						
 					else							
-						probActionCostMatrix[p][q] = Environment.actionCostRange[rnd2.nextInt(Environment.actionCostRange.length)];
+						probActionCostMatrix[p][q] = Environment.actionCostRange[rnd1.nextInt(Environment.actionCostRange.length)];
 					                     
 			agents[i].perceive(Environment.board(), probActionCostMatrix, Environment.goals(), env.agentsPosition());
 		}

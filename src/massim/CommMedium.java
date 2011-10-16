@@ -99,7 +99,8 @@ public class CommMedium {
 	
 	/**
 	 * Used for the debugging purposes
-	 * 
+	 * Generates a string representation of all the communication channels
+	 * and their values
 	 */
 	@Override
 	public String toString() {  // needs to be verified after replacing the sender/receiver positions

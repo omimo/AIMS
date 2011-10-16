@@ -8,10 +8,8 @@ package massim;
  */
 public class Environment implements EnvAgentInterface {
 
-	public static int numOfColors; // This can be derived from the colorRange, but for the sake of easier programming I'm keeping it like this!  
+	public static int numOfColors; 
 	public static int[] colorRange;
-//	public static int minActionCost;
-//	public static int maxActionCost;
 	public static int[] actionCostRange;
 	
 	
@@ -126,7 +124,7 @@ public class Environment implements EnvAgentInterface {
 		if (!RowCol.areNeighbors(agentsPosition[agent], newPos))
 				return false;					
 		
-		agentsPosition[agent] = new RowCol(newPos.row,newPos.col);
+		agentsPosition[agent] = new RowCol(newPos);
 					
 		return true;
 	}

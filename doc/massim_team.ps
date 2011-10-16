@@ -1,0 +1,2721 @@
+%!PS-Adobe-3.0
+%%Title: Agent.java, Team.java, Environment.java, EnvAgentInterface.java, DummyAgent.java, DummyTeam.java, AgentTester.java, Table of Content
+%%For: omimo
+%%Creator: a2ps version 4.14
+%%CreationDate: Fri Oct  7 20:18:39 2011
+%%BoundingBox: 24 24 588 768
+%%DocumentData: Clean7Bit
+%%Orientation: Portrait
+%%Pages: 19
+%%PageOrder: Ascend
+%%DocumentMedia: Letter 612 792 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      % <vector> <key> <val>
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def % -
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Get the underline position and thickness if they're defined.
+    % Use 1 if they are not defined.
+    currentdict /FontInfo 2 copy known
+    { get
+      /UnderlinePosition 2 copy % <FontInfo> /UP <FontInfo> /UP
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+
+      /UnderlineThickness 2 copy % <FontInfo> /UT <FontInfo> /UT
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+      pop % -
+    }{ pop pop
+    } ifelse
+
+    currentdict
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed strings
+% Version 1.2 1/31/1990
+% Original Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 792 def
+/sw 612 def
+/llx 24 def
+/urx 588 def
+/ury 768 def
+/lly 24 def
+/#copies 1 def
+/th 20.000000 def
+/fnfs 15 def
+/bfs 11.547912 def
+/cw 6.928747 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   689.410325 th add
+def
+/pmw 0 def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+] def
+/y [
+  pmh ph add 0 mul ph add
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 4 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1) 1
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim;) p n
+() N
+(import) K
+( java.util.HashMap;) p n
+(import) K
+( java.util.Map;) p n
+() N
+(import) K
+( javax.naming.CommunicationException;) p n
+() N
+(/**) C n
+( * Agent.java) N
+( * An abstract class for all the agents to be used in the ) N
+( * simulator) N
+( *) N
+( * @author Omid Alemi) N
+( * @version 1.1 2011/10/06) N
+( */) N
+(public) K
+( ) p
+(abstract) K
+( ) p
+(class) K
+( ) p
+(Agent) L
+( {) p n
+() N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Agent Status Return Code AGCODE:) N
+() S 4 T ( * ) N
+() S 4 T ( * OK) S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (Normal behavior of the agent while it is moving) N
+() S 4 T ( * ERR) S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (The sign of internal error within the agent) N
+() S 4 T ( * DONE) S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (Means the agent has reached the goal, but still is a) N
+(ctive and able to help ) N
+() S 4 T ( * OFF) S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (Means the agent is not functioning anymore \(no move,) N
+( no communication, no help\)) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( enum AGCODE { OK, ERR, DONE, OFF }; ) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( ) p
+(int) k
+( id;) p n
+() S 4 T () S
+(private) K
+( EnvAgentInterface env;) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( ) p
+(int) k
+([] actionCosts;) p 32 T () S 36 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S
+(// *** The beliefs) c n
+() p 4 T () S
+(// Personal beliefs \(mental notes\)) c n
+() p 4 T () S
+(private) K
+( ) p
+(int) k
+( resourcePoints = 0;) p n
+() S 4 T () S
+(private) K
+( ) p
+(int) k
+( rewardPoints = 0;) p 36 T () N
+() S 4 T () S
+(// Percepts) c 16 T () S 20 T () N
+() p 4 T () S
+(private) K
+( RowCol pos;) p n
+() S 4 T () S
+(private) K
+( RowCol myGoalPos;) p n
+() S 4 T () S
+(private) K
+( RowCol[] agPos;) p n
+() S 4 T () S
+(// ****) c n
+() p 4 T () N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * The constructor) N
+() S 4 T ( * ) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( Agent\() p
+(int) k
+( id,EnvAgentInterface env\) {) p n
+() S 4 T () S 8 T (this.id = id;) N
+() S 4 T () S 8 T (this.env = env;) S 24 T () S 28 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/** ) C n
+() S 4 T ( * Resets the agent's internals to prepare it for a new run) N
+() S 4 T ( * ) N
+() S 4 T ( * @param actionCosts) S 28 T () S 32 T () S 36 T () S 40 T (The action cost vector for this agent ) N
+() S 4 T ( */) N
+(Agent.java) (Page 1/5) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (1/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 2
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( reset\() p
+(int) k
+([] actionCosts\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (rewardPoints = 0;) N
+() S 4 T () S 8 T (resourcePoints = 0;) N
+() S 4 T () S 8 T () S
+(//path = new Path\(\);) c n
+() p 4 T () S 8 T () N
+() S 4 T () S 8 T (this.actionCosts = ) S
+(new) K
+( ) p
+(int) k
+([Environment.numOfColors];) p n
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<Environment.numOfColors;i++\)) p n
+() S 4 T () S 8 T () S 12 T (this.actionCosts[i] = actionCosts[i];) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// reset the agents positions beliefs) c n
+() p 4 T () S 8 T (agPos = ) S
+(new) K
+( RowCol[Team.teamSize];) p n
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<Team.teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T (this.agPos[i] = ) S
+(new) K
+( RowCol\(-1,-1\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// reset the own positions) c n
+() p 4 T () S 8 T (pos = ) S
+(new) K
+( RowCol\(-1, -1\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// reset the agent's  goal) c n
+() p 4 T () S 8 T (myGoalPos = ) S
+(null) k
+(;) p n
+() S 4 T () S 8 T () N
+() S 4 T (}) N
+() S 4 T () S 8 T () S 12 T () S 16 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Where agent performs its action.) N
+() S 4 T ( * No defualt action.) N
+() S 4 T ( * To be implemented by the customized agents.) N
+() S 4 T ( *) S 8 T ( ) N
+() S 4 T ( * @return ) S 16 T () S 20 T () S 24 T () S 28 T (AGCODE status code of current step) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( AGCODE act\(\) {) p n
+() N
+() S 4 T () S 8 T () S
+(return) K
+( AGCODE.OK;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S 8 T () N
+(    ) S
+(/**) C n
+(     * Called by the Team in order to enable the agent to update its information) N
+( ) N
+(     * about the environment.) N
+() S 4 T ( * ) N
+() S 4 T ( * We can pass all the information to the agent, but it can filer them) N
+() S 4 T ( * so that it can have partial observability.) N
+() S 4 T ( * ) N
+(     * @param board ) S 24 T () S 28 T () S 32 T () S 36 T (The current state of the board) N
+(     * @param actionCostsMatrix) S 32 T () S 36 T (The action cost vectors of all the agents) N
+(     * @param goals ) S 24 T () S 28 T () S 32 T () S 36 T (The goals for all the agents) N
+(     * @param agentsPos ) S 28 T () S 32 T () S 36 T (The current position of all the agents withi) N
+(n) N
+(     *        ) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (the team) N
+(     */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( perceive\(Board board, ) p
+(int) k
+([][] actionCostsMatrix, RowCol[] goals,) p n
+( RowCol[] agentsPos\) {) N
+() N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// Update the action cost vector) c 44 T () S 48 T () N
+() p 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<actionCostsMatrix[id].length;i++\)) p n
+() S 4 T () S 8 T () S 12 T (this.actionCosts[i] = actionCostsMatrix[id][i];) N
+() S 4 T () S 8 T () N
+(Agent.java) (Page 2/5) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (2/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 3
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T () S 8 T () S
+(// Update the agents positions) c n
+() p 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<agentsPos.length;i++\)) p n
+() S 4 T () S 8 T () S 12 T (this.agPos[i] = agentsPos[i];) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// Update the own positions) c n
+() p 4 T () S 8 T (pos = agPos[id];) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// Update the agent's  goal) c n
+() p 4 T () S 8 T (myGoalPos = ) S
+(new) K
+( RowCol\(goals[id].row,goals[id].col\);) p 64 T () S 68 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Sends all the outgoing messages, if any, in the current iteration ) N
+() S 4 T ( * in the team step\(\)) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( doSend\(\) {) p n
+() S 4 T () S 8 T () S
+(// nothing as default) c n
+() p 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Receives all the incoming message, if any, from other agents in ) N
+() S 4 T ( * the current iteration in the team cycle ) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( doReceive\(\) {) p n
+() S 4 T () S 8 T () S
+(// nothing as default) c n
+() p 4 T (}) N
+() S 4 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * ) N
+() S 4 T ( * @return ) S 16 T () S 20 T () S 24 T () S 28 T (The id of the class) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+( id\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( id;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Returns the amount of reward points the agent owns at the moment) N
+() S 4 T ( * ) N
+() S 4 T ( * @return ) S 16 T () S 20 T () S 24 T () S 28 T (The amount of points the agent owns at the moment) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+( rewardPoints\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( rewardPoints;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * The amount of resource points that the agent owns at the moment) N
+() S 4 T ( * ) N
+() S 4 T ( * @return ) S 16 T () S 20 T () S 24 T () S 28 T (The amount of resource points that the agent owns at) N
+( the moment) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+( resourcePoints\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( resourcePoints;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Increases the reward points by the specified amount) N
+() S 4 T ( * ) N
+() S 4 T ( * @param amount) S 24 T () S 28 T (The desired amount of points to be added) N
+(Agent.java) (Page 3/5) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (3/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 4
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() C 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( incRewardPoints\() p
+(int) k
+( amount\) {) p n
+() S 4 T () S 8 T (rewardPoints += amount;) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Decreases the award points by the specified amount) N
+() S 4 T ( * ) N
+() S 4 T ( * @param amount) S 24 T () S 28 T (The desired amount of points to be subtracted) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( decRewardPoints\() p
+(int) k
+( amount\) {) p n
+() S 4 T () S 8 T (rewardPoints -= amount;) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Increases the resource points by the specified amount) N
+() S 4 T ( * ) N
+() S 4 T ( * @param amount) S 24 T () S 28 T (The desired amount of points to be added) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( incResourcePoints\() p
+(int) k
+( amount\) {) p n
+() S 4 T () S 8 T (resourcePoints += amount;) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Decreases the resource points by the specified amount) N
+() S 4 T ( * ) N
+() S 4 T ( * @param amount) S 24 T () S 28 T (The desired amount of points to be subtracted) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( decResourcePoints\() p
+(int) k
+( amount\) {) p n
+() S 4 T () S 8 T (resourcePoints -= amount;) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized agents to get their position) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The current position of the agent) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( RowCol pos\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( pos;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized agents to access to the environment/agent interfac) N
+(e) N
+() S 4 T ( * of the team for communication and action) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The instance of the ) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( EnvAgentInterface env\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( env;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized agents to get the position of their assigned goal) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The positon of the goal) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( RowCol goalPos\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( myGoalPos;) p n
+(Agent.java) (Page 4/5) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (4/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5) 5
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T (}) N
+() N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized agents to access their action costs vector) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The action costs vector of the agent) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+([] actionCosts\(\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(return) K
+( actionCosts; ) p n
+() S 4 T (}) N
+(}) N
+(Agent.java) (Page 5/5) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (5/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 6
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim;) p n
+() N
+(import) K
+( java.util.HashMap;) p n
+() N
+(import) K
+( massim.Agent.AGCODE;) p n
+() N
+(/**) C n
+( * Team.java) N
+( * ) N
+( *) N
+( * @author Omid Alemi) N
+( * @version 1.1 2011/10/06) N
+( */) N
+(public) K
+( ) p
+(class) K
+( ) p
+(Team) L
+( {) p n
+() N
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( teamSize;) p n
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( calculationCost;) p n
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( communicationCost;) p n
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( achievementReward;) p n
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( helpOverhead;) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( Agent[] agents;) p n
+() S 4 T () S
+(private) K
+( Environment env;) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( ) p
+(int) k
+([][] actionCostMatrix;) p n
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( enum TeamStepCode {OK, DONE, ERR}) p n
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Default constructor) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( Team\(\) {) p 20 T () S 24 T () N
+() S 4 T () S 8 T (env = ) S
+(new) K
+( Environment\(\);) p n
+() S 4 T () S 8 T (actionCostMatrix = ) S
+(new) K
+( ) p
+(int) k
+([teamSize][Environment.numOfColors];) p 72 T () S 76 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Prepares the team for a new run by resetting its internal values) N
+() S 4 T ( * ) N
+() S 4 T ( * @param agentsPos) S 24 T () S 28 T () S 32 T () S 36 T (The array of agents positions \(initial posit) N
+(ions\)) N
+() S 4 T ( * @param actionCostMatrix) S 32 T () S 36 T (The matrix of action costs for all the agent) N
+(s) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( reset\(RowCol[] agentsPos, ) p
+(int) k
+([][]actionCostMatrix\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T (env.setAgentPosition\(i, agentsPos[i]\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T () S
+(for) K
+( \() p
+(int) k
+( j=0;j<Environment.numOfColors;j++\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (this.actionCostMatrix[i][j] = actionCostMatrix[i][j];) S 72 T () S 76 T () S 80 T () N
+() S 4 T () S 8 T () S 12 T () S 16 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T (agents[i].reset\(actionCostMatrix[i]\);) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Called by the simulation engine in each step of simulation) N
+(Team.java) (Page 1/3) (Oct 07, 11 19:52) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (6/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 7
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() C 4 T ( * ) N
+() S 4 T ( * @return ENDSIM ) S 24 T () S 28 T () S 32 T () S 36 T (code if the simulation is over) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( TeamStepCode step\(\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// 0. Update Agents Percepts) c 40 T () S 44 T () S 48 T () S 52 T () N
+() p 4 T () S 8 T () S 12 T () S 16 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<agents.length;i++\)) p 44 T () S 48 T () S 52 T () S 56 T () N
+() S 4 T () S 8 T () S 12 T (agents[i].perceive\(Environment.board\(\), actionCostMatrix, Environmen) N
+(t.goals\(\), env.agentsPosition\(\)\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// 1. Communication Phase) c n
+() p n
+() S 4 T () S 8 T () S
+(int) k
+( noMsgPass = 1;) p n
+() S 4 T () S 8 T () S
+(do) K
+( {) p n
+() S 4 T () S 8 T () S 12 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (agents[i].doSend\(\);) S 36 T () S 40 T () S 44 T () S 48 T () S 52 T () N
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T () S 12 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (agents[i].doReceive\(\);) S 40 T () S 44 T () S 48 T () N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () N
+() S 4 T () S 8 T () S 12 T () S
+(if) K
+( \(env\(\).communicationMedium\(\).isEmpty\(\)\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (noMsgPass--;) S 32 T () S 36 T () S 40 T () N
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T (} ) S
+(while) K
+( \(!env\(\).communicationMedium\(\).isEmpty\(\) || noMsgPass > 0\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(// 1. Action Phase) c n
+() p 4 T () N
+() S 4 T () S 8 T () S
+(boolean) k
+( allDone = ) p
+(true) k
+(;) p 32 T () S
+(// this way of checking is just temporally and f) c n
+(or tests) N
+() p 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<agents.length;i++\)) p 44 T () N
+() S 4 T () S 8 T () S 12 T () S
+(if) K
+( \(agents[i].act\(\) != AGCODE.OFF\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (allDone = ) S
+(false) k
+(;) p n
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T () S
+(if) K
+( \(allDone\)) p 24 T () S 28 T () S 32 T () N
+() S 4 T () S 8 T () S 12 T () S
+(return) K
+( TeamStepCode.DONE;) p n
+() S 4 T () S 8 T () S
+(else) K
+( ) p n
+() S 4 T () S 8 T () S 12 T () S
+(return) K
+( TeamStepCode.OK;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized team classes to access the environment of the team) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The instance of the team's environment) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( Environment env\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( env;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customize team classes to create and set their own agent type) N
+(s) N
+() S 4 T ( * ) N
+() S 4 T ( * @param agents) S 24 T () S 28 T (The array of customized agent objects) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( setAgents\(Agent[] agents\) {) p n
+() S 4 T () S 8 T (this.agents = agents;) N
+(Team.java) (Page 2/3) (Oct 07, 11 19:52) title
+border
+grestore
+(Printed by omimo) rhead
+() (7/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 8
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the customized team classes to get access to individual agents of) N
+( the) N
+() S 4 T ( * team) N
+() S 4 T ( * ) N
+() S 4 T ( * @param agent) S 20 T () S 24 T () S 28 T (The id of the desired agent) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The instance of the agnet object with the specified ) N
+(id) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( Agent agent\() p
+(int) k
+( agent\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( agents[agent];) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * To get the collective resource points for the team) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The amount of resources points that all the team's a) N
+(gents ) N
+() S 4 T ( *) S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (own) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+( teamResourcePoints\(\) {) p n
+() S 4 T () S 8 T () S
+(int) k
+( sum = 0;) p n
+() S 4 T () S 8 T () S
+(for) K
+( \(Agent a: agents\)) p n
+() S 4 T () S 8 T () S 12 T (sum += a.resourcePoints\(\);) N
+() S 4 T () S 8 T () S
+(return) K
+( sum;) p n
+() S 4 T (}) N
+() N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * To get the collective reward points for the team) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T (The amount of reward points that all the team's agen) N
+(ts own) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+( teamRewardPoints\(\) {) p n
+() S 4 T () S 8 T () S
+(int) k
+( sum = 0;) p n
+() S 4 T () S 8 T () S
+(for) K
+( \(Agent a: agents\)) p n
+() S 4 T () S 8 T () S 12 T (sum += a.rewardPoints\(\);) N
+() S 4 T () S 8 T () S
+(return) K
+( sum;) p n
+() S 4 T (}) N
+(}) N
+(Team.java) (Page 3/3) (Oct 07, 11 19:52) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (8/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 9
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim;) p n
+() N
+(/**) C n
+( * The Environment class) N
+( * ) N
+( * @author Omid Alemi) N
+( * @version 1.0 2011/10/06) N
+( */) N
+(public) K
+( ) p
+(class) K
+( ) p
+(Environment) L
+( ) p
+(implements) K
+( EnvAgentInterface {) p n
+() N
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+( numOfColors; ) p
+(// This can be derived from the colorRange, b) c n
+(ut for the sake of easier programming I'm keeping it like this!  ) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+([] colorRange;) p n
+(//) c 4 T (public static int minActionCost;) N
+(//) S 4 T (public static int maxActionCost;) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(int) k
+([] actionCostRange;) p n
+() S 4 T () N
+() S 4 T () N
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(double) k
+( disturbanceLevel;) p n
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(double) k
+( awarenessProb;) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( ) p
+(static) K
+( Board mainBoard;) p n
+() S 4 T () S
+(private) K
+( ) p
+(static) K
+( RowCol[] goals;) p n
+() S 4 T () N
+() S 4 T () S
+(private) K
+( RowCol[] agentsPosition;) p n
+() S 4 T () S
+(private) K
+( CommMedium communicationMedium;) p n
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * The constructor) N
+() S 4 T ( *  ) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( Environment\(\) {) p n
+() S 4 T () S 8 T (communicationMedium = ) S
+(new) K
+( CommMedium\(\);) p n
+() S 4 T () S 8 T (agentsPosition = ) S
+(new) K
+( RowCol[Team.teamSize];) p 52 T () S 56 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Sets the board to a new representation) N
+() S 4 T ( * ) N
+() S 4 T ( * @param newBoard) S 24 T () S 28 T () S 32 T () S 36 T (The desired new representation of the board ) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(void) k
+( setBoard\(Board newBoard\) {) p n
+() S 4 T () S 8 T (mainBoard = ) S
+(new) K
+( Board\(newBoard\);) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Sets the positions of the goals) N
+() S 4 T ( * ) N
+() S 4 T ( * @param newGoals) S 24 T () S 28 T () S 32 T () S 36 T (Array of goal positions) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(void) k
+( setGoals\(RowCol[] newGoals\)  {) p n
+() S 4 T () S 8 T (goals = ) S
+(new) K
+( RowCol[newGoals.length];) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<goals.length;i++\)) p n
+() S 4 T () S 8 T () S 12 T (goals[i] = newGoals[i];) N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the access to the board's representation ) N
+(Environment.java) (Page 1/4) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (9/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 10
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() C 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (The instance of the board) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( Board board\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( mainBoard;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the access to the goals positions) N
+() S 4 T ( * ) S 8 T () N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (Array of goal positions) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(static) K
+( RowCol[] goals\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( goals;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Returns the position of the specified agent) N
+() S 4 T ( * ) N
+() S 4 T ( * @param agent) S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (The agent's id) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (The agent's position) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( RowCol agentPosition\() p
+(int) k
+( agent\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( agentsPosition[agent];) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Returns the positions of all the agents with this environment instance) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (Array of agents' positions) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( RowCol[] agentsPosition\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( agentsPosition;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Sets the position of an agent.) N
+() S 4 T ( * ) N
+() S 4 T ( * @param agent) S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (The id of the agent) N
+() S 4 T ( * @param newPos) S 24 T () S 28 T () S 32 T () S 36 T (The desired position of the agent) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(void) k
+( setAgentPosition\() p
+(int) k
+( agent, RowCol newPos \) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (agentsPosition[agent] = ) S
+(new) K
+( RowCol\(newPos.row,newPos.col\);) p n
+() S 4 T () S 8 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the access to the communication medium for the agent) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (The instance of the communication medium of ) N
+(the environment) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( CommMedium communicationMedium\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( communicationMedium;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+(Environment.java) (Page 2/4) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (10/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3) 11
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() C 4 T ( * The move action of agents.) N
+() S 4 T ( * It can be called by an agent for its own move or for some other agent's m) N
+(ove \(help\).) N
+() S 4 T ( * ) N
+() S 4 T ( *  @param agent) S 24 T () S 28 T () S 32 T () S 36 T (The id of the agent to be moved.) N
+() S 4 T ( *  @param newPos) S 24 T () S 28 T () S 32 T () S 36 T (The new position of the agent) N
+() S 4 T ( *  @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T (True if the action was successful / false ot) N
+(herwise) N
+() S 4 T ( */) N
+() p 4 T () S
+(public) K
+( ) p
+(boolean) k
+( move\() p
+(int) k
+( agent, RowCol newPos\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(if) K
+( \(!RowCol.areNeighbors\(agentsPosition[agent], newPos\)\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S
+(return) K
+( ) p
+(false) k
+(;) p 32 T () S 36 T () S 40 T () S 44 T () S 48 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (agentsPosition[agent] = newPos;) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () N
+() S 4 T () S 8 T () S
+(return) K
+( ) p
+(true) k
+(;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Converts current state of this instance of environment to a string) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T (The string representation of the environment) N
+() S 4 T ( */) N
+() p 4 T (@Override) N
+() S 4 T () S
+(public) K
+( String toString\(\) {) p n
+() S 4 T () S 8 T (String s = "";) N
+() S 4 T () S 8 T (s +=\(") S
+(\\nThe Board\\n) str
+("\);) p n
+() S 4 T () S 8 T (s +=\(mainBoard.toString\(\)\);) N
+() S 4 T () S 8 T (s +=\(") S
+(\\n) str
+("\);) p n
+() S 4 T () S 8 T (s +=\(") S
+(Agents Positions:\\n) str
+("\);) p n
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<agentsPosition.length;i++\)) p n
+() S 4 T () S 8 T () S 12 T (s +=") S
+(Agent ) str
+("+i +") p
+(: \() str
+(" + agentsPosition[i].row +") p
+(,) str
+(" + agentsPosition[i].) p n
+(col +") S
+(\)\\n) str
+(";) p n
+() S 4 T () S 8 T (s +=\(") S
+(\\n) str
+("\);) p n
+() S 4 T () S 8 T (s +=\(") S
+(Communication Channels:\\n) str
+("\);) p n
+() S 4 T () S 8 T (s +=\(communicationMedium.toString\(\)\);) N
+() S 4 T () S 8 T () S
+(return) K
+( s;) p n
+() S 4 T (}) N
+() N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the agents to have the information about the range of action cost) N
+(s) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T (The action costs range in an array) N
+() S 4 T ( */) N
+() p 4 T (@Override) N
+() S 4 T () S
+(public) K
+( ) p
+(int) k
+([] actionCostRange\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( actionCostRange;) p 32 T () S 36 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () N
+() S 4 T () S
+(/**) C n
+() S 4 T ( * Enables the agents to have the information about the range of colors on t) N
+(he board) N
+() S 4 T ( * ) N
+() S 4 T ( * @return) S 16 T () S 20 T () S 24 T () S 28 T () S 32 T (The color range in an array) N
+() S 4 T ( */) N
+() p 4 T (@Override) N
+(Environment.java) (Page 3/4) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (11/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (4) 12
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T () S
+(public) K
+( ) p
+(int) k
+([] colorRange\(\) {) p n
+() S 4 T () S 8 T () S
+(return) K
+( colorRange;) p 28 T () S 32 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () N
+(}) N
+(Environment.java) (Page 4/4) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (12/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 13
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim;) p n
+() N
+(/**) C n
+( * The interface of the environment that the agents can use to access the ) N
+( * environment) N
+( * ) N
+( * @author Omid Alemi) N
+( * @version 1.0 2011/10/06) N
+( */) N
+(public) K
+( ) p
+(interface) K
+( ) p
+(EnvAgentInterface) L
+( {) p n
+() S 4 T () S
+(public) K
+( CommMedium communicationMedium\(\);) p n
+() S 4 T () S
+(public) K
+( ) p
+(boolean) k
+( move\() p
+(int) k
+( agent, RowCol newPos\);) p n
+() S 4 T () S
+(public) K
+( ) p
+(int) k
+([] actionCostRange\(\);) p n
+() S 4 T () S
+(public) K
+( ) p
+(int) k
+([] colorRange\(\);) p n
+(}) N
+(EnvAgentInterface.java) (Page 1/1) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (13/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 14
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim.agents;) p n
+() N
+(import) K
+( tests.DummyMessage;) p n
+(import) K
+( massim.Agent;) p n
+(import) K
+( massim.EnvAgentInterface;) p n
+(import) K
+( massim.Board;) p n
+(import) K
+( massim.Environment;) p n
+(import) K
+( massim.Goal;) p n
+(import) K
+( massim.Path;) p n
+(import) K
+( massim.RowCol;) p n
+() N
+(public) K
+( ) p
+(class) K
+( ) p
+(DummyAgent) L
+( ) p
+(extends) K
+( Agent {) p n
+() N
+() S 4 T () S
+(private) K
+( Board theBoard;) p n
+() S 4 T () S
+(private) K
+( Path path;) p n
+() S 4 T () N
+() S 4 T () S
+(boolean) k
+( sentHelpReq = ) p
+(false) k
+(;) p n
+() S 4 T () S
+(boolean) k
+( recHelpReq = ) p
+(false) k
+(;) p n
+() S 4 T () S
+(boolean) k
+( shouldAck = ) p
+(false) k
+(;) p n
+() S 4 T () S
+(boolean) k
+( reachedThere = ) p
+(false) k
+(;) p n
+() S 4 T () N
+() S 4 T () S
+(public) K
+( DummyAgent\() p
+(int) k
+( id, EnvAgentInterface env\) {) p n
+() S 4 T () S 8 T () S
+(super) K
+(\(id,env\);) p n
+() S 4 T () S 8 T (System.out.println\(") S
+(Hello from DummyAgent ) str
+(" + id\(\)\);) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () N
+() S 4 T (@Override) N
+() S 4 T () S
+(public) K
+( ) p
+(void) k
+( perceive\(Board board, ) p
+(int) k
+([][] costVectors, RowCol[] goals, RowCo) p n
+(l[] agentsPos\) {) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () N
+() S 4 T () S 8 T (super.perceive\(board, costVectors, goals, agentsPos\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (theBoard = board;) N
+() S 4 T () S 8 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+( New Percepts:) str
+("\);) p n
+() S 4 T () S 8 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: resourcePoints = ) str
+("+ resourcePoints\(\)\);) p n
+() S 4 T () S 8 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: my pos = ) str
+("+ pos\(\) ) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (+") S
+(: my goal's pos = ) str
+("+ goalPos\(\)\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(if) K
+( \(path == ) p
+(null) k
+( && goals[id\(\)] != ) p
+(null) k
+(\)) p 52 T () S 56 T () N
+() S 4 T () S 8 T () S 12 T (findPath\(\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(if) K
+( \(pos\(\).equals\(goalPos\(\)\)\)) p n
+() S 4 T () S 8 T () S 12 T (reachedThere = ) S
+(true) k
+(;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(public) K
+( ) p
+(int) k
+( getCellCost\(RowCol cell\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(int) k
+( [] colorRange = env\(\).colorRange\(\);) p 48 T () S 52 T () N
+() S 4 T () S 8 T () S
+(int) k
+( index = 0;) p n
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<colorRange.length;i++\)) p n
+() S 4 T () S 8 T ({) N
+() S 4 T () S 8 T () S 12 T () S
+(int) k
+( color = theBoard.getBoard\(\)[cell.row][cell.col];) p n
+() S 4 T () S 8 T () S 12 T () S
+(if) K
+( \(color == colorRange[i]\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (index = i;) S 28 T () S 32 T () S 36 T () S 40 T () S 44 T () S 48 T () N
+() S 4 T () S 8 T (}) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(return) K
+( actionCosts\(\)[index];) p 40 T () S 44 T () S 48 T () N
+() S 4 T (}) N
+(DummyAgent.java) (Page 1/2) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (14/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 15
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T () N
+() S 4 T (@Override) N
+() S 4 T () S
+(public) K
+( AGCODE act\(\) {) p n
+() S 4 T () S 8 T (AGCODE code = AGCODE.OK;;) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(if) K
+( \(!reachedThere\)) p n
+() S 4 T () S 8 T ({) N
+() S 4 T () S 8 T () S 12 T (RowCol nextPos = path.getNextPoint\(pos\(\)\);) N
+() S 4 T () S 8 T () S 12 T () S
+(if) K
+( \(env\(\).move\(id\(\), nextPos\)\)) p n
+() S 4 T () S 8 T () S 12 T () S 16 T ({) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: moving to ) str
+(" + nextPos \);) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T (decResourcePoints\(getCellCost\(nextPos\)\);) N
+() S 4 T () S 8 T () S 12 T () S 16 T (}) N
+() S 4 T () S 8 T () S 12 T () S
+(else) K
+( ) p n
+() S 4 T () S 8 T () S 12 T () S 16 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: failed to move to ) str
+(" + nextPos \);) p n
+() S 4 T () S 8 T (}) N
+() S 4 T () S 8 T () S
+(else) K n
+() p 4 T () S 8 T ({) N
+() S 4 T () S 8 T () S 12 T (code = AGCODE.OFF;) N
+() S 4 T () S 8 T (}) N
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(return) K
+( code;) p n
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () N
+() S 4 T (@Override) S 16 T () N
+() S 4 T () S
+(public) K
+( ) p
+(void) k
+( doSend\(\) {) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T (@Override) N
+() S 4 T () S
+(public) K
+( ) p
+(void) k
+( doReceive\(\) {) p 32 T () S 36 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () N
+() S 4 T (}) N
+() S 4 T () N
+() S 4 T () S
+(private) K
+( ) p
+(void) k
+( findPath\(\) {) p n
+() S 4 T () S 8 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: Does not have a path, finding one ...) str
+("\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (path = Path.getShortestPaths\(pos\(\), goalPos\(\), theBoard.getBoard\(\), acti) N
+(onCosts\(\), 1\).get\(0\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (System.out.println\(") S
+(Agent ) str
+(" + id\(\) +") p
+(: My path will be: ) str
+(" + path\);) p n
+() S 4 T (}) N
+() S 4 T () N
+(}) N
+(DummyAgent.java) (Page 2/2) (Oct 07, 11 20:16) title
+border
+grestore
+(Printed by omimo) rhead
+() (15/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 16
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( massim.agents;) p n
+() N
+(import) K
+( massim.RowCol;) p n
+(import) K
+( massim.Team;) p n
+() N
+(public) K
+( ) p
+(class) K
+( ) p
+(DummyTeam) L
+( ) p
+(extends) K
+( Team {) p n
+() S 4 T () N
+() S 4 T () N
+() S 4 T () S
+(public) K
+( DummyTeam\(\) {) p n
+() S 4 T () S 8 T () S
+(super) K
+(\(\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (DummyAgent[] agents = ) S
+(new) K
+( DummyAgent[teamSize];) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(for) K
+( \() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T (agents[i] = ) S
+(new) K
+( DummyAgent\(i,env\(\)\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (setAgents\(agents\);) N
+() S 4 T () S 8 T () N
+() S 4 T (}) S 8 T () N
+() S 4 T () N
+() S 4 T () S
+(public) K
+( ) p
+(void) k
+( reset\(RowCol[] agentsPos, ) p
+(int) k
+([][] actionCostsMatrix\) {) p n
+() S 4 T () S 8 T (super.reset\(agentsPos, actionCostsMatrix\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(for) K
+(\() p
+(int) k
+( i=0;i<teamSize;i++\)) p n
+() S 4 T () S 8 T () S 12 T (agent\(i\).incResourcePoints\(1000\);) N
+() S 4 T () S 8 T () N
+() S 4 T (}) N
+(}) N
+(DummyTeam.java) (Page 1/1) (Oct 07, 11 18:55) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (16/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 17
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(package) K
+( tests;) p n
+() N
+(import) K
+( massim.Team.TeamStepCode;) p n
+(import) K
+( massim.agents.DummyAgent;) p n
+(import) K
+( massim.agents.DummyTeam;) p n
+(import) K
+( massim.*;) p n
+() N
+(public) K
+( ) p
+(class) K
+( ) p
+(AgentTester) L
+( {) p n
+() N
+() S 4 T () N
+() S 4 T () S
+(public) K
+( ) p
+(static) K
+( ) p
+(void) k
+( main\(String[] args\) {) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () N
+(// Simulation-wide settings) c n
+() p 4 T () S 8 T (SimulationEngine.numOfTeams =1;) N
+() S 4 T () S 8 T (Team.teamSize = 4;) S 28 T () S 32 T () S 36 T () S 40 T () S 44 T () S 48 T () N
+() S 4 T () S 8 T (Environment.numOfColors = 5;) S 40 T () S 44 T () S 48 T () N
+() S 4 T () S 8 T (Environment.colorRange = ) S
+(new) K
+( ) p
+(int) k
+([] {10,11,12,13,14};) p n
+() S 4 T () S 8 T (Environment.actionCostRange = ) S
+(new) K
+( ) p
+(int) k
+([] {10,15,20,30,50};) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (DummyTeam dt = ) S
+(new) K
+( DummyTeam\(\);) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () N
+(// Experiment-wide settings) c 28 T () S 32 T () N
+() p 4 T () S 8 T (Board board = Board.randomBoard\(5, 5\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (RowCol[] goals = ) S
+(new) K
+( RowCol[Team.teamSize];  ) p
+(// can be assigned randomiz) c n
+(ed, etc;) S 12 T () S 16 T () S 20 T () N
+() p 4 T () S 8 T (goals[0] = ) S
+(new) K
+( RowCol\(4,4\);) p n
+() S 4 T () S 8 T (goals[1] = ) S
+(new) K
+( RowCol\(0,4\);) p n
+() S 4 T () S 8 T (goals[2] = ) S
+(new) K
+( RowCol\(4,0\);) p n
+() S 4 T () S 8 T (goals[3] = ) S
+(new) K
+( RowCol\(0,0\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (Environment.setBoard\(board\);) N
+() S 4 T () S 8 T (Environment.setGoals\(goals\);) N
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T () S
+(int) k
+([][] actionCostsMatrix = {{20,10,10,15,50}, ) p
+(// can be assigned random) c n
+(ized, etc; ) N
+() p 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T ( {10,10,50,20,10},) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T ( {10,10,50,15,30},) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T ( {15,30,20,10,10}};   ) N
+() S 4 T () S 8 T () S 12 T () N
+() S 4 T () S 8 T (RowCol[] agentsPos = {) S
+(new) K
+( RowCol\(0,0\), ) p
+(// can be assigned randomized, et) c n
+(c;) N
+() p 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (  ) S
+(new) K
+( RowCol\(4,0\), ) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (  ) S
+(new) K
+( RowCol\(0,4\),) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T (  ) S
+(new) K
+( RowCol\(2,2\)};) p n
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () S 28 T () S 32 T () S 36 T () N
+(// Run-wide settings) c 24 T () S 28 T () N
+() p 4 T () S 8 T () N
+() S 4 T () S 8 T (dt.reset\(agentsPos,actionCostsMatrix\);) N
+() S 4 T () S 8 T () N
+(// Run) c n
+() p 4 T () S 8 T () N
+() S 4 T () S 8 T (System.out.println\(") S
+(The initial env: ) str
+("+dt.env\(\)\);) p 60 T () S 64 T () N
+() S 4 T () S 8 T (System.out.println\(") S
+(The initial team's resources = ) str
+("+dt.teamResourcePoints\(\)\);) p n
+() S 4 T () S 8 T () N
+() S 4 T () S 8 T (TeamStepCode tsc = TeamStepCode.OK;) S 44 T () S 48 T () N
+() S 4 T () S 8 T () S
+(while) K
+( \(tsc == TeamStepCode.OK\)) p n
+() S 4 T () S 8 T ({) N
+(AgentTester.java) (Page 1/2) (Oct 07, 11 20:14) title
+border
+grestore
+(Printed by omimo) rhead
+() (17/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (2) 18
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 4 T () S 8 T () S 12 T (System.out.println\(") S
+(--------------------) str
+("\);) p n
+() S 4 T () S 8 T () S 12 T (tsc = dt.step\(\);) S 32 T () S 36 T () S 40 T () N
+() S 4 T () S 8 T (}) N
+() S 4 T () S 8 T () S 12 T () S 16 T () S 20 T () S 24 T () N
+() S 4 T () S 8 T (System.out.println\(") S
+(The final team's resources = ) str
+("+dt.teamResourcePoints\(\)\);) p n
+() S 4 T (}) N
+() N
+(}) N
+(AgentTester.java) (Page 2/2) (Oct 07, 11 20:14) title
+border
+grestore
+(Printed by omimo) rhead
+() (Friday October 07, 2011) (18/19) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (1) 19
+%%BeginPageSetup
+/pagesave save def
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 4.850123 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(Table of Contents) K n
+( 1 ) p
+(Agent.java..........) k
+( sheets   1 to   5 \( 5\) pages   1-  5  243 lines) p n
+( 2 ) S
+(Team.java...........) k
+( sheets   6 to   8 \( 3\) pages   6-  8  152 lines) p n
+( 3 ) S
+(Environment.java....) k
+( sheets   9 to  12 \( 4\) pages   9- 12  177 lines) p n
+( 4 ) S
+(EnvAgentInterface.java) k
+( sheets  13 to  13 \( 1\) pages  13- 13   16 lines) p n
+( 5 ) S
+(DummyAgent.java.....) k
+( sheets  14 to  15 \( 2\) pages  14- 15  107 lines) p n
+( 6 ) S
+(DummyTeam.java......) k
+( sheets  16 to  16 \( 1\) pages  16- 16   29 lines) p n
+( 7 ) S
+(AgentTester.java....) k
+( sheets  17 to  18 \( 2\) pages  17- 18   65 lines) p n
+(Table of Content) (Page 1/1) (Oct 07, 11 20:18) title
+border
+grestore
+(Printed by omimo) rhead
+() (19/19) (Friday October 07, 2011) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF

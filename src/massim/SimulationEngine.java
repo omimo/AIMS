@@ -14,15 +14,23 @@ import massim.Team.TeamStepCode;
  */
 public class SimulationEngine {
 
-	public static int numOfTeams;
+	// Simulation params
+	private int[] colorRange = {1,2,3,4,5,6};
+	private int[] costsRange = {10,40,70,100,300,400,450,500};
+	private int numOfColors = colorRange.length;
+	private int numOfTeams;
+	
+	// Simulation objects
+	private Team[] teams;   
+	Board mainBoard;
+	int[][] actionCostsMatrix;
 	
 	
-	private int simCounter; //change the name 
 	
-	
-	private Team[] teams;        
+	// Internal SimEng params:
+	private int simCounter;
         
-	public static enum SimStepCode {SIMOK, SIMEND, SIMERR}
+	public static enum SimRoundCode {SIMOK, SIMEND, SIMERR}
 	    
     
 	/**
@@ -33,7 +41,7 @@ public class SimulationEngine {
 	 * @param initBoard The initial board settings	 
 	 */
 	public SimulationEngine(Team[] teams) {
-		System.arraycopy(teams, 0, this.teams, 0, teams.length);
+		this.teams = teams;
 		
 	}
 	
@@ -42,17 +50,9 @@ public class SimulationEngine {
 	 * Should be called before step() method
 	 * @param initBoard The initial board, defined in the frontend
 	 */
-	public void init() {		
-		// set the simulation state to the input one
-		// initialize the teams
-		// set the counter to zero
-				
-		
-		
-		/*for (Team t : teams)
-			t.init();*/
-		
+	public void initializeSimulation() {			
 		simCounter = 0;
+		
 	}
 	
 	/**
@@ -60,9 +60,9 @@ public class SimulationEngine {
 	 * counter.
 	 * Should be called by the frontend software
 	 * @param disturbanceLevel The level of desired disturbance on the board 
-	 * @return The proper code from the SimStepCode enum
+	 * @return The proper code from the SimRoundCode enum
 	 */
-	public SimStepCode step(double disturbanceLevel) {		
+	public SimRoundCode round() {		
 		// increase the counter by 1		
 		// refresh the board: only add the disturbance 
 		// board.disturb(disturbanceLevel);
@@ -92,9 +92,9 @@ public class SimulationEngine {
 		
 		// Check the simulation's status at the step
 		if (allDone)
-			return SimStepCode.SIMEND;
+			return SimRoundCode.SIMEND;
 		else
-			return SimStepCode.SIMOK;		
+			return SimRoundCode.SIMOK;		
 	}
 	
 	/**
@@ -102,24 +102,13 @@ public class SimulationEngine {
 	 * without interruption
 	 * @return The final step's code, to be used to determine any error
 	 */
-	public SimStepCode autoplay(double disturbanceLevel) {
+	public SimRoundCode autoplay(double disturbanceLevel) {
 		// run the simulation from current step in a loop until the last step 
 		// (determined by the return code) without user interaction
-		SimStepCode ssc = SimStepCode.SIMOK;
-		while (ssc == SimStepCode.SIMOK)		
-			ssc = step(disturbanceLevel);
+		SimRoundCode ssc = SimRoundCode.SIMOK;
+		while (ssc == SimRoundCode.SIMOK)		
+			ssc = round();
 		return ssc;		
 	}
-	
-	
-	/*
-	 * NOT SURE IF WE NEED THIS ANYMORE.
-	 * EVERYTHING CAN BE DONE USING THE SIMSTATE and TEAMSTATE CLASSES.
-	public void finish() {
-		// sum the scores
-		// ********
-	}*/
-	
-	
-	
+		
 }
