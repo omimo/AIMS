@@ -55,7 +55,7 @@ public class AgentTester {
 		while (tsc == TeamStepCode.OK)
 		{
 			System.out.println("--------------------");
-			tsc = dt.step();			
+			tsc = dt.round();			
 		}
 						
 		System.out.println("The final team's resources = "+dt.teamResourcePoints());

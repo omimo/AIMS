@@ -103,7 +103,7 @@ public class exp1 {
 					allDone = true;							
 					for (Team t : teams) {
 						TeamStepCode tsc;
-						tsc = t.step();
+						tsc = t.round();
 						if (tsc == TeamStepCode.OK)
 							allDone = false;
 					}															

@@ -14,18 +14,18 @@ public class CommMedium {
 
 	
 	String[][] channels;
-	
+	int numOfChannels;
 	/**
 	 * The default constructor
 	 * 
 	 */
 	public CommMedium() {
 
-		int n = Team.teamSize;
+		numOfChannels = Team.teamSize;
 		// Initializing all the channels
-		channels = new String[n][n];
-		for (int i=0;i<n;i++)
-			for (int j=0;j<n;j++)
+		channels = new String[numOfChannels][numOfChannels];
+		for (int i=0;i<numOfChannels;i++)
+			for (int j=0;j<numOfChannels;j++)
 				channels[i][j]="";
 	}
 	
@@ -37,9 +37,9 @@ public class CommMedium {
 	 * @param msg 					The message
 	 */
 	public void send(int sender, int receiver, String msg) {	
-		// Might add the sender,receiver info to the head of msg
-		// which will be used while decoding by a Message class
-		channels[sender][receiver] = msg;
+
+		if (receiver != sender)
+			channels[sender][receiver] = msg;
 	}
 	
 	/**
@@ -49,8 +49,6 @@ public class CommMedium {
 	 * @param msg 					The message
 	 */
 	public void broadcast(int sender, String msg) {
-		// Might add the sender,receiver info to the head of msg
-		// which will be used while decoding by a Message class
 		
 		for (int i=0;i<Team.teamSize;i++)		
 			if (i!=sender)
@@ -69,7 +67,7 @@ public class CommMedium {
 		
 		String out="";
 		
-		for(int i=0;i<channels[receiver].length;i++)
+		for(int i=0;i<channels.length;i++)
 		{			
 			if (!channels[i][receiver].isEmpty())
 			{
@@ -98,16 +96,25 @@ public class CommMedium {
 	}
 	
 	/**
+	 * Clears all the channels
+	 */
+	public void clear() {
+		for (int i=0;i<numOfChannels;i++)
+			for (int j=0;j<numOfChannels;j++)
+				channels[i][j]="";
+	}
+	
+	/**
 	 * Used for the debugging purposes
 	 * Generates a string representation of all the communication channels
 	 * and their values
 	 */
 	@Override
-	public String toString() {  // needs to be verified after replacing the sender/receiver positions
+	public String toString() {
 		String s = "";
 		for (int i=0;i<channels[0].length;i++)
 		{
-			s += "Agent "+ i+ "'s channels: \n";
+			s += "[Agent "+ i+ "'s incoming channels: ]\n";
 						
 			for (int j=0;j<channels.length;j++)
 			{
@@ -118,9 +125,7 @@ public class CommMedium {
 					s += "\n";
 				}
 			}
-		}
-		
-		
+		}				
 		return s;
 	}
 	

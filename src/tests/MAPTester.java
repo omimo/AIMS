@@ -56,7 +56,7 @@ public class MAPTester {
 			
 		RowCol[] agentsPos = new RowCol[Team.teamSize];					
 		for (int i=0;i<Team.teamSize;i++)
-			//agentsPos[i] = randomPos(boardh, boardw);
+			//initAgentsPos[i] = randomPos(boardh, boardw);
 			agentsPos[i] = new RowCol(0,0);
 					
 		int numOfRuns = 1000;
@@ -76,7 +76,7 @@ public class MAPTester {
 		while (tsc == TeamStepCode.OK)
 		{
 			System.out.println("--------------------");
-			tsc = mt.step();			
+			tsc = mt.round();			
 		}
 						
 		System.out.println("The final team's resources = "+mt.teamResourcePoints());

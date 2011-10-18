@@ -106,7 +106,7 @@ public abstract class Agent {
 	 * 								(based on the mutual awareness among team
 	 * 								members)
 	 * @param goals			        The goals for all the agents
-	 * @param agentsPos		        The current position of all the agents 
+	 * @param initAgentsPos		        The current position of all the agents 
 	 * 								within the team
 	 */
 	protected void perceive(Board board, int[][] actionCostsMatrix,

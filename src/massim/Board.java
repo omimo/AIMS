@@ -103,8 +103,7 @@ public class Board {
 
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
-				b.mainBoard[i][j] = Environment.colorRange[rndBoardGen
-						.nextInt(Environment.numOfColors)];
+				b.mainBoard[i][j] = rndBoardGen.nextInt(6);
 		return b;
 	}
 
@@ -123,8 +122,8 @@ public class Board {
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				if (rndChange.nextDouble() < disturbanceLevel)
-					mainBoard[i][j] = Environment.colorRange[rndColor
-							.nextInt(Environment.numOfColors)];
+					mainBoard[i][j] = SimulationEngine.colorRange[rndColor
+							.nextInt(SimulationEngine.numOfColors)];
 	}
 
 	/**
@@ -156,7 +155,7 @@ public class Board {
 	 */
 	public String boardCostsToString(int actionCosts[]) {
 		String out = "";
-		int[] colorRange = Environment.colorRange;
+		int[] colorRange = SimulationEngine.colorRange;
 
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {

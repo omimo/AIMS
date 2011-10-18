@@ -5,19 +5,18 @@ import java.util.Random;
 import massim.RowCol;
 import massim.Team;
 
-public class DummyTeam extends Team {
+public class UselessTeam extends Team{
 	
 	private boolean debuggingInf = true;
 	
-	public DummyTeam() {
-		super();		
-		
+	public UselessTeam() {
+		super();				
 	}	
 	
 	@Override
 	public void initializeRun(RowCol[] initAgentsPos, RowCol[] goals, int[][]actionCostMatrix) {
-		super.initializeRun(initAgentsPos, goals, actionCostMatrix);
-		testRunCounter = 10;	
+		super.initializeRun(initAgentsPos, goals, actionCostMatrix);		
+		testRunCounter = 7;		
 	}
 	
 	@Override
@@ -29,6 +28,6 @@ public class DummyTeam extends Team {
 	
 	private void logInf(String msg) {
 		if (debuggingInf)
-			System.out.println("[Dummy Team]: " + msg);
+			System.out.println("[Useless Team]: " + msg);
 	}
 }
