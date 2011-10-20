@@ -57,11 +57,14 @@ public class CommMedium {
 
 	
 	/**
-	 * Returns the next available message in the receiver's incoming communication channels.
-	 * Returns an empty message if there is no message left on the channels
+	 * Returns the next available message in the receiver's incoming 
+	 * communication channels.
+	 * 
+	 * Returns an empty message if there is no message left on the 
+	 * channels
 	 * 
 	 * @param receiver				The id of the receiver agent
-	 * @return						The message 
+	 * @return						The message/empty string 
 	 */
 	public String receive(int receiver) {
 		
@@ -83,8 +86,8 @@ public class CommMedium {
 	 * To check whether the communication medium is empty. Means there 
 	 * were no communication during the last iteration
 	 * 
-	 * @return 					true if all the channels for all the agents are empty. 
-	 * 		   					false otherwise
+	 * @return 					true if all the channels for all the 
+	 * 							agents are empty. / false otherwise.
 	 */
 	public boolean isEmpty() {
 		

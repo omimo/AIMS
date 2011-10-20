@@ -147,7 +147,9 @@ public class Board {
 
 	/**
 	 * Prints the costs associated with each square of the board based on the
-	 * given action costs set into a string Used for debugging purposes
+	 * given action costs set into a string.
+	 * 
+	 * Used for debugging purposes.
 	 * 
 	 * @param actionCosts		The action costs set of an agent
 	 * @return					The string representation of the board; 
