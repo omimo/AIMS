@@ -17,7 +17,7 @@ public class Board {
 	private final int cols;
 
 	/**
-	 * Constructor 1: just with the size
+	 * Constructor
 	 * 
 	 * @param r				The number of rows of the board
 	 * @param c        		The number of columns of the board
@@ -28,22 +28,7 @@ public class Board {
 		mainBoard = new int[rows][cols];
 	}
 
-	/**
-	 * Constructor 2: get the board setting and creating an exact copy
-	 * 
-	 * @param board       	The 2dim array, representing the board's 
-	 * 					  	initial setting
-	 */
-	public Board(Board board) {
-		rows = board.rows();
-		cols = board.cols();
-		mainBoard = new int[rows][cols];
-
-		for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
-				this.mainBoard[i][j] = board.mainBoard[i][j];
-	}
-
+	
 	/**
 	 * Returns the number of rows of the board
 	 * 
@@ -94,7 +79,9 @@ public class Board {
 	}
 
 	/**
-	 * Static method; Creates a board with randomly filled values (colors).
+	 * Creates a board with randomly filled values (colors).
+	 * 
+	 * Static method; 
 	 * 
 	 * @return 				The instance of the newly randomly generated board
 	 */
@@ -108,13 +95,14 @@ public class Board {
 	}
 
 	/**
-	 * Adds random values (disturbance) to the cells of the board. Each cell on
-	 * the board may be changed based on the probability defined by
-	 * disturbanecLevel
+	 * Adds random values (disturbance) to the cells of the board. 
+	 * 
+	 * Each cell on the board may be changed based on the probability defined by
+	 * disturbanecLevel.
 	 * 
 	 * @param disturbanceLevel		The level of disturbance, between 0 and 1.0
 	 */
-	public void distrub(double disturbanceLevel) {
+	public void disturb(double disturbanceLevel) {
 
 		Random rndColor = new Random();
 		Random rndChange = new Random();
@@ -127,8 +115,9 @@ public class Board {
 	}
 
 	/**
-	 * Converts the current setting of the board into a string for debugging
-	 * purposes
+	 * Converts the current setting of the board into a string.
+	 * 
+	 * For debugging purposes
 	 * 
 	 * @return 			The string representing the current setting of the board
 	 */

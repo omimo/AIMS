@@ -74,7 +74,7 @@ public class SimEngTeamTester {
 			Team.initResCoef = 200;
 			
 			/* vary the disturbance: */
-			SimulationEngine.disturbanceLevel = 10 * exp;  
+			SimulationEngine.disturbanceLevel = 0.1 * exp;  
 			
 			/* Initialize and run the experiment */
 			se.initializeExperiment(numberOfRuns);			

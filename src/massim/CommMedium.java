@@ -1,7 +1,5 @@
 package massim;
 
-import java.util.HashMap;
-
 /**
  * CommMedium.java
  * Responsible for all the communications within a team of 
@@ -19,18 +17,19 @@ public class CommMedium {
 	 * The default constructor
 	 * 
 	 */
-	public CommMedium() {
+	public CommMedium(int n) {
 
-		numOfChannels = Team.teamSize;
+		numOfChannels = n;
 		// Initializing all the channels
 		channels = new String[numOfChannels][numOfChannels];
-		for (int i=0;i<numOfChannels;i++)
-			for (int j=0;j<numOfChannels;j++)
-				channels[i][j]="";
+		clear();
 	}
 	
 	/**
-	 * Puts the msg into the receiver's special channel for the sender
+	 * Sends a message.
+	 * 
+	 * Puts the msg into the unidirectional channel between the sender
+	 * and the receiver.
 	 * 
 	 * @param sender 				The sender agent's id
 	 * @param receiver 				The receiver agent's id
@@ -43,25 +42,30 @@ public class CommMedium {
 	}
 	
 	/**
-	 * Puts the msg into all the agent's special channels for the sender
+	 * Broadcasts a message.
+	 * 
+	 * Puts the msg into all the unidirectional channels starting from 
+	 * the sender.
 	 * 
 	 * @param sender 				The sender agent's id
 	 * @param msg 					The message
 	 */
 	public void broadcast(int sender, String msg) {
 		
-		for (int i=0;i<Team.teamSize;i++)		
+		for (int i=0;i<numOfChannels;i++)		
 			if (i!=sender)
 				channels[sender][i] = msg;		
 	}
 
 	
 	/**
-	 * Returns the next available message in the receiver's incoming 
-	 * communication channels.
+	 * Receives the next message.
+	 *  
+	 * Returns the next available message in the unidirectional channels
+	 * ending to the receiver.
 	 * 
 	 * Returns an empty message if there is no message left on the 
-	 * channels
+	 * channels.
 	 * 
 	 * @param receiver				The id of the receiver agent
 	 * @return						The message/empty string 
@@ -83,17 +87,16 @@ public class CommMedium {
 	}
 	
 	/**
-	 * To check whether the communication medium is empty. Means there 
-	 * were no communication during the last iteration
+	 * Checks if all the unidirectional channels are empty.
 	 * 
-	 * @return 					true if all the channels for all the 
-	 * 							agents are empty. / false otherwise.
+	 * @return 					true if all the channels are empty.
+	 * 							/ false otherwise.
 	 */
-	public boolean isEmpty() {
+	public boolean allChannelsEmpty() {
 		
-		for (int i=0;i<Team.teamSize;i++)
+		for (int i=0;i<numOfChannels;i++)
 			for (int j=0;j<Team.teamSize;j++)
-				if (channels[i][j] != "")
+				if (!channels[i][j].isEmpty())
 					return false;
 		return true;
 	}
@@ -108,9 +111,10 @@ public class CommMedium {
 	}
 	
 	/**
-	 * Used for the debugging purposes
 	 * Generates a string representation of all the communication channels
-	 * and their values
+	 * and their values.
+	 * 
+	 * Used for the debugging purposes
 	 */
 	@Override
 	public String toString() {

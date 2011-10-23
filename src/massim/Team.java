@@ -16,13 +16,23 @@ public class Team {
 
 	public static int teamSize;
 	public static int initResCoef;
-
+	public static double mutualAwareness;
+	
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 
 	private static Random rnd1 = new Random();
 
-	public static enum TeamStepCode {
+	
+	/**
+	 * OK: The round executed without any problem and there is
+	 *      at least one active agent.
+	 *        
+	 * MEND: All the agents are done.
+	 * 
+	 * ERR: There was a problem in the current round.
+	 */
+	public static enum TeamRoundCode {
 		OK, DONE, ERR
 	}
 
@@ -34,13 +44,13 @@ public class Team {
 	 */
 	public Team() {
 		id = nextID++;
-		commMedium = new CommMedium();
+		commMedium = new CommMedium(Team.teamSize);
 	}
 
 	/**
-	 * Called by the simulation engine (SimulationEngine.initializeRun())
-	 * to initialize the team and agents for a new run. 
+	 * Initializes the team and agents for a new run.
 	 * 
+	 * Called by the simulation engine (SimulationEngine.initializeRun())
 	 * It should reset necessary variables values.
 	 * 
 	 * @param initAgentsPos					Array of initial agents	position
@@ -58,15 +68,17 @@ public class Team {
 	}
 
 	/**
-	 * Called by the simulation engine (SimulationEngine.round()) to start 
-	 * a new round of the simulation for this specific team.
+	 * Starts a new round of the simulation for this team.
+	 * 
+	 * Called by the simulation engine (SimulationEngine.round()).
+	 * 
+	 * It is possible to implement error handling mechanisms for this method.
 	 *  
 	 * @param board							The current board representation
-	 * @return								The proper TeamStepCode based on
-	 * 										the team's current state after at 
-	 * 										the end of the round.
+	 * @return								The proper TeamRoundCode based on
+	 * 										the team's current state.
 	 */
-	public TeamStepCode round(Board board) {
+	public TeamRoundCode round(Board board) {
 		logInf("starting a new round");
 		for (int i = 0; i < Team.teamSize; i++) {
 
@@ -75,7 +87,7 @@ public class Team {
 			
 			for (int p = 0; p < Team.teamSize; p++)
 				for (int q = 0; q < SimulationEngine.numOfColors; q++)
-					if (rnd1.nextDouble() < SimulationEngine.mutualAwareness
+					if (rnd1.nextDouble() < Team.mutualAwareness
 							|| p == i)
 						probActionCostMatrix[p][q] = 
 							actionCostsMatrix[p][q];
@@ -89,10 +101,10 @@ public class Team {
 
 		if (testRunCounter > 0) {  // For debugging purposes only; 
 			testRunCounter--;	   // indicates when the team should be done
-			return TeamStepCode.OK;
+			return TeamRoundCode.OK;
 		} else {
 			logInf(" is done!");
-			return TeamStepCode.DONE;
+			return TeamRoundCode.DONE;
 		}
 	}
 
@@ -101,7 +113,7 @@ public class Team {
 	 * To get the collective reward points of the team members
 	 * 
 	 * @return 						The amount of reward points that all the 
-	 * 								team's agents own
+	 * 								team's agents has earned
 	 */
 	public int teamRewardPoints() {
 		int sum = 0;

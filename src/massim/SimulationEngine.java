@@ -3,7 +3,7 @@ package massim;
 import java.util.Calendar;
 import java.util.Random;
 
-import massim.Team.TeamStepCode;
+import massim.Team.TeamRoundCode;
 
 /**
  * The main class of the simulator. 
@@ -22,8 +22,7 @@ public class SimulationEngine {
 	private int boardh = 10;
 	private int boardw = 10;
 
-	public static int disturbanceLevel;
-	public static int mutualAwareness;
+	public static double disturbanceLevel;	
 
 	private Team[] teams;
 	Board mainBoard;
@@ -31,13 +30,21 @@ public class SimulationEngine {
 	RowCol[] goals;
 	RowCol[] initAgentsPos;
 
-	private int simCounter;
+	private int roundCounter;
 	private int[][] teamsScores;
 	private int numOfRuns;
 
 	private boolean debuggingInf = true;
 	private boolean debuggingErr = true;
 
+	/**
+	 * SIMOK: The round executed without any problem and there is
+	 *        at least one active team.
+	 *        
+	 * SIMEND: All the teams are done.
+	 * 
+	 * SIMERR: There was a problem in the current round.
+	 */
 	public static enum SimRoundCode {
 		SIMOK, SIMEND, SIMERR
 	}
@@ -55,11 +62,13 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Initializes the simulation engine for a new experiment. Each experiment
-	 * consists of a number of runs. The final scores of the experiment would 
-	 * be the average of the scores over multiple runs
+	 * Initializes the simulation engine for a new experiment. 
 	 * 
-	 * @param numOfRuns				Number of desired runs for an identical 
+	 * Each experiment consists in a number of runs.
+	 * The final score of each team for each run will be stored in an 
+	 * array.
+	 * 
+	 * @param numOfRuns				Number of desired runs for current 
 	 * 								experiment setting.
 	 */
 	public void initializeExperiment(int numOfRuns) {
@@ -70,15 +79,16 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Initializes the simulation engine parameters for a new run. This 
-	 * includes a new board setting, new action costs matrix, and possibly 
-	 * new positions for initial agents' position and goals' position.
+	 * Prepares the simulation engine parameters for a new run. 
 	 * 
-	 * The method also invokes the Team.initializeRun() for each team.
+	 * This includes a new board setting, new action costs matrix, and
+	 * possibly new positions for initial agents' position and goals' position.
+	 * 
+	 * The method also invokes the Team.initializeRun() for all teams.
 	 */
 	public void initializeRun() {
 		logInf("--- The run initialized ---");
-		simCounter = 0;
+		roundCounter = 0;
 		mainBoard = Board.randomBoard(boardh, boardw);
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
 
@@ -104,18 +114,23 @@ public class SimulationEngine {
 	/**
 	 * Executes one round of the simulation.
 	 * 
+	 * Each round of the simulation consist in updating the board; executing
+	 * each team; and checking the current status of the simulation.
+	 * 
+	 * It is possible to implement error handling mechanisms for this method.
+	 * 
 	 * @return 				The proper simulation-round-code representing 
-	 * 						the status of the round.
+	 * 						the status of the round. 
 	 */
 	public SimRoundCode round() {
-		simCounter++;
-		logInf("Round #" + simCounter + " started ...");
+		roundCounter++;
+		logInf("Round #" + roundCounter + " started ...");
 
 		logInf("Chaning the board setting based on the disturbance level of "+
 				disturbanceLevel);
-		mainBoard.distrub(disturbanceLevel);
+		mainBoard.disturb(disturbanceLevel);
 
-		TeamStepCode[] tsc = new TeamStepCode[teams.length];
+		TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
 		for (int t = 0; t < teams.length; t++) {
 			tsc[t] = teams[t].round(mainBoard);
 			logInf(teams[t].getClass().getSimpleName()
@@ -124,7 +139,7 @@ public class SimulationEngine {
 
 		boolean allTeamsDone = true;
 		for (int t = 0; t < teams.length; t++) {
-			if (tsc[t] == TeamStepCode.OK) {
+			if (tsc[t] == TeamRoundCode.OK) {
 				allTeamsDone = false;
 				break;
 			}
@@ -137,12 +152,14 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Executes the simulator for one whole run. This consists in invoking the
-	 * round() method of the engine until it indicates that it is either done 
-	 * or there were a problem during the execution.
+	 * Executes the simulator for one whole run. 
 	 * 
-	 * @return 				The final return code of the round method, 
-	 * 						representing the return code of the run.
+	 * A run consists in invoking the round() until it indicates that it is 
+	 * either done or there was a problem during the execution.
+	 * 
+	 * @return 				The return code of the last round method
+	 * 						invocation,	representing the return code 
+	 * 						of the run.
 	 */
 	public SimRoundCode run() {
 		logInf("-- The run started --");
@@ -154,20 +171,21 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Executes the simulation for a whole experiment. The experiment consists
-	 * in multiple runs using the identical set of simulation parameters, but
-	 * with a new board and costs setting.
+	 * Executes the simulation for one whole experiment. 
 	 * 
-	 * @return 				The average score of each team collected in 
-	 * 						an array.
+	 * A experiment consists in multiple runs using the identical set 
+	 * of parameters, but with a new board and costs settings.
+	 * 
+	 * @return 				The score of each team averaged over multiple
+	 * 						runs.
 	 */
 	public int[] runExperiment() {
 		logInf("---- The experiment started ----");
-		for (int exp = 0; exp < numOfRuns; exp++) {
+		for (int r = 0; r < numOfRuns; r++) {
 			initializeRun();
 			run();
 			for (int t = 0; t < numOfTeams; t++) {
-				teamsScores[t][exp] = teams[t].teamRewardPoints();
+				teamsScores[t][r] = teams[t].teamRewardPoints();
 				logInf("Team " + teams[t].getClass().getSimpleName()
 						+ " scored " + teams[t].teamRewardPoints()
 						+ " for this run.");
@@ -183,7 +201,10 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Calculates the average of the given integer array
+	 * Calculates the average of the given integer array.
+	 * 
+	 * Note: it calculates the average using a double division then
+	 * rounding the result to the nearest integer.
 	 * 
 	 * @param numbers	    The array of integer numbers
 	 * @return 				The average of the input array
@@ -192,7 +213,7 @@ public class SimulationEngine {
 		int sum = 0;
 		for (int i = 0; i < numbers.length; i++)
 			sum += numbers[i];
-		return sum / numbers.length;
+		return (int) Math.round((double)sum / numbers.length);
 	}
 
 	/**
