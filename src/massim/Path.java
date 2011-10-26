@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class Path implements Comparable {
 
-	private ArrayList<RowCol> pathPoints = new ArrayList<RowCol>();
+	public ArrayList<RowCol> pathPoints = new ArrayList<RowCol>();
 	
 	public Path() {
 		

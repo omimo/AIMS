@@ -14,7 +14,7 @@ import massim.Team.TeamRoundCode;
  */
 public class SimulationEngine {
 
-	public static int[] colorRange = {1, 2, 3, 4, 5, 6};
+	public static int[] colorRange = {0, 1, 2, 3, 4, 5};
 	public static int[] actionCostsRange = 
 									 {10, 40, 70, 100, 300, 400, 450,  500};
 	public static int numOfColors = colorRange.length;
@@ -89,7 +89,7 @@ public class SimulationEngine {
 	public void initializeRun() {
 		logInf("--- The run initialized ---");
 		roundCounter = 0;
-		mainBoard = Board.randomBoard(boardh, boardw);
+		mainBoard = Board.randomBoard(boardh, boardw,SimulationEngine.colorRange);
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
 
 		goals = new RowCol[Team.teamSize];

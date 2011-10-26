@@ -85,12 +85,12 @@ public class Board {
 	 * 
 	 * @return 				The instance of the newly randomly generated board
 	 */
-	public static Board randomBoard(int rows, int cols) {
+	public static Board randomBoard(int rows, int cols,int[] colorRange) {
 		Board b = new Board(rows, cols);
 
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
-				b.mainBoard[i][j] = rndBoardGen.nextInt(6);
+				b.mainBoard[i][j] = colorRange[rndBoardGen.nextInt(colorRange.length)];
 		return b;
 	}
 

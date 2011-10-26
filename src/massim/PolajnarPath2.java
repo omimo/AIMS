@@ -63,6 +63,48 @@ public class PolajnarPath2 {
 		}
 	}
 
+	void fillBP_SW(int sr, int sc, int dr, int dc) {
+		
+		int n = Math.abs(dr-sr) + 1;
+		int m = Math.abs(dc-sc) + 1;			
+		
+		for (int d = 0; d < n + m - 1; d++) {
+			for (int i = sr; i <= sr+d; i++) {
+				int j = sc - d + (i-sr);
+				if (i <= dr && j >= dc) {					
+					if (i == sr) {
+						if (j == sc) {
+							BP[i][j].x = -1; // undefined
+							BP[i][j].y = -1; // undefined
+							BP[i][j].p = 0;
+						} else {
+							BP[i][j].x = i;
+							BP[i][j].y = j + 1;
+							BP[i][j].p = C[i][j] + BP[i][j + 1].p;
+						}
+					} else if (j == sc) {
+						BP[i][j].x = i - 1;
+						BP[i][j].y = j;
+						BP[i][j].p = C[i][j] + BP[i - 1][j].p;
+					} else {
+						int ph = BP[i - 1][j].p; // best path cost of the horizontal neighbor
+						int pv = BP[i][j + 1].p; // best path cost of the vertical neighbor
+
+						if (ph <= pv) {
+							BP[i][j].x = i - 1;
+							BP[i][j].y = j;
+							BP[i][j].p = C[i][j] + BP[i - 1][j].p;
+						} else {
+							BP[i][j].x = i;
+							BP[i][j].y = j + 1;
+							BP[i][j].p = C[i][j] + BP[i][j + 1].p;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	void fillBP_NW(int sr, int sc, int dr, int dc) {
 		
 		int n = Math.abs(dr-sr) + 1;
@@ -107,6 +149,48 @@ public class PolajnarPath2 {
 		}
 	}
 	
+	void fillBP_NE(int sr, int sc, int dr, int dc) {
+		
+		int n = Math.abs(dr-sr) + 1;
+		int m = Math.abs(dc-sc) + 1;			
+		
+		for (int d = 0; d < n + m - 1; d++) {
+			for (int i = sr; i >= sr-d; i--) {
+				int j = sc + d + (i-sr);				
+				if (i >= dr && j <= dc) {					
+					if (i == sr) {
+						if (j == sc) {
+							BP[i][j].x = -1; // undefined
+							BP[i][j].y = -1; // undefined
+							BP[i][j].p = 0;
+						} else {
+							BP[i][j].x = i;
+							BP[i][j].y = j - 1;
+							BP[i][j].p = C[i][j] + BP[i][j - 1].p;
+						}
+					} else if (j == sc) {
+						BP[i][j].x = i + 1;
+						BP[i][j].y = j;
+						BP[i][j].p = C[i][j] + BP[i + 1][j].p;
+					} else {
+						int ph = BP[i + 1][j].p; // best path cost of the horizontal neighbor
+						int pv = BP[i][j - 1].p; // best path cost of the vertical neighbor
+
+						if (ph <= pv) {
+							BP[i][j].x = i + 1;
+							BP[i][j].y = j;
+							BP[i][j].p = C[i][j] + BP[i + 1][j].p;
+						} else {
+							BP[i][j].x = i;
+							BP[i][j].y = j - 1;
+							BP[i][j].p = C[i][j] + BP[i][j - 1].p;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void fillPath(int sr, int sc, int dr, int dc) {
 		/* set the local n and m variables */
 		int n = Math.abs(dr-sr) + 1;
@@ -153,6 +237,8 @@ public class PolajnarPath2 {
 		{
 			case SE:fillBP_SE(source.row,source.col,destination.row,destination.col); break;
 			case NW:fillBP_NW(source.row,source.col,destination.row,destination.col); break;
+			case SW:fillBP_SW(source.row,source.col,destination.row,destination.col); break;
+			case NE:fillBP_NE(source.row,source.col,destination.row,destination.col); break;
 		}
 		
 		
@@ -178,7 +264,10 @@ public class PolajnarPath2 {
 			dir = DIRECTION.SE;
 		else if (dc-sc < 0 && dr-sr < 0 )
 			dir = DIRECTION.NW;
-		
+		else if (dc-sc <= 0 && dr-sr >= 0)
+			dir = DIRECTION.SW;
+		else if (dc-sc >= 0 && dr-sr <= 0)
+			dir = DIRECTION.NE;
 		return dir;		
 	}
 
