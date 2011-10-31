@@ -154,19 +154,12 @@ public class Path implements Comparable {
 	}
 	
 	public int totalPathCost(int[][] board, int[] actionCosts) {
-		int cost = 0;
-		int [] colorRange = Environment.colorRange;
+		int cost = 0;	
 		
 		for (RowCol p : pathPoints)
-		{		
-			int index = 0;
-			for (int i=0;i<colorRange.length;i++)
-			{
-				int color = board[p.row][p.col];
-				if (color == colorRange[i])
-					index = i;			
-			}
-			cost += actionCosts[index];
+		{							
+			int color = board[p.row][p.col];				
+			cost += actionCosts[color];
 		}
 		
 		return cost;
