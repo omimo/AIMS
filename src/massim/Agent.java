@@ -8,9 +8,15 @@ package massim;
  */
 public abstract class Agent {
 
-	protected static enum AGCODE {
-		DONE, AWAITINGRESPONSE
-	};
+	public static int cellReward;
+	
+	protected static enum agRoundCode {
+		READY, REACHED_GOAL, RESOURCE_BLOCKED, BLOCKED
+	}
+	
+	protected static enum agStateCode {
+		DONE, NEEDING_TO_SEND, NEEDING_TO_REC 
+	}
 
 	private int id;
 
@@ -41,14 +47,22 @@ public abstract class Agent {
 
 	}
 
-	protected void doSend() {
-		// nothing as default
+	protected agStateCode sendCycle() {
+		
+		return agStateCode.DONE;
 	}
 
-	protected void doReceive() {
-		// nothing as default
+	protected agStateCode receiveCycle() {
+
+		
+		return agStateCode.DONE;
 	}
 
+	protected agRoundCode finalizeRound() {
+		
+		return agRoundCode.READY;
+	}
+	
 	protected int id() {
 		return id;
 	}
@@ -100,8 +114,8 @@ public abstract class Agent {
 	 * @return The cost associated with the color of the given cell
 	 */
 	protected int getCellCost(RowCol cell) {
-		int index = theBoard.getBoard()[cell.row][cell.col];
-		return actionCosts()[index];
+		int color = theBoard.getBoard()[cell.row][cell.col];
+		return actionCosts()[color];
 	}
 
 	/**
@@ -116,8 +130,8 @@ public abstract class Agent {
 	 */
 	protected int getCellCost(RowCol cell, int[] actCost) {
 
-		int index = theBoard.getBoard()[cell.row][cell.col];
-		return actCost[index];
+		int color = theBoard.getBoard()[cell.row][cell.col];
+		return actCost[color];
 	}
 
 	/**
@@ -173,5 +187,18 @@ public abstract class Agent {
 	 */
 	protected Path path() {
 		return path;
+	}
+	
+	protected boolean move() {
+		
+		int cost = getCellCost(pos);
+		if (resourcePoints >= cost)
+		{
+			decResourcePoints(cost);
+			pos = path.getNextPoint(pos);		
+			return true;
+		}
+		else
+			return false;
 	}
 }
