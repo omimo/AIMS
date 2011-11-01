@@ -2,7 +2,22 @@ package massim;
 
 import massim.PolajnarPath.BPCell;
 
-
+/**
+ * Algorithm to find the lowest cost path among the shortest
+ * paths.
+ * 
+ * Version 1.0: Works only of the two ends of the path are the 
+ * on the diagonal corners of the board.
+ * 
+ * Version 2.0: works with any arbitrary points as the ending
+ * points for the path. This version first creates a sub-board
+ * with two ending points defining its diagonal corners.
+ * Then based on the direction of the path from starting point
+ * towards ending points, runs a specific version of the 
+ * algorithm.
+ *  
+ * 
+ */
 public class PolajnarPath2 {
 
 	
