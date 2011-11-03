@@ -2,6 +2,9 @@ package massim;
 
 import java.util.Random;
 
+import massim.Agent.agRoundCode;
+import massim.Agent.agStateCode;
+
 /**
  * Team.java
  * 
@@ -18,9 +21,12 @@ public class Team {
 	public static int initResCoef;
 	public static double mutualAwareness;
 	
+	private Agent[] agents;
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 
+	agRoundCode[] agentsStatus = new agRoundCode[Team.teamSize];
+	
 	private static Random rnd1 = new Random();
 
 	
@@ -45,6 +51,8 @@ public class Team {
 	public Team() {
 		id = nextID++;
 		commMedium = new CommMedium(Team.teamSize);
+		
+		actionCostsMatrix = new int[Team.teamSize][SimulationEngine.numOfColors];
 	}
 
 	/**
@@ -65,6 +73,9 @@ public class Team {
 		for (int i = 0; i < teamSize; i++)
 			for (int j = 0; j < SimulationEngine.numOfColors; j++)
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
+		
+		for (int i = 0; i < teamSize; i++)
+			agentsStatus[i] = agRoundCode.READY;
 	}
 
 	/**
@@ -79,9 +90,11 @@ public class Team {
 	 * 										the team's current state.
 	 */
 	public TeamRoundCode round(Board board) {
+		logInf("********");
 		logInf("starting a new round");
+		
+		/* Initialize round for agents */
 		for (int i = 0; i < Team.teamSize; i++) {
-
 			int[][] probActionCostMatrix = 
 				new int[Team.teamSize][SimulationEngine.numOfColors];
 			
@@ -96,16 +109,61 @@ public class Team {
 							SimulationEngine.actionCostsRange[
 							 rnd1.nextInt(
 									 SimulationEngine.actionCostsRange.length)];
-
+				
+			if (agentsStatus[i] != agRoundCode.BLOCKED)
+				agents[i].initializeRound(board, probActionCostMatrix);						
 		}
-
-		if (testRunCounter > 0) {  // For debugging purposes only; 
-			testRunCounter--;	   // indicates when the team should be done
-			return TeamRoundCode.OK;
-		} else {
-			logInf(" is done!");
+		
+		/* Communication Cycles */
+		boolean allDoneComm = false;
+		
+		while(!allDoneComm) {
+			
+			for (int i = 0; i < Team.teamSize; i++)
+			{
+				if (agentsStatus[i] != agRoundCode.BLOCKED)
+					agents[i].sendCycle();				
+			}
+			allDoneComm = true;
+			
+			for (int i = 0; i < Team.teamSize; i++)
+			{
+				agStateCode receiveCycleCode = agStateCode.DONE;
+				
+				if (agentsStatus[i] != agRoundCode.BLOCKED)
+					receiveCycleCode = agents[i].receiveCycle();
+				
+				if (receiveCycleCode != agStateCode.DONE)
+					allDoneComm = false;
+			}			
+		}
+		
+		/* Finalize the round for agents */
+		
+		boolean allDone = false;
+		for (int i = 0; i < Team.teamSize; i++)
+		{
+			
+		/* If the agent were blocked before, don't call it as it doesn't have
+		   enough resources to help itself nor its teammates.
+		   However, call those who has reached the goal, they may help others.
+		*/
+			allDone = true;
+			
+			if (agentsStatus[i] != agRoundCode.BLOCKED)
+				agentsStatus[i]  = agents[i].finalizeRound();
+			
+			if (agentsStatus[i] != agRoundCode.REACHED_GOAL && 
+					agentsStatus[i] != agRoundCode.BLOCKED)
+				allDone = false;
+		}
+		
+		commMedium.clear();
+		
+		if (allDone)
 			return TeamRoundCode.DONE;
-		}
+		else 
+			return TeamRoundCode.OK;
 	}
 
 	
@@ -123,8 +181,27 @@ public class Team {
 	}
 
 	/**
-	 * Prints the log message into the output if the information debugging level
-	 * is turned on (debuggingInf).
+	 * Enables access to the specified agent.
+	 * 
+	 * @param id					The id of the agent
+	 * @return						The instance of the agent
+	 */
+	protected Agent agent(int id) {
+		return agents[id];
+	}
+	
+	/**
+	 * Sets the agents of the team.
+	 * 
+	 * 
+	 * @param agents				The array of agents.
+	 */
+	protected void setAgents(Agent[] agents) {
+		this.agents = agents;
+	}
+	/**
+	 * Prints the log message into the output if the information 
+	 * debugging level is turned on (debuggingInf).
 	 * 
 	 * @param msg					The desired message to be printed
 	 */

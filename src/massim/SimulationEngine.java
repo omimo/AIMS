@@ -94,11 +94,11 @@ public class SimulationEngine {
 
 		goals = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			goals[i] = new RowCol(boardh - 1, boardw - 1);
+			goals[i] = randomPos(boardh, boardw);
 
 		initAgentsPos = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			initAgentsPos[i] = new RowCol(0, 0);
+			initAgentsPos[i] = randomPos(boardh, boardw);
 
 		Random rnd = new Random(Calendar.getInstance().getTimeInMillis());
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];
@@ -126,7 +126,7 @@ public class SimulationEngine {
 		roundCounter++;
 		logInf("Round #" + roundCounter + " started ...");
 
-		logInf("Chaning the board setting based on the disturbance level of "+
+		logInf("Changing the board setting based on the disturbance level of "+
 				disturbanceLevel);
 		mainBoard.disturb(disturbanceLevel);
 
@@ -236,5 +236,18 @@ public class SimulationEngine {
 	private void logErr(String msg) {
 		if (debuggingErr)
 			System.err.println("[SimulationEngine]: " + msg);
+	}
+	
+	/**
+	 * Generates a random position within the specified range
+	 * 
+	 * @param h					The height of the board
+	 * @param w					The width of the board
+	 * @return					The generated position
+	 */
+	private RowCol randomPos(int h, int w) {
+		Random rnd = new Random();
+		
+		return new RowCol(rnd.nextInt(h),rnd.nextInt(w));
 	}
 }
