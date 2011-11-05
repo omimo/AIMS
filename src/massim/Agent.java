@@ -17,6 +17,10 @@ public abstract class Agent {
 	protected static enum agStateCode {
 		DONE, NEEDING_TO_SEND, NEEDING_TO_REC 
 	}
+	
+	protected static enum actionType {
+		OWN, HELP_ANOTHER, HAS_HELP, SKIP, FORFEIT  
+	}
 
 	private int id;
 
@@ -29,6 +33,7 @@ public abstract class Agent {
 	private RowCol goalPos;
 	private Board theBoard;
 
+	private actionType thisRoundAction = actionType.SKIP;
 	
 	/**
 	 * The constructor.
@@ -59,6 +64,12 @@ public abstract class Agent {
 	 */
 	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
 			int[] actionCosts, int initResourcePoints) {
+		
+		goalPos = null;
+		pos = null;
+		theBoard = null;
+		path = null;
+		
 		this.pos = initialPosition;
 		this.goalPos = goalPosition;
 		
@@ -133,11 +144,9 @@ public abstract class Agent {
 	 * 
 	 * @return							The reward points
 	 */
-	public int rewardPoints() {
-		
-		//TODO: Calc the reward points
-		
-		return 0;
+	public int rewardPoints() {		
+	
+		return path.getIndexOf(pos) * cellReward;
 	}
 
 	/**
@@ -164,7 +173,10 @@ public abstract class Agent {
 	 * @param amount					The amounts to be subtracted
 	 */
 	protected void decResourcePoints(int amount) {
-		resourcePoints -= amount;
+		if (resourcePoints - amount < 0)
+			System.err.println("ERROR: decreasing too much resource points!");
+		else
+			resourcePoints -= amount;
 	}
 
 	/**
@@ -176,6 +188,15 @@ public abstract class Agent {
 		return pos;
 	}
 
+	/**
+	 * Sets the position of the agent
+	 * 
+	 * @param newPos					The new position
+	 */
+	protected void setPos(RowCol newPos) {
+		pos = newPos;
+	}
+	
 	/**
 	 * Enables the agent to access its goal position.
 	 * 
@@ -277,28 +298,87 @@ public abstract class Agent {
 		return path;
 	}
 	
+
+	
 	/**
-	 * Agent's move action.
+	 * Sets the type of the action that is going to be performed
+	 * in this round.
 	 * 
-	 * Moves the agent to the next position if possible
-	 * 
-	 * TODO: Needs to be extended to perform help.
-	 * 
-	 * @return
+	 * @param a						The action type
 	 */
-	protected boolean move() {
+	protected void setRoundAction(actionType a) {
+		thisRoundAction = a;
+	}
+	
+	/**
+	 * Enables the agent to get the action type for current round.
+	 * 
+	 * @return						The action type
+	 */
+	protected actionType getRoundAction() {
+		return thisRoundAction;
+	}
+	
+	/**
+	 * Enables the agent to perform its own action. 
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	protected boolean doOwnAction() {
 		
-		if (pos.equals(path.getNextPoint(pos)))
-			return false;
+		return true;
+	}
+	
+	/**
+	 * Enables the agent to perform an action on behalf of another 
+	 * agent (Help). 
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	protected boolean doHelpAnother() {
 		
-		int cost = getCellCost(pos);
-		if (resourcePoints >= cost)
-		{
-			decResourcePoints(cost);
-			pos = path.getNextPoint(pos);		
-			return true;
+		return true;
+	}
+	
+	/**
+	 * Enables the agent do any bookkeeping while receiving help.
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	protected boolean doGetHelpAction() {
+		
+		return true;
+	}
+	
+	
+	protected boolean act() {
+	
+		boolean result = false;
+		
+		switch (thisRoundAction) {
+		case OWN:
+			result = doOwnAction();
+			break;
+		case HAS_HELP:
+			result = doGetHelpAction();
+			break;
+		case HELP_ANOTHER:
+			result = doHelpAnother();
+			break;
+		case SKIP:
+			result = true;
+			break;
+		case FORFEIT:		
+			result = false;
+			break;
 		}
-		else
-			return false;
+		
+		return result;
 	}
 }

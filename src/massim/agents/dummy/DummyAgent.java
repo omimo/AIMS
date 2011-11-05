@@ -1,5 +1,7 @@
 package massim.agents.dummy;
 
+import java.util.Random;
+
 import massim.Agent;
 import massim.Board;
 import massim.RowCol;
@@ -7,12 +9,12 @@ import massim.RowCol;
 public class DummyAgent extends Agent {
 	
 	private boolean debuggingInf = true;
-	private int dbgSendCount = 1;
-	private int dbgRecCount = 1;
 	
-	private boolean doMove=false;
+	private int procrastinateCount;
+	private int procrastinateLevel;
+	
 
-	enum DummyStates {S_INIT, S_SEND, R_REC, R_MOVE, S_MOVE};
+	enum DummyStates {S_INIT, S_PROC, R_PROC, R_MOVE, R_BLOCKED};
 	
 	DummyStates state;
 	
@@ -75,7 +77,12 @@ public class DummyAgent extends Agent {
 		}
 		
 		state = DummyStates.S_INIT;
-		logInf("Set the current state to +"+state.toString());
+		logInf("Set the inital state to +"+state.toString());
+		
+		setRoundAction(actionType.SKIP);
+		
+		procrastinateLevel = (new Random()).nextInt(4);
+		procrastinateCount = 0;
 	}
 	
 	/**
@@ -86,25 +93,32 @@ public class DummyAgent extends Agent {
 	 */
 	@Override
 	protected agStateCode sendCycle() {
-		
-		logInf("Send Cycle #"+dbgSendCount);		
-		dbgSendCount++;
+		agStateCode returnCode = agStateCode.DONE;
+		logInf("Send Cycle");		
 		
 		switch (state) {
-		case S_INIT:
-		case S_SEND:
-			state = DummyStates.R_REC;
-			logInf("In S_INIT/S_SEND state");
-			logInf("Set the current state to +"+state.toString());
-			break;					
-		case S_MOVE:
-			state = DummyStates.R_MOVE;
-			logInf("In S_MOVE state");
-			logInf("Set the current state to +"+state.toString());
-			break;					
+		case S_INIT:			
+			RowCol nextCell = path().getNextPoint(pos());
+			int cost = getCellCost(nextCell);
+			if (cost  <= resourcePoints())
+				setState(DummyStates.R_PROC);
+			else
+				setState(DummyStates.R_BLOCKED);			
+			returnCode = agStateCode.NEEDING_TO_REC;
+			break;
+		case S_PROC:
+			procrastinateCount++;
+			if (procrastinateCount > procrastinateLevel)
+				setState(DummyStates.R_MOVE);
+			else
+				setState(DummyStates.R_PROC);
+			returnCode = agStateCode.NEEDING_TO_REC;
+			break;			
+		default:
+			logErr("Undefined state: " + state.toString());
 		}
 		
-		return agStateCode.DONE;
+		return returnCode;
 	}
 
 	/**
@@ -118,34 +132,24 @@ public class DummyAgent extends Agent {
 	protected agStateCode receiveCycle() {
 		agStateCode returnCode = agStateCode.DONE;
 		
-		logInf("Receive Cycle #"+dbgRecCount);		
-		dbgRecCount++;
+		logInf("Receive Cycle");		
 		
 		switch (state) {
-		case R_REC:
-			logInf("In R_REC state");
-			if (dbgRecCount>3)
-				{
-					state = DummyStates.S_MOVE;
-					logInf("Set the current state to +"+state.toString());
-					returnCode = agStateCode.NEEDING_TO_SEND;
-				}
-			else
-				{
-					state = DummyStates.S_SEND;
-					logInf("Set the current state to +"+state.toString());
-					returnCode = agStateCode.NEEDING_TO_SEND;
-				}
-			
-			break;
-			
-		case R_MOVE:
-			logInf("In R_MOVE state (final)");
-			doMove = true;
-			dbgRecCount = 1;
-			dbgSendCount = 1;
-			returnCode = agStateCode.DONE;
+		case R_PROC:
+			setState(DummyStates.S_PROC);
+			returnCode = agStateCode.NEEDING_TO_SEND;
 			break;			
+		case R_MOVE:	
+			logInf("Setting current action to do my own move");
+			setRoundAction(actionType.OWN);			
+			returnCode = agStateCode.DONE;
+			break;	
+		case R_BLOCKED:
+			setRoundAction(actionType.FORFEIT);
+			returnCode = agStateCode.DONE;
+			break;
+		default:	
+			logErr("Undefined state: " + state.toString());
 		}
 		
 		return returnCode;
@@ -163,7 +167,6 @@ public class DummyAgent extends Agent {
 	protected agRoundCode finalizeRound() {
 		
 		logInf("Finalizing the round ...");
-		RowCol oldPos = new RowCol(pos());
 		
 		if (pos().equals(goalPos()))
 		{
@@ -172,30 +175,20 @@ public class DummyAgent extends Agent {
 		}
 		else
 		{
-			if (doMove)
-			{				
-				if(move())
-					logInf("Moved from "+oldPos +" to "+ pos());
-				else
-				{
-					logInf("Falied to Moved from "+oldPos +" to "+ 
-							path().getNextPoint(oldPos));
-					return agRoundCode.BLOCKED;
-				}
-			}
+			if (act())
+				return agRoundCode.READY;
 			else
-				logInf("Staying at "+ pos());
-			
-			return agRoundCode.READY;
-		}
-		
-		
+				{
+					logInf("Blocked!");
+					return agRoundCode.BLOCKED;			
+				}
+		}					
 	}
 	
 	
 	/**
-	 * Prints the log message into the output if the information debugging level
-	 * is turned on (debuggingInf).
+	 * Prints the log message into the output if the information debugging 
+	 * level is turned on (debuggingInf).
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
@@ -203,5 +196,66 @@ public class DummyAgent extends Agent {
 		if (debuggingInf)
 			System.out.println("[DummyAgent " + id() + "]: " + msg);
 	}
+	
+	/**
+	 * Prints the log message into the output if the  debugging level
+	 * is turned on (debuggingInf).
+	 * 
+	 * @param msg					The desired message to be printed
+	 */
+	private void logErr(String msg) {
+		if (debuggingInf)
+			System.out.println("[xxxxxxxxxxx][DummyAgent " + id() + 
+							   "]: " + msg);
+	}
+	
+	/**
+	 * Changes the current state of the agents state machine.
+	 * 
+	 * @param newState				The new state
+	 */
+	private void setState(DummyStates newState) {
+		logInf("In "+ state.toString() +" state");
+		state = newState;
+		logInf("Set the state to +"+state.toString());
+	}
 
+	/**
+	 * Agent's move action.
+	 * 
+	 * Moves the agent to the next position if possible
+	 * 
+	 * TODO: Needs to be extended to perform help.
+	 * 
+	 * @return
+	 */
+	private boolean move() {
+		
+		RowCol nextCell = path().getNextPoint(pos());
+		if (pos().equals(nextCell))
+		{
+			logInf("Can not move from "+pos() +" to itself!"); 			
+			return false;
+		}
+		else
+		{
+			logInf("Moved from "+pos() +" to "+ nextCell);
+			
+			int cost = getCellCost(nextCell);
+			decResourcePoints(cost);
+			setPos(nextCell);				
+			return true;
+		}
+	}
+	
+	/**
+	 * The DummyAgent performs its own action (move) here.
+	 * 
+	 * @return					The same as what move() returns.
+	 */
+	@Override
+	protected boolean doOwnAction() {
+		return move();		
+	}
+	
 }

@@ -46,7 +46,7 @@ public class TeamAgentTester {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
-			Team.initResCoef = 200;			
+			Team.initResCoef = 80;			
 			Agent.cellReward = 50;
 			
 			/* vary the disturbance: */

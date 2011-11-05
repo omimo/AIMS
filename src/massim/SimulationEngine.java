@@ -25,10 +25,10 @@ public class SimulationEngine {
 	public static double disturbanceLevel;	
 
 	private Team[] teams;
-	Board mainBoard;
-	int[][] actionCostsMatrix;
-	RowCol[] goals;
-	RowCol[] initAgentsPos;
+	private Board mainBoard;
+	private int[][] actionCostsMatrix;
+	private RowCol[] goals;
+	private RowCol[] initAgentsPos;
 
 	private int roundCounter;
 	private int[][] teamsScores;
@@ -89,7 +89,9 @@ public class SimulationEngine {
 	public void initializeRun() {
 		logInf("--- The run initialized ---");
 		roundCounter = 0;
-		mainBoard = Board.randomBoard(boardh, boardw,SimulationEngine.colorRange);
+		mainBoard = Board.randomBoard
+					(boardh, boardw,SimulationEngine.colorRange);
+		
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
 
 		goals = new RowCol[Team.teamSize];

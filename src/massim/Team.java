@@ -25,8 +25,8 @@ public class Team {
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 
-	agRoundCode[] agentsStatus = new agRoundCode[Team.teamSize];
-	
+	agRoundCode[] agentsGameStatus = new agRoundCode[Team.teamSize];
+	agStateCode[] agentsCommStatus = new agStateCode[Team.teamSize];
 	private static Random rnd1 = new Random();
 
 	
@@ -75,7 +75,7 @@ public class Team {
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-			agentsStatus[i] = agRoundCode.READY;
+			agentsGameStatus[i] = agRoundCode.READY;
 	}
 
 	/**
@@ -110,37 +110,42 @@ public class Team {
 							 rnd1.nextInt(
 									 SimulationEngine.actionCostsRange.length)];
 				
-			if (agentsStatus[i] != agRoundCode.BLOCKED)
-				agents[i].initializeRound(board, probActionCostMatrix);						
+			if (agentsGameStatus[i] != agRoundCode.BLOCKED)
+				agents[i].initializeRound(board, probActionCostMatrix);
+			
+			agentsCommStatus[i] = agStateCode.NEEDING_TO_SEND;
 		}
 		
 		/* Communication Cycles */
 		boolean allDoneComm = false;
-		
+		logInf("");
 		while(!allDoneComm) {
 			
 			for (int i = 0; i < Team.teamSize; i++)
 			{
-				if (agentsStatus[i] != agRoundCode.BLOCKED)
+				/* TODO: Double check the need of first condition */
+				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&  
+						agentsCommStatus[i] != agStateCode.DONE)
 					agents[i].sendCycle();				
 			}
 			allDoneComm = true;
 			
 			for (int i = 0; i < Team.teamSize; i++)
-			{
-				agStateCode receiveCycleCode = agStateCode.DONE;
+			{							
+				/* TODO: Double check the need of first condition */
+				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&   
+						agentsCommStatus[i] != agStateCode.DONE)
+					agentsCommStatus[i] = agents[i].receiveCycle();
 				
-				if (agentsStatus[i] != agRoundCode.BLOCKED)
-					receiveCycleCode = agents[i].receiveCycle();
-				
-				if (receiveCycleCode != agStateCode.DONE)
+				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&
+					agentsCommStatus[i] != agStateCode.DONE)
 					allDoneComm = false;
 			}			
 		}
 		
 		/* Finalize the round for agents */
 		
-		boolean allDone = false;
+		boolean allDone = true;
 		for (int i = 0; i < Team.teamSize; i++)
 		{
 			
@@ -148,13 +153,12 @@ public class Team {
 		   enough resources to help itself nor its teammates.
 		   However, call those who has reached the goal, they may help others.
 		*/
-			allDone = true;
+	
+			if (agentsGameStatus[i] != agRoundCode.BLOCKED)
+				agentsGameStatus[i]  = agents[i].finalizeRound();
 			
-			if (agentsStatus[i] != agRoundCode.BLOCKED)
-				agentsStatus[i]  = agents[i].finalizeRound();
-			
-			if (agentsStatus[i] != agRoundCode.REACHED_GOAL && 
-					agentsStatus[i] != agRoundCode.BLOCKED)
+			if (agentsGameStatus[i] != agRoundCode.REACHED_GOAL && 
+					agentsGameStatus[i] != agRoundCode.BLOCKED)
 				allDone = false;
 		}
 		
@@ -175,8 +179,8 @@ public class Team {
 	 */
 	public int teamRewardPoints() {
 		int sum = 0;
-		// for (Agent a: agents)
-		// sum += a.rewardPoints();
+		for (Agent a: agents)
+		   sum += a.rewardPoints();
 		return sum;
 	}
 
