@@ -99,6 +99,7 @@ public class Path implements Comparable {
 		return tail;
 	}
 	
+	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		

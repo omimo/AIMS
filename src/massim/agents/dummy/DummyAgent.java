@@ -92,8 +92,8 @@ public class DummyAgent extends Agent {
 	 * 
 	 */
 	@Override
-	protected agStateCode sendCycle() {
-		agStateCode returnCode = agStateCode.DONE;
+	protected AgCommStatCode sendCycle() {
+		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");		
 		
 		switch (state) {
@@ -104,7 +104,7 @@ public class DummyAgent extends Agent {
 				setState(DummyStates.R_PROC);
 			else
 				setState(DummyStates.R_BLOCKED);			
-			returnCode = agStateCode.NEEDING_TO_REC;
+			returnCode = AgCommStatCode.NEEDING_TO_REC;
 			break;
 		case S_PROC:
 			procrastinateCount++;
@@ -112,7 +112,7 @@ public class DummyAgent extends Agent {
 				setState(DummyStates.R_MOVE);
 			else
 				setState(DummyStates.R_PROC);
-			returnCode = agStateCode.NEEDING_TO_REC;
+			returnCode = AgCommStatCode.NEEDING_TO_REC;
 			break;			
 		default:
 			logErr("Undefined state: " + state.toString());
@@ -129,24 +129,24 @@ public class DummyAgent extends Agent {
 	 * 
 	 */
 	@Override
-	protected agStateCode receiveCycle() {
-		agStateCode returnCode = agStateCode.DONE;
+	protected AgCommStatCode receiveCycle() {
+		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		
 		logInf("Receive Cycle");		
 		
 		switch (state) {
 		case R_PROC:
 			setState(DummyStates.S_PROC);
-			returnCode = agStateCode.NEEDING_TO_SEND;
+			returnCode = AgCommStatCode.NEEDING_TO_SEND;
 			break;			
 		case R_MOVE:	
 			logInf("Setting current action to do my own move");
 			setRoundAction(actionType.OWN);			
-			returnCode = agStateCode.DONE;
+			returnCode = AgCommStatCode.DONE;
 			break;	
 		case R_BLOCKED:
 			setRoundAction(actionType.FORFEIT);
-			returnCode = agStateCode.DONE;
+			returnCode = AgCommStatCode.DONE;
 			break;
 		default:	
 			logErr("Undefined state: " + state.toString());
@@ -164,23 +164,23 @@ public class DummyAgent extends Agent {
 	 * @return 						Returns the current state 
 	 */
 	@Override
-	protected agRoundCode finalizeRound() {
+	protected AgGameStatCode finalizeRound() {
 		
 		logInf("Finalizing the round ...");
 		
 		if (pos().equals(goalPos()))
 		{
 			logInf("Reached the goal");
-			return agRoundCode.REACHED_GOAL;
+			return AgGameStatCode.REACHED_GOAL;
 		}
 		else
 		{
 			if (act())
-				return agRoundCode.READY;
-			else
+				return AgGameStatCode.READY;
+			else  /*TODO: The logic here should be changed!*/
 				{
 					logInf("Blocked!");
-					return agRoundCode.BLOCKED;			
+					return AgGameStatCode.BLOCKED;			
 				}
 		}					
 	}

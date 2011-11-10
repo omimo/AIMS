@@ -28,6 +28,20 @@ public class Board {
 		mainBoard = new int[rows][cols];
 	}
 
+	/**
+	 * The copy constructor.
+	 * 
+	 * @param initBoard		The board to be copied.
+	 */
+	public Board(Board initBoard) {
+		rows = initBoard.rows;
+		cols = initBoard.cols;
+		this.mainBoard = new int[rows][cols];
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				this.mainBoard[i][j] = initBoard.mainBoard[i][j];		
+	}
 	
 	/**
 	 * Returns the number of rows of the board

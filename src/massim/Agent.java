@@ -9,12 +9,13 @@ package massim;
 public abstract class Agent {
 
 	public static int cellReward;
+	public static int achievementReward;
 	
-	protected static enum agRoundCode {
+	protected static enum AgGameStatCode {
 		READY, REACHED_GOAL, RESOURCE_BLOCKED, BLOCKED
 	}
 	
-	protected static enum agStateCode {
+	protected static enum AgCommStatCode {
 		DONE, NEEDING_TO_SEND, NEEDING_TO_REC 
 	}
 	
@@ -101,9 +102,9 @@ public abstract class Agent {
 	 * 
 	 * @return							The current state of the agent 
 	 */
-	protected agStateCode sendCycle() {
+	protected AgCommStatCode sendCycle() {
 		
-		return agStateCode.DONE;
+		return AgCommStatCode.DONE;
 	}
 
 	/**
@@ -112,10 +113,10 @@ public abstract class Agent {
 	 * 
 	 * @return							The current state of the agent 
 	 */
-	protected agStateCode receiveCycle() {
+	protected AgCommStatCode receiveCycle() {
 
 		
-		return agStateCode.DONE;
+		return AgCommStatCode.DONE;
 	}
 
 	/**
@@ -125,9 +126,9 @@ public abstract class Agent {
 	 * @return							The status of the agent after 
 	 * 									this round
 	 */
-	protected agRoundCode finalizeRound() {
+	protected AgGameStatCode finalizeRound() {
 		
-		return agRoundCode.READY;
+		return AgGameStatCode.READY;
 	}
 	
 	/**
@@ -141,14 +142,44 @@ public abstract class Agent {
 
 	/**
 	 * Returns the amount reward points that the agent has earned.
-	 * 
+	 *  
+	 * This uses the Agent.calcRewardPoints() to get the reward 
+	 * points.
+	 *  
 	 * @return							The reward points
 	 */
 	public int rewardPoints() {		
 	
-		return path.getIndexOf(pos) * cellReward;
+		return calcRewardPoints(resourcePoints,pos);
 	}
 
+	/**
+	 * Calculates the agent's reward points based on the given 
+	 * resources and position.
+	 * 
+	 * If the agent has reached the goal, then it will be rewarded
+	 * the amount specified by 'achievementReward' plus the amount
+	 * of resource points it has left.
+	 * 
+	 * If the agent has not reached the goal, it will be rewarded
+	 * the amount specified by 'cellReward' for each cell it has
+	 * passed.
+	 * 
+	 * @param resources					The resource points left
+	 * @param position					The position on the path
+	 * @return							The award points
+	 */
+	protected int calcRewardPoints(int resources, RowCol position) {
+		if (position.equals(path.getEndPoint()))
+			return Agent.achievementReward + resourcePoints;
+		else
+			return (path.getIndexOf(position)) * cellReward;
+			/* uses the index of position, starting from 0;
+		     * as if the agent has not moved at all, there should
+		     * be no reward points 
+		     */
+	}
+	
 	/**
 	 * Returns the amount of resource points that the agent has earned.
 	 * 

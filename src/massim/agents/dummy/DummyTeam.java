@@ -44,8 +44,8 @@ public class DummyTeam extends Team {
 		{
 			int pathLength = calcDistance(initAgentsPos[i], goals[i]);
 			
-			agent(i).initializeRun(initAgentsPos[i], goals[i], actionCostsMatrix[i],
-					pathLength * initResCoef);
+			agent(i).initializeRun(initAgentsPos[i], goals[i], 
+					actionCostsMatrix[i], pathLength * initResCoef);
 		}
 	}
 	

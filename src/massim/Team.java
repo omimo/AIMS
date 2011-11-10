@@ -2,8 +2,8 @@ package massim;
 
 import java.util.Random;
 
-import massim.Agent.agRoundCode;
-import massim.Agent.agStateCode;
+import massim.Agent.AgGameStatCode;
+import massim.Agent.AgCommStatCode;
 
 /**
  * Team.java
@@ -25,8 +25,8 @@ public class Team {
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 
-	agRoundCode[] agentsGameStatus = new agRoundCode[Team.teamSize];
-	agStateCode[] agentsCommStatus = new agStateCode[Team.teamSize];
+	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[Team.teamSize];
+	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
 	private static Random rnd1 = new Random();
 
 	
@@ -34,7 +34,7 @@ public class Team {
 	 * OK: The round executed without any problem and there is
 	 *      at least one active agent.
 	 *        
-	 * MEND: All the agents are done.
+	 * DONE: All the agents are done.
 	 * 
 	 * ERR: There was a problem in the current round.
 	 */
@@ -52,7 +52,8 @@ public class Team {
 		id = nextID++;
 		commMedium = new CommMedium(Team.teamSize);
 		
-		actionCostsMatrix = new int[Team.teamSize][SimulationEngine.numOfColors];
+		actionCostsMatrix = 
+			new int[Team.teamSize][SimulationEngine.numOfColors];
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class Team {
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-			agentsGameStatus[i] = agRoundCode.READY;
+			agentsGameStatus[i] = AgGameStatCode.READY;
 	}
 
 	/**
@@ -110,10 +111,10 @@ public class Team {
 							 rnd1.nextInt(
 									 SimulationEngine.actionCostsRange.length)];
 				
-			if (agentsGameStatus[i] != agRoundCode.BLOCKED)
+			if (agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				agents[i].initializeRound(board, probActionCostMatrix);
 			
-			agentsCommStatus[i] = agStateCode.NEEDING_TO_SEND;
+			agentsCommStatus[i] = AgCommStatCode.NEEDING_TO_SEND;
 		}
 		
 		/* Communication Cycles */
@@ -124,8 +125,8 @@ public class Team {
 			for (int i = 0; i < Team.teamSize; i++)
 			{
 				/* TODO: Double check the need of first condition */
-				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&  
-						agentsCommStatus[i] != agStateCode.DONE)
+				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&  
+						agentsCommStatus[i] != AgCommStatCode.DONE)
 					agents[i].sendCycle();				
 			}
 			allDoneComm = true;
@@ -133,12 +134,12 @@ public class Team {
 			for (int i = 0; i < Team.teamSize; i++)
 			{							
 				/* TODO: Double check the need of first condition */
-				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&   
-						agentsCommStatus[i] != agStateCode.DONE)
+				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&   
+						agentsCommStatus[i] != AgCommStatCode.DONE)
 					agentsCommStatus[i] = agents[i].receiveCycle();
 				
-				if (agentsGameStatus[i] != agRoundCode.BLOCKED &&
-					agentsCommStatus[i] != agStateCode.DONE)
+				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&
+					agentsCommStatus[i] != AgCommStatCode.DONE)
 					allDoneComm = false;
 			}			
 		}
@@ -154,11 +155,11 @@ public class Team {
 		   However, call those who has reached the goal, they may help others.
 		*/
 	
-			if (agentsGameStatus[i] != agRoundCode.BLOCKED)
+			if (agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				agentsGameStatus[i]  = agents[i].finalizeRound();
 			
-			if (agentsGameStatus[i] != agRoundCode.REACHED_GOAL && 
-					agentsGameStatus[i] != agRoundCode.BLOCKED)
+			if (agentsGameStatus[i] != AgGameStatCode.REACHED_GOAL && 
+					agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				allDone = false;
 		}
 		

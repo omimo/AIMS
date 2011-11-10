@@ -93,7 +93,7 @@ public class SimulationEngine {
 					(boardh, boardw,SimulationEngine.colorRange);
 		
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
-
+		
 		goals = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
 			goals[i] = randomPos(boardh, boardw);
