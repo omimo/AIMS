@@ -34,7 +34,7 @@ public class SimulationEngine {
 	private int[][] teamsScores;
 	private int numOfRuns;
 
-	private boolean debuggingInf = true;
+	private boolean debuggingInf = false;
 	private boolean debuggingErr = true;
 
 	/**
@@ -96,11 +96,13 @@ public class SimulationEngine {
 		
 		goals = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			goals[i] = randomPos(boardh, boardw);
+			goals[i] = new RowCol(boardh-1, boardw-1);
+				//randomPos(boardh, boardw);
 
 		initAgentsPos = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			initAgentsPos[i] = randomPos(boardh, boardw);
+			initAgentsPos[i] =new RowCol(0, 0); 
+				//randomPos(boardh, boardw);
 
 		Random rnd = new Random(Calendar.getInstance().getTimeInMillis());
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];

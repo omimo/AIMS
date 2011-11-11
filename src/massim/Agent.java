@@ -83,6 +83,7 @@ public abstract class Agent {
 		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
 				actionCosts.length);
 		
+		resourcePoints = 0;
 		incResourcePoints(initResourcePoints);
 	}
 
@@ -210,7 +211,7 @@ public abstract class Agent {
 	 */
 	protected void decResourcePoints(int amount) {
 		if (resourcePoints - amount < 0)
-			System.err.println("ERROR: decreasing too much resource points!");
+			System.err.println("["+this.getClass().getSimpleName()+id+"]ERROR: decreasing too much resource points!");
 		else
 			resourcePoints -= amount;
 	}

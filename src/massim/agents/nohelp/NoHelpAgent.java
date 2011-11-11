@@ -1,30 +1,31 @@
-package massim.agents.dummy;
-
-import java.util.Random;
+package massim.agents.nohelp;
 
 import massim.Agent;
 import massim.Board;
 import massim.CommMedium;
 import massim.RowCol;
 
-public class DummyAgent extends Agent {
+/**
+ * The NO-HELP Agent Implementation
+ * 
+ * @author Omid Alemi
+ * @version 2.0  2011/11/11
+ */
+public class NoHelpAgent extends Agent {
 	
-	private boolean debuggingInf = false;
-	
-	private int procrastinateCount;
-	private int procrastinateLevel;
-	
+	private boolean dbgInf = false;
+	private boolean dbgErr = true;
 
-	enum DummyStates {S_INIT, S_PROC, R_PROC, R_MOVE, R_BLOCKED};
+	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED};
 	
-	DummyStates state;
+	NoHelpAgentStates state;
 	
 	/**
 	 * The constructor
 	 * 
 	 * @param id			The given id of the agent
 	 */
-	public DummyAgent(int id, CommMedium comMed) {
+	public NoHelpAgent(int id, CommMedium comMed) {
 		super(id, comMed);
 	}
 	
@@ -77,19 +78,14 @@ public class DummyAgent extends Agent {
 			logInf("Chose this path: "+ path().toString());
 		}
 		
-		state = DummyStates.S_INIT;
+		state = NoHelpAgentStates.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
-		
-		procrastinateLevel = 0; //(new Random()).nextInt(4);
-		procrastinateCount = 0;
 	}
 	
 	/**
-	 * A dummy send cycle method.
-	 * 
-	 * Will alternate between send and receive states.
+	 * The send cycle method.
 	 * 
 	 */
 	@Override
@@ -102,19 +98,11 @@ public class DummyAgent extends Agent {
 			RowCol nextCell = path().getNextPoint(pos());
 			int cost = getCellCost(nextCell);
 			if (cost  <= resourcePoints())
-				setState(DummyStates.R_PROC);
+				setState(NoHelpAgentStates.R_MOVE);
 			else
-				setState(DummyStates.R_BLOCKED);			
+				setState(NoHelpAgentStates.R_BLOCKED);			
 			returnCode = AgCommStatCode.NEEDING_TO_REC;
-			break;
-		case S_PROC:
-			procrastinateCount++;
-			if (procrastinateCount > procrastinateLevel)
-				setState(DummyStates.R_MOVE);
-			else
-				setState(DummyStates.R_PROC);
-			returnCode = AgCommStatCode.NEEDING_TO_REC;
-			break;			
+			break;		
 		default:
 			logErr("Undefined state: " + state.toString());
 		}
@@ -123,10 +111,7 @@ public class DummyAgent extends Agent {
 	}
 
 	/**
-	 * A dummy receive cycle method.
-	 * 
-	 * Will alternate between send and receive cycles for 3 times.
-	 * Then will transit to a final state.
+	 * The receive cycle method.
 	 * 
 	 */
 	@Override
@@ -135,11 +120,7 @@ public class DummyAgent extends Agent {
 		
 		logInf("Receive Cycle");		
 		
-		switch (state) {
-		case R_PROC:
-			setState(DummyStates.S_PROC);
-			returnCode = AgCommStatCode.NEEDING_TO_SEND;
-			break;			
+		switch (state) {		
 		case R_MOVE:	
 			logInf("Setting current action to do my own move");
 			setRoundAction(actionType.OWN);			
@@ -194,8 +175,8 @@ public class DummyAgent extends Agent {
 	 * @param msg					The desired message to be printed
 	 */
 	private void logInf(String msg) {
-		if (debuggingInf)
-			System.out.println("[DummyAgent " + id() + "]: " + msg);
+		if (dbgInf)
+			System.out.println("[NoHelpAgent " + id() + "]: " + msg);
 	}
 	
 	/**
@@ -205,8 +186,8 @@ public class DummyAgent extends Agent {
 	 * @param msg					The desired message to be printed
 	 */
 	private void logErr(String msg) {
-		if (debuggingInf)
-			System.err.println("[xx][DummyAgent " + id() + 
+		if (dbgErr)
+			System.err.println("[xx][NoHelpAgent " + id() + 
 							   "]: " + msg);
 	}
 	
@@ -215,7 +196,7 @@ public class DummyAgent extends Agent {
 	 * 
 	 * @param newState				The new state
 	 */
-	private void setState(DummyStates newState) {
+	private void setState(NoHelpAgentStates newState) {
 		logInf("In "+ state.toString() +" state");
 		state = newState;
 		logInf("Set the state to +"+state.toString());
@@ -250,7 +231,7 @@ public class DummyAgent extends Agent {
 	}
 	
 	/**
-	 * The DummyAgent performs its own action (move) here.
+	 * The agent performs its own action (move) here.
 	 * 
 	 * @return					The same as what move() returns.
 	 */

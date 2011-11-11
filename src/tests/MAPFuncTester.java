@@ -8,6 +8,8 @@ public class MAPFuncTester {
 	static Path path;
 	static RowCol pos;
 	static int[] actionCost = {20,30,50,60,100,200};
+	static double disturbanceLevel = 0.0;
+	static int resourcePoints = 250;
 	
 	public static void main(String[] args) {
 		
@@ -19,6 +21,13 @@ public class MAPFuncTester {
 		path.addPathPoint(new RowCol(0,4));
 		
 		projectPoints(10,new RowCol(0,0));
+		
+		pos = new RowCol(0,4);
+		
+		System.out.println(remainingPath(pos));
+		System.out.println(wellbeing());
+		
+		
 
 	}
 
@@ -56,4 +65,78 @@ public class MAPFuncTester {
 	static int getCellCost(RowCol cell) {
 		return 50;
 }
+	
+	private static double estimatedCost(Path p) {		
+		int l = p.getNumPoints();
+		double sigma = 1 - disturbanceLevel;
+		double eCost = 0.0;		
+		if (Math.abs(sigma-1) < 0.000001)
+		{
+			for (int k=0;k<l;k++)
+				eCost += getCellCost(p.getNthPoint(k));			
+		}
+		else
+		{
+			double m = getAverage(actionCost); /*TODO: check this! */				 
+			eCost = (l - (1-Math.pow(sigma, l))/(1-sigma)) * m;		
+			for (int k=0;k<l;k++)
+				eCost += Math.pow(sigma, k) * getCellCost(p.getNthPoint(k));
+		}
+		return eCost;
+	}
+	
+	private static double wellbeing () {
+		//RowCol nextCell = path.getNextPoint(pos);
+		double eCost = estimatedCost(remainingPath(pos));
+		if (eCost == 0)
+			return resourcePoints;
+		else
+			return resourcePoints/eCost;
+	}
+	
+	/**
+	 * Finds the remaining path from the given cell.
+	 * 
+	 * The path DOES NOT include the given cell and the starting cell 
+	 * of the remaining path would be the next cell.
+	 * 
+	 * @param from					The cell the remaining path would be
+	 * 								generated from.
+	 * @return						The remaining path.
+	 */
+	private static Path remainingPath(RowCol from) {
+		Path rp = new Path(path);
+		
+		while (!rp.getStartPoint().equals(from))
+			rp = rp.tail();
+		
+		return rp.tail();
+	}
+	
+	/**
+	 * The importance function.
+	 * 
+	 * Maps the remaining distance to the goal into 
+	 * 
+	 * @param remainingLength
+	 * @return
+	 */
+	private static int importance(int remainingLength) {
+		if (remainingLength != 0)
+			return 10/remainingLength;
+		else
+			return 0;
+	}
+	
+	/**
+	 * Calculates the average of the given integer array.
+	 * 
+	 * @return						The average.
+	 */
+	private static double getAverage(int[] array) {
+		int sum = 0;
+		for (int i=0;i<array.length;i++)
+			sum+=array[i];
+		return (double)sum/array.length;
+	}
 }

@@ -1,9 +1,7 @@
-package massim.agent.advancedactionmap;
+package massim.agents.advancedactionmap;
 
-import massim.CommMedium;
 import massim.RowCol;
 import massim.Team;
-import massim.agents.dummy.DummyAgent;
 
 public class AdvActionMapTeam extends Team {
 	
@@ -56,22 +54,4 @@ public class AdvActionMapTeam extends Team {
 		return  Math.abs(end.row-start.row) + Math.abs(end.col-start.col) + 1;
 	}
 	
-	/**
-	 * For debugging purposes only:
-	 * 
-	 * The overridden Team.teamRewardPoints() method to return a dummy amount 
-	 * of reward points.
-	 * 
-	 * @return					The amount of reward points.
-	 */
-	@Override
-	public int teamRewardPoints() 
-	{
-		int sum = 0;
-		
-		for(int i=0;i<Team.teamSize;i++)
-			sum += agent(i).rewardPoints();
-		
-		return sum;
-	}
 }

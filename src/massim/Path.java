@@ -111,7 +111,7 @@ public class Path implements Comparable {
 			sb.append(" ("+l.row+","+l.col+")");
 		}
 		
-		sb.append("\n");
+		//sb.append("\n");
 		
 		return sb.toString();
 		

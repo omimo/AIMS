@@ -21,7 +21,7 @@ public class Team {
 	public static int initResCoef;
 	public static double mutualAwareness;
 	public static int unicastCost;
-	public static int broadcastCost = unicastCost * (teamSize-1);
+	public static int broadcastCost;
 	
 	private Agent[] agents;
 	private CommMedium commMedium;
@@ -44,14 +44,14 @@ public class Team {
 		OK, DONE, ERR
 	}
 
-	private boolean debuggingInf = true;
+	private boolean debuggingInf = false;
 	public int testRunCounter;
 
 	/**
 	 * Default constructor
 	 */
 	public Team() {
-		System.out.println("-------------- multicast cost = "+ broadcastCost);
+		
 		id = nextID++;
 		commMedium = new CommMedium(Team.teamSize);
 		
@@ -79,7 +79,7 @@ public class Team {
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-			agentsGameStatus[i] = AgGameStatCode.READY;
+			agentsGameStatus[i] = AgGameStatCode.READY;				
 	}
 
 	/**
@@ -167,11 +167,14 @@ public class Team {
 		}
 		
 		commMedium.clear();
+	
+		//(new Scanner(System.in)).nextLine();
 		
 		if (allDone)
 			return TeamRoundCode.DONE;
 		else 
 			return TeamRoundCode.OK;
+	
 	}
 
 	

@@ -1,34 +1,23 @@
-package massim.agents.dummy;
-
-import java.util.Random;
+package massim.agents.empatic;
 
 import massim.Agent;
 import massim.Board;
 import massim.CommMedium;
 import massim.RowCol;
 
-public class DummyAgent extends Agent {
-	
-	private boolean debuggingInf = false;
-	
-	private int procrastinateCount;
-	private int procrastinateLevel;
-	
 
-	enum DummyStates {S_INIT, S_PROC, R_PROC, R_MOVE, R_BLOCKED};
+public class EmpaticAgent extends Agent {
+
+	private boolean dbgInf = true;
+	private boolean dbgErr = true;
 	
-	DummyStates state;
+	private enum EmpaticAgentState {S_INIT}
+	private EmpaticAgentState state;
 	
-	/**
-	 * The constructor
-	 * 
-	 * @param id			The given id of the agent
-	 */
-	public DummyAgent(int id, CommMedium comMed) {
-		super(id, comMed);
+	public EmpaticAgent(int id, CommMedium comMed) {
+		super(id, comMed); 
 	}
-	
-	
+
 	/**
 	 * Initializes the agent for a new run.
 	 * 
@@ -77,19 +66,16 @@ public class DummyAgent extends Agent {
 			logInf("Chose this path: "+ path().toString());
 		}
 		
-		state = DummyStates.S_INIT;
+		state =EmpaticAgentState.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
 		
-		procrastinateLevel = 0; //(new Random()).nextInt(4);
-		procrastinateCount = 0;
 	}
 	
 	/**
-	 * A dummy send cycle method.
+	 * The send cycle
 	 * 
-	 * Will alternate between send and receive states.
 	 * 
 	 */
 	@Override
@@ -99,22 +85,8 @@ public class DummyAgent extends Agent {
 		
 		switch (state) {
 		case S_INIT:			
-			RowCol nextCell = path().getNextPoint(pos());
-			int cost = getCellCost(nextCell);
-			if (cost  <= resourcePoints())
-				setState(DummyStates.R_PROC);
-			else
-				setState(DummyStates.R_BLOCKED);			
-			returnCode = AgCommStatCode.NEEDING_TO_REC;
-			break;
-		case S_PROC:
-			procrastinateCount++;
-			if (procrastinateCount > procrastinateLevel)
-				setState(DummyStates.R_MOVE);
-			else
-				setState(DummyStates.R_PROC);
-			returnCode = AgCommStatCode.NEEDING_TO_REC;
-			break;			
+			
+			break;		
 		default:
 			logErr("Undefined state: " + state.toString());
 		}
@@ -123,10 +95,7 @@ public class DummyAgent extends Agent {
 	}
 
 	/**
-	 * A dummy receive cycle method.
-	 * 
-	 * Will alternate between send and receive cycles for 3 times.
-	 * Then will transit to a final state.
+	 * The receive cycle
 	 * 
 	 */
 	@Override
@@ -136,19 +105,7 @@ public class DummyAgent extends Agent {
 		logInf("Receive Cycle");		
 		
 		switch (state) {
-		case R_PROC:
-			setState(DummyStates.S_PROC);
-			returnCode = AgCommStatCode.NEEDING_TO_SEND;
-			break;			
-		case R_MOVE:	
-			logInf("Setting current action to do my own move");
-			setRoundAction(actionType.OWN);			
-			returnCode = AgCommStatCode.DONE;
-			break;	
-		case R_BLOCKED:
-			setRoundAction(actionType.FORFEIT);
-			returnCode = AgCommStatCode.DONE;
-			break;
+		
 		default:	
 			logErr("Undefined state: " + state.toString());
 		}
@@ -189,24 +146,24 @@ public class DummyAgent extends Agent {
 	
 	/**
 	 * Prints the log message into the output if the information debugging 
-	 * level is turned on (debuggingInf).
+	 * level is turned on (dbgInf).
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
 	private void logInf(String msg) {
-		if (debuggingInf)
-			System.out.println("[DummyAgent " + id() + "]: " + msg);
+		if (dbgInf)
+			System.out.println("[EmpaticAgent " + id() + "]: " + msg);
 	}
 	
 	/**
 	 * Prints the log message into the output if the  debugging level
-	 * is turned on (debuggingInf).
+	 * is turned on (dbgErr).
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
 	private void logErr(String msg) {
-		if (debuggingInf)
-			System.err.println("[xx][DummyAgent " + id() + 
+		if (dbgErr)
+			System.err.println("[xx][EmpaticAgent " + id() + 
 							   "]: " + msg);
 	}
 	
@@ -215,48 +172,21 @@ public class DummyAgent extends Agent {
 	 * 
 	 * @param newState				The new state
 	 */
-	private void setState(DummyStates newState) {
+	private void setState(EmpaticAgentState newState) {
 		logInf("In "+ state.toString() +" state");
 		state = newState;
 		logInf("Set the state to +"+state.toString());
 	}
 
-	/**
-	 * Agent's move action.
-	 * 
-	 * Moves the agent to the next position if possible
-	 * 
-	 * TODO: Needs to be extended to perform help.
-	 * 
-	 * @return
-	 */
-	private boolean move() {
-		
-		RowCol nextCell = path().getNextPoint(pos());
-		if (pos().equals(nextCell))
-		{
-			logErr("Can not move from "+pos() +" to itself!"); 			
-			return false;
-		}
-		else
-		{
-			logInf("Moved from "+pos() +" to "+ nextCell);
-			
-			int cost = getCellCost(nextCell);
-			decResourcePoints(cost);
-			setPos(nextCell);				
-			return true;
-		}
-	}
+
 	
 	/**
-	 * The DummyAgent performs its own action (move) here.
+	 * The agent performs its own action (move) here.
 	 * 
-	 * @return					The same as what move() returns.
+	 * @return					True if succeeded
 	 */
 	@Override
 	protected boolean doOwnAction() {
-		return move();		
+		return true;		
 	}
-	
 }
