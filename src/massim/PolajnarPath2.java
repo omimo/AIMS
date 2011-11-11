@@ -1,6 +1,5 @@
 package massim;
 
-import massim.PolajnarPath.BPCell;
 
 /**
  * Algorithm to find the lowest cost path among the shortest

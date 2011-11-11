@@ -1,10 +1,15 @@
 package massim.agent.advancedactionmap;
 
+import java.util.ArrayList;
+
 import massim.Agent;
 import massim.Board;
+import massim.CommMedium;
+import massim.Message;
 import massim.Path;
 import massim.RowCol;
 import massim.SimulationEngine;
+import massim.Team;
 
 /**
  * Advanced Action MAP Implementation.
@@ -32,20 +37,29 @@ public class AdvActionMAP extends Agent {
 	public static double WLL;
 	public static double requestThreshold;
 	
+	private final static int MAP_HELP_REQ_MSG = 1;
+	private final static int MAP_BID_MSG = 2;
+	private final static int MAP_HELP_CONF = 3;
+	
 	private AAMAPState state;
 	
 	private int[][] oldBoard;
 	private double disturbanceLevel;
+	
 	private boolean bidding;
+	private int agentToHelp;
+	private String bidMsg;
+	
+	private int helperAgent;
+	
 	/**
 	 * The Constructor
 	 * 
 	 * @param id					The agent's id; to be passed
 	 * 								by the team.
 	 */
-	public AdvActionMAP(int id) {
-		super(id);
-
+	public AdvActionMAP(int id, CommMedium comMed) {
+		super(id, comMed);
 	}
 
 	/**
@@ -123,21 +137,23 @@ public class AdvActionMAP extends Agent {
 							   (cost > requestThreshold);
 			
 			if (needHelp)
-			{
-				int withHelpRewards = projectPoints(resourcePoints(), nextCell);
-				int noHelpRewards = projectPoints(resourcePoints(), pos());
-				int withHelpRemPathLength = path().getNumPoints() - findFinalPos(resourcePoints(),nextCell) + 1 ;
-				int noHelpRemPathLength = path().getNumPoints() - findFinalPos(resourcePoints(),nextCell) + 1;
-				double teamBenefit = (withHelpRewards-noHelpRewards) *
-									(1+
-										(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)) *
-										(noHelpRemPathLength-withHelpRemPathLength));
-				/*
-				 * calc team benefit f(5)
-				 * subt(computation cost)
-				 * broadcast help (cost)
-				 */
-				setState(AAMAPState.R_IGNORE_HELP_REQ);
+			{							
+				int teamBenefit;
+				if (canCalc())
+				{
+					teamBenefit = calcTeamBenefit(nextCell);
+				
+					if (canSend())
+					{
+						String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
+						broadcastMsg(helpReqMsg);
+						setState(AAMAPState.R_IGNORE_HELP_REQ);
+					}
+					else
+						setState(AAMAPState.R_BLOCKED);								
+				}
+				else
+					setState(AAMAPState.R_BLOCKED);
 			}
 			else
 			{
@@ -145,11 +161,9 @@ public class AdvActionMAP extends Agent {
 			}			
 			break;
 		case S_RESPOND_TO_REQ:
-			if(bidding)
+			if(bidding && canSend())
 			{
-				/* send the bid (cost)
-				 * 
-				 */
+				sendMsg(agentToHelp, bidMsg);
 				setState(AAMAPState.R_BIDDING);
 			}
 			else
@@ -195,23 +209,59 @@ public class AdvActionMAP extends Agent {
 		logInf("Receive Cycle");		
 	
 		switch (state) {
-		case R_GET_HELP_REQ:
-			int k = 0;
-			/*
-			 * receive k requests 
-			 */
-			bidding = false;
+		case R_GET_HELP_REQ:			
+			ArrayList<Message> helpReqMsgs = new ArrayList<Message>();
 			
-			if (k>0)
+			String msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
 			{
-				/*
-				 * calc net team benefit for each using F(7)
-				 * sub(computation cost)
-				 * if (any of the net team benefits are positive)
-				 * 		select the highest NTB
-				 * 		prepare a bid
-				 * 		bidding = true;
-				 */			
+				logInf("Received a message: " + msgStr);
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(MAP_HELP_REQ_MSG))
+						helpReqMsgs.add(msg);
+				 msgStr = commMedium().receive(id());
+			}
+			
+			bidding = false;
+			agentToHelp = -1;
+			
+			if (helpReqMsgs.size() > 0)
+			{
+				logInf("Received "+helpReqMsgs.size()+" help requests");
+				
+				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				
+				for (Message msg : helpReqMsgs)
+				{
+					RowCol helpeeNextCell = 
+						new RowCol(msg.getIntValue("nextCellRow"), 
+								   msg.getIntValue("nextCellCol"));
+					
+					int teamBenefit = msg.getIntValue("teamBenefit");
+					int requesterAgent = msg.sender();
+					int helpActCost = getCellCost(helpeeNextCell) + Agent.helpOverhead;
+					int teamLoss;
+					int netTeamBenefit;
+					if (canCalc())
+					{
+						teamLoss = calcTeamLoss(helpActCost);
+						netTeamBenefit = teamBenefit - teamLoss;
+					}
+					else
+						netTeamBenefit = -1;
+					
+					if (netTeamBenefit > 0 && netTeamBenefit > maxNetTeamBenefit)
+					{
+						maxNetTeamBenefit = netTeamBenefit;
+						agentToHelp = requesterAgent;
+					}
+				}
+				
+				if (agentToHelp != -1)
+				{					
+					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit);					
+					bidding = true;					
+				}									
 			}
 			setState(AAMAPState.S_RESPOND_TO_REQ);
 			break;
@@ -222,23 +272,52 @@ public class AdvActionMAP extends Agent {
 			setState(AAMAPState.S_BIDDING);
 			break;
 		case R_GET_BIDS:
-			/*receive q bids
-			 * 
-			 * if (q==0)
-			 *   if has resources
-			 *     setState(AAMAPState.S_DECIDE_OWN_ACT);
-			 *   else
-			 *     setState(AAMAPState.S_BLOCKED);
-			 * else
-			 *   select the bid with hight NTB;
-			 *   setState(AAMAPState.S_RESPOND_TO_BIDS);
-			 */
+			ArrayList<Message> bidMsgs = new ArrayList<Message>();
+			
+			msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
+			{
+				logInf("Received a message: " + msgStr);
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(MAP_BID_MSG))
+					bidMsgs.add(msg);
+				 msgStr = commMedium().receive(id());
+			}
+			
+			helperAgent = -1;
+			
+			if (bidMsgs.size() == 0)
+			{
+				int cost = getCellCost(path().getNextPoint(pos()));
+				if (cost <= resourcePoints())
+					setState(AAMAPState.S_DECIDE_OWN_ACT);
+				else
+					setState(AAMAPState.S_BLOCKED);
+			}
+			else
+			{
+				int maxBid = Integer.MIN_VALUE;
+				
+				for (Message bid : bidMsgs)
+				{
+					int bidNTB = bid.getIntValue("NTB");
+					int offererAgent = bid.sender();
+					
+					if (bidNTB > maxBid)
+					{
+						maxBid = bidNTB;
+						agentToHelp = offererAgent;
+					}
+				}
+				
+				setState(AAMAPState.S_RESPOND_BIDS);
+			}		
 			break;
 		case R_BLOCKED:
 			// skip the action
 			break;
 		case R_GET_BID_CONF:
-			// if receved conf
+			// if received conf
 					setState(AAMAPState.S_DECIDE_HELP_ACT);
 			// else
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
@@ -372,7 +451,7 @@ public class AdvActionMAP extends Agent {
 		int iIndex = path().getIndexOf(iCell);
 		
 		while (iIndex < path().getNumPoints())
-		{							
+		{
 			int cost = getCellCost(iCell);
 			if (cost <= remainingResourcePoints)
 			{
@@ -429,7 +508,142 @@ public class AdvActionMAP extends Agent {
 			return 0;
 	}
 	
+	/**
+	 * Prepares a help request message and returns its String encoding.
+	 * 
+	 * @param teamBenefit			The team benefit to be included in
+	 * 								the message.
+	 * @return						The message encoded in String
+	 */
+	private String prepareHelpReqMsg(int teamBenefit, RowCol nextCell) {
+		
+		Message helpReq = new Message(id(),-1,MAP_HELP_REQ_MSG);
+		helpReq.putTuple("teamBenefit", Integer.toString(teamBenefit));
+		helpReq.putTuple("nextCellRow", nextCell.row);
+		helpReq.putTuple("nextCellCol", nextCell.col);
+		return helpReq.toString();
+	}
+	
+	/**
+	 * Prepares a bid message and returns its String encoding.
+	 * 
+	 * @param requester				The help requester agent
+	 * @param NTB					The net team benefit
+	 * @return						The message encoded in String
+	 */
+	private String prepareBidMsg(int requester, int NTB) {
+		Message bidMsg = new Message(id(),requester,MAP_BID_MSG);
+		bidMsg.putTuple("NTB", NTB);
+		return bidMsg.toString();
+	}
+	
+	/**
+	 * Calculates the team loss considering spending the given amount 
+	 * of resource points to help. 
+	 * 
+	 * @param helpActCost				The cost of help action
+	 * @return							The team loss
+	 */
+	private int calcTeamLoss(int helpActCost)
+	{
+		decResourcePoints(Agent.calculationCost);
+		
+		int withHelpRewards = 
+			projectPoints(resourcePoints()-helpActCost, pos());
+						
+		int noHelpRewards =
+			projectPoints(resourcePoints(),pos());
+						
+		int withHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints()-helpActCost, pos())
+			+ 1;
+					
+		int noHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints(), pos())
+			+ 1;
+				
+		return  
+			(noHelpRewards - withHelpRewards) *
+			(1 + 
+			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
+			(withHelpRemPathLength-noHelpRemPathLength)
+			);
+							
+	}
+	
+	/**
+	 * Calculates the team benefit considering having another agent to the
+	 * given action.
+	 * 
+	 * @param skipCell				The cell to skip.
+	 * @return						The team benefit.
+	 */
+	private int calcTeamBenefit(RowCol skipCell) {
+		
+		decResourcePoints(Agent.calculationCost);
+		
+		int withHelpRewards = 
+			projectPoints(resourcePoints(), skipCell) + 
+			Agent.cellReward; /* double check cellReward */
+		
+		int noHelpRewards = 
+			projectPoints(resourcePoints(), pos());
+		
+		int withHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints(),skipCell) +
+			1 ;
+		
+		int noHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints(),pos()) + 
+			1;
+		
+		return 
+			(withHelpRewards-noHelpRewards) *
+			(1+
+			(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)) *
+			(noHelpRemPathLength-withHelpRemPathLength));
+	}
 	/*******************************************************************/
+	
+	/**
+	 * Tells whether the agent has enough resources to send a unicast
+	 * message or not
+	 * 
+	 * @return 					true if there are enough resources /
+	 * 							false if there aren't enough resources	
+	 */
+	private boolean canSend() {
+		return (resourcePoints() >= Team.unicastCost);	
+	}
+	
+	/**
+	 * Indicates whether the agent has enough resources to do calculations.
+	 * 
+	 * @return					true if there are enough resources /
+	 * 							false if there aren't enough resources
+	 */
+	private boolean canCalc() {
+		return (resourcePoints() >= Agent.calculationCost);
+	}
+	
+	/**
+	 * Broadcast the given String encoded message.
+	 * 
+	 * @param msg				The String encoded message 
+	 */
+	private void broadcastMsg(String msg) {
+		decResourcePoints(Team.broadcastCost);
+		commMedium().broadcast(id(), msg);
+	}
+	
+	private void sendMsg(int receiver, String msg) {
+		decResourcePoints(Team.unicastCost);
+		commMedium().send(id(), receiver, msg);
+	}
 	
 	/**
 	 * Calculates the average of the given integer array.

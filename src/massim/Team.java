@@ -20,6 +20,8 @@ public class Team {
 	public static int teamSize;
 	public static int initResCoef;
 	public static double mutualAwareness;
+	public static int unicastCost;
+	public static int broadcastCost = unicastCost * (teamSize-1);
 	
 	private Agent[] agents;
 	private CommMedium commMedium;
@@ -49,6 +51,7 @@ public class Team {
 	 * Default constructor
 	 */
 	public Team() {
+		System.out.println("-------------- multicast cost = "+ broadcastCost);
 		id = nextID++;
 		commMedium = new CommMedium(Team.teamSize);
 		

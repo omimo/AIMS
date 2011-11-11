@@ -10,6 +10,8 @@ public abstract class Agent {
 
 	public static int cellReward;
 	public static int achievementReward;
+	public static int helpOverhead;
+	public static int calculationCost;
 	
 	protected static enum AgGameStatCode {
 		READY, REACHED_GOAL, RESOURCE_BLOCKED, BLOCKED
@@ -33,6 +35,8 @@ public abstract class Agent {
 	private RowCol pos;
 	private RowCol goalPos;
 	private Board theBoard;
+	
+	private CommMedium communicationMedium; 
 
 	private actionType thisRoundAction = actionType.SKIP;
 	
@@ -43,8 +47,9 @@ public abstract class Agent {
 	 * 
 	 * @param id			The id of the agent being created.
 	 */
-	public Agent(int id) {
+	public Agent(int id, CommMedium comMed) {
 		this.id = id;
+		communicationMedium = comMed;
 		goalPos = null;
 		pos = null;
 		theBoard = null;
@@ -387,6 +392,9 @@ public abstract class Agent {
 		return true;
 	}
 	
+	protected CommMedium commMedium() {
+		return communicationMedium;
+	}
 	
 	protected boolean act() {
 	
