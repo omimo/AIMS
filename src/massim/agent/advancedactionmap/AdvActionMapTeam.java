@@ -1,28 +1,24 @@
-package massim.agents.dummy;
+package massim.agent.advancedactionmap;
 
+import massim.CommMedium;
 import massim.RowCol;
 import massim.Team;
+import massim.agents.dummy.DummyAgent;
 
-/**
- * 
- * 
- * @author Omid Alemi
- * @version 2.0 2011/10/31
- */
-public class DummyTeam extends Team {	
+public class AdvActionMapTeam extends Team {
 	
 	/**
 	 * The default constructor
 	 */
-	public DummyTeam() {
+	public AdvActionMapTeam() {
 		super();		
 			
-		DummyAgent[] dummyAgents = new DummyAgent[Team.teamSize];
+		AdvActionMAPAgent[] aaMAPAgents = new AdvActionMAPAgent[Team.teamSize];
 		
 		for(int i=0;i<Team.teamSize;i++)
-			dummyAgents[i] = new DummyAgent(i,commMedium());
+			aaMAPAgents[i] = new AdvActionMAPAgent(i,commMedium());
 		
-		setAgents(dummyAgents);
+		setAgents(aaMAPAgents);
 	}	
 	
 	/**
@@ -78,5 +74,4 @@ public class DummyTeam extends Team {
 		
 		return sum;
 	}
-		
 }

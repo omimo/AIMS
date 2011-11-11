@@ -4,11 +4,12 @@ import java.util.Random;
 
 import massim.Agent;
 import massim.Board;
+import massim.CommMedium;
 import massim.RowCol;
 
 public class DummyAgent extends Agent {
 	
-	private boolean debuggingInf = true;
+	private boolean debuggingInf = false;
 	
 	private int procrastinateCount;
 	private int procrastinateLevel;
@@ -23,8 +24,8 @@ public class DummyAgent extends Agent {
 	 * 
 	 * @param id			The given id of the agent
 	 */
-	public DummyAgent(int id) {
-		super(id);
+	public DummyAgent(int id, CommMedium comMed) {
+		super(id, comMed);
 	}
 	
 	

@@ -8,7 +8,6 @@ import massim.CommMedium;
 import massim.Message;
 import massim.Path;
 import massim.RowCol;
-import massim.SimulationEngine;
 import massim.Team;
 
 /**
@@ -18,7 +17,7 @@ import massim.Team;
  * @version 1.0 2011/11/07
  * 
  */
-public class AdvActionMAP extends Agent {
+public class AdvActionMAPAgent extends Agent {
 
 	boolean dbgInf = true;
 	boolean dbgErr = true;
@@ -58,7 +57,7 @@ public class AdvActionMAP extends Agent {
 	 * @param id					The agent's id; to be passed
 	 * 								by the team.
 	 */
-	public AdvActionMAP(int id, CommMedium comMed) {
+	public AdvActionMAPAgent(int id, CommMedium comMed) {
 		super(id, comMed);
 	}
 
@@ -182,10 +181,13 @@ public class AdvActionMAP extends Agent {
 			setState(AAMAPState.R_DO_HELP_ACT);
 			break;
 		case S_RESPOND_BIDS:
-			/*
-			 * send a conf msg to the selected agent Aj (cost)
-			 */
-			setState(AAMAPState.R_ACCEPT_HELP_ACT);
+			if (canSend())
+			{
+				String msg = prepareConfirmMsg(helperAgent);
+				sendMsg(helperAgent, msg);				
+			}
+			setState(AAMAPState.R_ACCEPT_HELP_ACT); 
+			/* should be checked if can not send ... */
 			break;
 		case S_BLOCKED:
 			setState(AAMAPState.R_BLOCKED);
@@ -315,11 +317,13 @@ public class AdvActionMAP extends Agent {
 			break;
 		case R_BLOCKED:
 			// skip the action
+			setRoundAction(actionType.SKIP);
 			break;
 		case R_GET_BID_CONF:
-			// if received conf
+			msgStr = commMedium().receive(id());
+			if (!msgStr.equals("")) /* double check */
 					setState(AAMAPState.S_DECIDE_HELP_ACT);
-			// else
+			else
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
 			break;
 		case R_DO_OWN_ACT:
@@ -537,6 +541,17 @@ public class AdvActionMAP extends Agent {
 		return bidMsg.toString();
 	}
 	
+	/**
+	 * Prepares a help confirmation message returns its String 
+	 * encoding.
+	 * 
+	 * @param helper				The helper agent
+	 * @return						The message encoded in String
+	 */
+	private String prepareConfirmMsg(int helper) {
+		Message confMsg = new Message(id(),helper,MAP_HELP_CONF);
+		return confMsg.toString();
+	}
 	/**
 	 * Calculates the team loss considering spending the given amount 
 	 * of resource points to help. 

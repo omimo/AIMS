@@ -10,7 +10,7 @@ import massim.Agent.AgCommStatCode;
  * 
  * 
  * @author Omid Alemi
- * @version 1.2 2011/10/17
+ * @version 1.3 2011/11/10
  */
 public class Team {
 
@@ -207,6 +207,16 @@ public class Team {
 	protected void setAgents(Agent[] agents) {
 		this.agents = agents;
 	}
+	
+	/**
+	 * Enables access to the team's communication medium.
+	 * 
+	 * @return						The communication medium.
+	 */
+	protected CommMedium commMedium() {
+		return commMedium;
+	}
+	
 	/**
 	 * Prints the log message into the output if the information 
 	 * debugging level is turned on (debuggingInf).

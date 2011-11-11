@@ -67,7 +67,7 @@ public class RandomTester {
 	}
 	public static void testBoard() {
 		
-		Board board = Board.randomBoard(10, 10);
+		//Board board = Board.randomBoard(10, 10);
 		
 		
 	}
