@@ -115,6 +115,7 @@ public class Team {
 							 rnd1.nextInt(
 									 SimulationEngine.actionCostsRange.length)];
 				
+		
 			if (agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				agents[i].initializeRound(board, probActionCostMatrix);
 			
@@ -170,7 +171,7 @@ public class Team {
 		}
 				
 	
-		//(new Scanner(System.in)).nextLine();
+		(new Scanner(System.in)).nextLine();
 		
 		if (allDone)
 			return TeamRoundCode.DONE;

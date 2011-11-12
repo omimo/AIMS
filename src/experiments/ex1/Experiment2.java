@@ -8,6 +8,8 @@ import massim.SimulationEngine;
 import massim.Team;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMapTeam;
+import massim.agents.basicactionmap.BasicActionMAPAgent;
+import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.nohelp.NoHelpTeam;
 
 public class Experiment2 {
@@ -17,9 +19,10 @@ public class Experiment2 {
 		
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
-		Team[] teams = new Team[2];
+		Team[] teams = new Team[3];		
 		teams[0] = new AdvActionMapTeam();
-		teams[1] = new NoHelpTeam();
+		teams[1] = new BasicActionMAPTeam();
+		teams[2] = new NoHelpTeam();
 			
 				
 		/* Create the SimulationEngine */
@@ -41,6 +44,7 @@ public class Experiment2 {
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 40;
+			BasicActionMAPAgent.requestThreshold = 299;
 			
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1 * exp;  
