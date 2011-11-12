@@ -177,9 +177,9 @@ public abstract class Agent {
 	 */
 	protected int calcRewardPoints(int resources, RowCol position) {
 		if (position.equals(path.getEndPoint()))
-			return Agent.achievementReward + resourcePoints;
+			return Agent.achievementReward + resources;
 		else
-			return (path.getIndexOf(position)) * cellReward;
+			return (path.getIndexOf(position)) * Agent.cellReward;
 			/* uses the index of position, starting from 0;
 		     * as if the agent has not moved at all, there should
 		     * be no reward points 
@@ -391,6 +391,16 @@ public abstract class Agent {
 	protected boolean doGetHelpAction() {
 		
 		return true;
+	}
+	
+	/**
+	 * Checks whether the agent has reached the goal or not.
+	 * 
+	 * @return				true if has reached the goal /
+	 * 						false o.w.
+	 */
+	protected boolean reachedGoal() {
+		return path().getEndPoint().equals(pos());
 	}
 	
 	protected CommMedium commMedium() {

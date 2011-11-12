@@ -85,7 +85,9 @@ public class AdvActionMAPAgent extends Agent {
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My initial position: "+ pos());
-		logInf("My goal position: " + goalPos().toString());		
+		logInf("My goal position: " + goalPos().toString());	
+		
+		oldBoard = null;
 	}
 	
 	/** 
@@ -134,39 +136,48 @@ public class AdvActionMAPAgent extends Agent {
 		
 		switch(state) {
 		case S_INIT:
-			RowCol nextCell = path().getNextPoint(pos());			
-			int cost = getCellCost(nextCell);
-			double wellbeing = wellbeing();
-			boolean needHelp = (cost > resourcePoints()) ||
-							   (wellbeing < WLL && cost > lowCostThreshold) ||
-							   (cost > requestThreshold);
-			logInf("My wellbeing = " + wellbeing);
-			
-			if (needHelp)
-			{							
-				logInf("Need help!");
-				int teamBenefit;
-				if (canCalc())
-				{
-					teamBenefit = calcTeamBenefit(nextCell);
-				
-					if (canBCast())
-					{
-						logInf("Broadcasting help");
-						String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
-						broadcastMsg(helpReqMsg);
-						setState(AAMAPState.R_IGNORE_HELP_REQ);
-					}
-					else
-						setState(AAMAPState.R_BLOCKED);								
-				}
-				else
-					setState(AAMAPState.R_BLOCKED);
-			}
-			else
+			if (reachedGoal())
 			{
 				setState(AAMAPState.R_GET_HELP_REQ);
-			}			
+			}
+			else 
+			{
+				RowCol nextCell = path().getNextPoint(pos());			
+				int cost = getCellCost(nextCell);
+				double wellbeing = wellbeing();
+				boolean needHelp = (cost > resourcePoints()) ||
+								   (wellbeing < WLL && cost > lowCostThreshold) ||
+								   (cost > requestThreshold);
+				logInf("My wellbeing = " + wellbeing);
+				
+				if (needHelp)
+				{							
+					logInf("Need help!");
+					int teamBenefit;
+					if (canCalc())
+					{
+						teamBenefit = calcTeamBenefit(nextCell);
+					
+						if (canBCast())
+						{
+							logInf("Broadcasting help");
+							logInf("Team benefit of help would be "+teamBenefit);
+							String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
+							broadcastMsg(helpReqMsg);
+							setState(AAMAPState.R_IGNORE_HELP_REQ);
+						}
+						else
+							setState(AAMAPState.R_BLOCKED);								
+					}
+					else
+						setState(AAMAPState.R_BLOCKED);
+				}
+				else
+				{
+					setState(AAMAPState.R_GET_HELP_REQ);
+				}
+			}
+						
 			break;
 		case S_RESPOND_TO_REQ:
 			if(bidding && canSend())
@@ -193,7 +204,7 @@ public class AdvActionMAPAgent extends Agent {
 		case S_RESPOND_BIDS:
 			if (canSend())
 			{
-				logInf("Confiming the help offer of agent "+ helperAgent);
+				logInf("Confirming the help offer of agent "+ helperAgent);
 				String msg = prepareConfirmMsg(helperAgent);
 				sendMsg(helperAgent, msg);				
 			}
@@ -253,15 +264,16 @@ public class AdvActionMAPAgent extends Agent {
 					int teamBenefit = msg.getIntValue("teamBenefit");
 					int requesterAgent = msg.sender();
 					int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
-					int teamLoss;
-					int netTeamBenefit;
+					int teamLoss = -1;
+					int netTeamBenefit = -1;
 					if (canCalc())
 					{
 						teamLoss = calcTeamLoss(helpActCost);
 						netTeamBenefit = teamBenefit - teamLoss;
-					}
-					else
-						netTeamBenefit = -1;
+					}					
+					
+					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
+							", NTB= "+netTeamBenefit);
 					
 					if (netTeamBenefit > 0 && netTeamBenefit > maxNetTeamBenefit)
 					{
@@ -302,7 +314,7 @@ public class AdvActionMAPAgent extends Agent {
 			helperAgent = -1;
 			
 			if (bidMsgs.size() == 0)
-			{
+			{							
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
@@ -311,8 +323,8 @@ public class AdvActionMAPAgent extends Agent {
 			}
 			else
 			{
-				int maxBid = Integer.MIN_VALUE;
-				
+				logInf("Received "+bidMsgs.size()+" bids.");
+				int maxBid = Integer.MIN_VALUE;					
 				for (Message bid : bidMsgs)
 				{
 					int bidNTB = bid.getIntValue("NTB");
@@ -324,29 +336,47 @@ public class AdvActionMAPAgent extends Agent {
 						helperAgent = offererAgent;
 					}
 				}
-				
+				logInf("Agent "+ helperAgent+" won the bidding.");
 				setState(AAMAPState.S_RESPOND_BIDS);
 			}		
 			break;
 		case R_BLOCKED:
-			//TODO: skip the action
+			//TODO: ? skip the action
 			// or forfeit
 			setRoundAction(actionType.FORFEIT);
 			break;
 		case R_GET_BID_CONF:
 			msgStr = commMedium().receive(id());
+			
 			if (!msgStr.equals("")) /* double check */
-					setState(AAMAPState.S_DECIDE_HELP_ACT);
+			{
+				logInf("Received confirmation");
+				setState(AAMAPState.S_DECIDE_HELP_ACT);
+			}
 			else
-					setState(AAMAPState.S_DECIDE_OWN_ACT);
+			{
+				logInf("Didn't received confirmation");
+				setState(AAMAPState.S_DECIDE_OWN_ACT);
+			}
 			break;
 		case R_DO_OWN_ACT:
-			setRoundAction(actionType.OWN);
+			if (!reachedGoal())
+			{
+				logInf("Will do my own move.");
+				setRoundAction(actionType.OWN);
+			}
+			else
+			{
+				logInf("Nothing to do at this round.");
+				setRoundAction(actionType.SKIP);
+			}
 			break;
 		case R_DO_HELP_ACT:
+			logInf("Will help another agent");
 			setRoundAction(actionType.HELP_ANOTHER);
 			break;
 		case R_ACCEPT_HELP_ACT:
+			logInf("Will receive help");
 			setRoundAction(actionType.HAS_HELP);
 			break;
 		default:			
@@ -371,26 +401,26 @@ public class AdvActionMAPAgent extends Agent {
 	@Override
 	protected AgGameStatCode finalizeRound() {			
 		logInf("Finalizing the round ...");				
-		//AgGameStatCode returnCode = AgGameStatCode.READY;
-		
+				
 		keepBoard();
-		if (pos().equals(goalPos()))
+		
+		boolean succeed = act();
+		
+		if (reachedGoal())
 		{
 			logInf("Reached the goal");
 			return AgGameStatCode.REACHED_GOAL;
 		}
 		else
 		{
-			if (act())
+			if (succeed) 
 				return AgGameStatCode.READY;
 			else  /*TODO: The logic here should be changed!*/
-				{
-					logInf("Blocked!");
-					return AgGameStatCode.BLOCKED;			
-				}
-		}	
-		
-		//return returnCode;
+			{
+				logInf("Blocked!");
+				return AgGameStatCode.BLOCKED;			
+			}
+		}					
 	}
 	
 	/**
@@ -560,12 +590,15 @@ public class AdvActionMAPAgent extends Agent {
 	 * 
 	 * Maps the remaining distance to the goal into 
 	 * 
+	 * Currently: imp(x) = 20/x
+	 * 
 	 * @param remainingLength
 	 * @return
 	 */
 	private int importance(int remainingLength) {
+		remainingLength ++; /* TODO: double check */
 		if (remainingLength != 0)
-			return 10/remainingLength;
+			return 20/remainingLength;
 		else
 			return 0;
 	}
@@ -629,20 +662,20 @@ public class AdvActionMAPAgent extends Agent {
 						
 		int withHelpRemPathLength = 
 			path().getNumPoints() - 
-			findFinalPos(resourcePoints()-helpActCost, pos())
-			+ 1;
+			findFinalPos(resourcePoints()-helpActCost, pos()) -
+			1;
 					
 		int noHelpRemPathLength = 
 			path().getNumPoints() - 
-			findFinalPos(resourcePoints(), pos())
-			+ 1;
+			findFinalPos(resourcePoints(), pos()) -
+			1;
 				
 		return  
 			(noHelpRewards - withHelpRewards) *
 			(1 + 
 			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
-			(withHelpRemPathLength-noHelpRemPathLength)
-			);
+			(withHelpRemPathLength-noHelpRemPathLength)) +
+			Agent.helpOverhead;
 							
 	}
 	
@@ -658,20 +691,22 @@ public class AdvActionMAPAgent extends Agent {
 		decResourcePoints(Agent.calculationCost);
 		
 		int withHelpRewards = 
-			projectPoints(resourcePoints(), skipCell) + 
-			Agent.cellReward; /* double check cellReward */
+			projectPoints(resourcePoints(), skipCell);  
+			//Agent.cellReward; 
+		/* double check cellReward
+		projectPoints will include that */
 		
 		int noHelpRewards = 
 			projectPoints(resourcePoints(), pos());
 		
 		int withHelpRemPathLength = 
 			path().getNumPoints() - 
-			findFinalPos(resourcePoints(),skipCell) +
+			findFinalPos(resourcePoints(),skipCell) -
 			1 ;
 		
 		int noHelpRemPathLength = 
 			path().getNumPoints() - 
-			findFinalPos(resourcePoints(),pos()) + 
+			findFinalPos(resourcePoints(),pos()) -
 			1;
 		
 		return 

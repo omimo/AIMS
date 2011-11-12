@@ -1,4 +1,4 @@
-package massim.agents.empatic;
+package massim.agents.empathic;
 
 import massim.Agent;
 import massim.Board;
@@ -6,7 +6,7 @@ import massim.CommMedium;
 import massim.RowCol;
 
 
-public class EmpaticAgent extends Agent {
+public class EmpathicAgent extends Agent {
 
 	private boolean dbgInf = true;
 	private boolean dbgErr = true;
@@ -14,7 +14,7 @@ public class EmpaticAgent extends Agent {
 	private enum EmpaticAgentState {S_INIT}
 	private EmpaticAgentState state;
 	
-	public EmpaticAgent(int id, CommMedium comMed) {
+	public EmpathicAgent(int id, CommMedium comMed) {
 		super(id, comMed); 
 	}
 
@@ -152,7 +152,7 @@ public class EmpaticAgent extends Agent {
 	 */
 	private void logInf(String msg) {
 		if (dbgInf)
-			System.out.println("[EmpaticAgent " + id() + "]: " + msg);
+			System.out.println("[EmpathicAgent " + id() + "]: " + msg);
 	}
 	
 	/**
@@ -163,7 +163,7 @@ public class EmpaticAgent extends Agent {
 	 */
 	private void logErr(String msg) {
 		if (dbgErr)
-			System.err.println("[xx][EmpaticAgent " + id() + 
+			System.err.println("[xx][EmpathicAgent " + id() + 
 							   "]: " + msg);
 	}
 	

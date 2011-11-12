@@ -1,6 +1,7 @@
 package experiments.ex1;
 
 import java.text.DecimalFormat;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.SimulationEngine;
@@ -12,7 +13,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment2 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 100;
+	int numberOfRuns = 1000;
 		
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
@@ -31,10 +32,10 @@ public class Experiment2 {
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 3;
+			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 3;
-			Agent.helpOverhead = 50;			
+			Agent.calculationCost = 1;
+			Agent.helpOverhead = 100;			
 			Agent.cellReward = 50;
 			Agent.achievementReward = 10000;
 			AdvActionMAPAgent.requestThreshold = 299;
@@ -56,7 +57,7 @@ public class Experiment2 {
 				System.out.print(","+ 
 						teamScores[i]);
 			System.out.println("");
-			//(new Scanner(System.in)).nextLine();
+//			(new Scanner(System.in)).nextLine();
 
 		}
 	}

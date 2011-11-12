@@ -1,6 +1,7 @@
 package massim;
 
 import java.util.Random;
+import java.util.Scanner;
 
 import massim.Agent.AgGameStatCode;
 import massim.Agent.AgCommStatCode;
@@ -144,7 +145,9 @@ public class Team {
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&
 					agentsCommStatus[i] != AgCommStatCode.DONE)
 					allDoneComm = false;
-			}			
+			}
+			
+			commMedium.clear();
 		}
 		
 		/* Finalize the round for agents */
@@ -165,8 +168,7 @@ public class Team {
 					agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				allDone = false;
 		}
-		
-		commMedium.clear();
+				
 	
 		//(new Scanner(System.in)).nextLine();
 		

@@ -16,7 +16,7 @@ public class NoHelpAgent extends Agent {
 	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 
-	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED};
+	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
 	
 	NoHelpAgentStates state;
 	
@@ -94,13 +94,19 @@ public class NoHelpAgent extends Agent {
 		logInf("Send Cycle");		
 		
 		switch (state) {
-		case S_INIT:			
-			RowCol nextCell = path().getNextPoint(pos());
-			int cost = getCellCost(nextCell);
-			if (cost  <= resourcePoints())
-				setState(NoHelpAgentStates.R_MOVE);
+		case S_INIT:
+			if (!reachedGoal())
+			{
+				RowCol nextCell = path().getNextPoint(pos());
+				int cost = getCellCost(nextCell);
+				if (cost  <= resourcePoints())
+					setState(NoHelpAgentStates.R_MOVE);
+				else
+					setState(NoHelpAgentStates.R_BLOCKED);				
+			}
 			else
-				setState(NoHelpAgentStates.R_BLOCKED);			
+				setState(NoHelpAgentStates.R_SKIP);
+			
 			returnCode = AgCommStatCode.NEEDING_TO_REC;
 			break;		
 		default:
@@ -109,7 +115,7 @@ public class NoHelpAgent extends Agent {
 		
 		return returnCode;
 	}
-
+	
 	/**
 	 * The receive cycle method.
 	 * 
@@ -128,6 +134,10 @@ public class NoHelpAgent extends Agent {
 			break;	
 		case R_BLOCKED:
 			setRoundAction(actionType.FORFEIT);
+			returnCode = AgCommStatCode.DONE;
+			break;
+		case R_SKIP:
+			setRoundAction(actionType.SKIP);
 			returnCode = AgCommStatCode.DONE;
 			break;
 		default:	
@@ -150,24 +160,26 @@ public class NoHelpAgent extends Agent {
 		
 		logInf("Finalizing the round ...");
 		
-		if (pos().equals(goalPos()))
+		boolean succeed = act();
+		
+		if (reachedGoal())
 		{
 			logInf("Reached the goal");
 			return AgGameStatCode.REACHED_GOAL;
 		}
 		else
 		{
-			if (act())
+			if (succeed) 
 				return AgGameStatCode.READY;
 			else  /*TODO: The logic here should be changed!*/
-				{
-					logInf("Blocked!");
-					return AgGameStatCode.BLOCKED;			
-				}
+			{
+				logInf("Blocked!");
+				return AgGameStatCode.BLOCKED;			
+			}
 		}					
 	}
 	
-	
+		
 	/**
 	 * Prints the log message into the output if the information debugging 
 	 * level is turned on (debuggingInf).
