@@ -14,10 +14,10 @@ import massim.Team.TeamRoundCode;
  */
 public class SimulationEngine {
 
-	public static int[] colorRange = {0, 1, 2, 3, 4, 5};
-	public static int[] actionCostsRange = 
-									 {10, 40, 70, 100, 300, 400, 450,  500};
-	public static int numOfColors = colorRange.length;
+	public static int[] colorRange;
+	public static int[] actionCostsRange; 
+									 
+	public static int numOfColors;
 	public static int numOfTeams;
 	private int boardh = 10;
 	private int boardw = 10;
@@ -104,13 +104,21 @@ public class SimulationEngine {
 			initAgentsPos[i] =new RowCol(0, 0); 
 				//randomPos(boardh, boardw);
 
-		Random rnd = new Random(Calendar.getInstance().getTimeInMillis());
+		Random rnd = new Random();
+		
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];
+		
 		for (int i = 0; i < Team.teamSize; i++)
+		{
 			for (int j = 0; j < numOfColors; j++)
-				actionCostsMatrix[i][j] = actionCostsRange[rnd
-						.nextInt(actionCostsRange.length)];
-
+				if (rnd.nextInt(2) % 2 == 1)
+					actionCostsMatrix[i][j] = actionCostsRange[
+					                    rnd.nextInt(actionCostsRange.length/2)];
+				else
+					actionCostsMatrix[i][j] = actionCostsRange[actionCostsRange.length/2+
+					   					                    rnd.nextInt(actionCostsRange.length/2)];
+		}
+		
 		for (int t = 0; t < numOfTeams; t++)
 			teams[t].initializeRun(initAgentsPos, goals, actionCostsMatrix);
 	}
@@ -135,8 +143,10 @@ public class SimulationEngine {
 		mainBoard.disturb(disturbanceLevel);
 
 		TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
-		for (int t = 0; t < teams.length; t++) {
+		for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
+			//System.out.println(t+" hellllo!");
 			tsc[t] = teams[t].round(mainBoard);
+			
 			logInf(teams[t].getClass().getSimpleName()
 					+ " returned with the code: " + tsc[t].toString());
 		}

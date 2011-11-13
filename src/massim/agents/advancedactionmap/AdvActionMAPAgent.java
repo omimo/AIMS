@@ -124,6 +124,7 @@ public class AdvActionMAPAgent extends Agent {
 		
 		disturbanceLevel = calcDistrubanceLevel();
 		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
+		
 	}
 	
 	/**
@@ -148,8 +149,8 @@ public class AdvActionMAPAgent extends Agent {
 				int cost = getCellCost(nextCell);
 				double wellbeing = wellbeing();
 				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > lowCostThreshold) ||
-								   (cost > requestThreshold);
+								   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
+								   (cost > AdvActionMAPAgent.requestThreshold);
 				logInf("My wellbeing = " + wellbeing);
 				
 				if (needHelp)
@@ -279,7 +280,9 @@ public class AdvActionMAPAgent extends Agent {
 					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
 							", NTB= "+netTeamBenefit);
 					
-					if (netTeamBenefit > 0 && netTeamBenefit > maxNetTeamBenefit)
+					if (netTeamBenefit > 0 && 
+							netTeamBenefit > maxNetTeamBenefit &&
+							helpActCost < resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;
@@ -319,6 +322,9 @@ public class AdvActionMAPAgent extends Agent {
 			
 			if (bidMsgs.size() == 0)
 			{							
+				/* TODO: this may not be necessary as it will be checked
+				 * in the R_DO_OWN_ACT
+				 */
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
@@ -360,12 +366,13 @@ public class AdvActionMAPAgent extends Agent {
 			}
 			else
 			{
-				logInf("Didn't received confirmation");
-				setState(AAMAPState.S_DECIDE_OWN_ACT);
+				logInf("Didn't received confirmation");				
+				setState(AAMAPState.S_DECIDE_OWN_ACT);								
 			}
 			break;
 		case R_DO_OWN_ACT:
-			if (!reachedGoal())
+			int cost = getCellCost(path().getNextPoint(pos()));			
+			if (!reachedGoal() && cost <= resourcePoints())
 			{
 				logInf("Will do my own move.");
 				setRoundAction(actionType.OWN);
@@ -503,7 +510,7 @@ public class AdvActionMAPAgent extends Agent {
 		if (eCost == 0)
 			return resourcePoints();
 		else
-			return resourcePoints()/eCost;
+			return (double)resourcePoints()/eCost;
 	}
 	
 	/**
@@ -607,7 +614,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * 
 	 * Maps the remaining distance to the goal into 
 	 * 
-	 * Currently: imp(x) = 20/x
+	 * Currently: imp(x) = 100/x
 	 * 
 	 * @param remainingLength
 	 * @return
@@ -615,7 +622,7 @@ public class AdvActionMAPAgent extends Agent {
 	private int importance(int remainingLength) {
 		remainingLength ++; /* TODO: double check */
 		if (remainingLength != 0)
-			return 20/remainingLength;
+			return 100/remainingLength;
 		else
 			return 0;
 	}
@@ -773,6 +780,7 @@ public class AdvActionMAPAgent extends Agent {
 		boolean result;		
 		int cost = getCellCost(helpeeNextCell);			
 		logInf("Should help agent "+agentToHelp);
+		
 		if (resourcePoints() >= cost )
 		{			
 			logInf("Helped agent " + agentToHelp);
@@ -781,6 +789,8 @@ public class AdvActionMAPAgent extends Agent {
 		}
 		else
 		{
+			logErr(""+resourcePoints());
+			logErr(""+cost);
 			logErr("Failed to help :(");
 			result = false;
 		}

@@ -3,6 +3,8 @@ package experiments.ex1;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
 import massim.Agent;
 import massim.SimulationEngine;
 import massim.Team;
@@ -15,16 +17,24 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment2 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1000;
+	int numberOfRuns = 500;
 		
-		/* Create the teams involved in the simulation */
+	SimulationEngine.colorRange = 
+		new int[] {0, 1, 2, 3, 4, 5};
+	SimulationEngine.numOfColors =  
+		SimulationEngine.colorRange.length;
+	SimulationEngine.actionCostsRange = 
+		new int[] {10, 40, 70, 100, 300, 400, 450,  500};	
+	
+	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[3];		
-		teams[0] = new AdvActionMapTeam();
-		teams[1] = new BasicActionMAPTeam();
+		teams[0] = new BasicActionMAPTeam();
+		teams[1] = new AdvActionMapTeam();		
 		teams[2] = new NoHelpTeam();
 			
-				
+		
+		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 		
@@ -38,16 +48,16 @@ public class Experiment2 {
 			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 1;
-			Agent.helpOverhead = 100;			
-			Agent.cellReward = 50;
-			Agent.achievementReward = 10000;
+			Agent.helpOverhead = 50;			
+			Agent.cellReward = 100;
+			Agent.achievementReward = 20000;
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
-			AdvActionMAPAgent.lowCostThreshold = 40;
+			AdvActionMAPAgent.lowCostThreshold = 70;
 			BasicActionMAPAgent.requestThreshold = 299;
 			
 			/* vary the disturbance: */
-			SimulationEngine.disturbanceLevel = 0.1 * exp;  
+			SimulationEngine.disturbanceLevel = 0.1 * exp;;  
 			
 			/* Initialize and run the experiment */
 			se.initializeExperiment(numberOfRuns);			

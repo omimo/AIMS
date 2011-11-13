@@ -18,7 +18,7 @@ import massim.Team;
  */
 public class BasicActionMAPAgent extends Agent {
 
-	boolean dbgInf = true;
+	boolean dbgInf = false;
 	boolean dbgErr = true;
 	
 	private enum BAMAPState {
@@ -77,7 +77,7 @@ public class BasicActionMAPAgent extends Agent {
 			int[] actionCosts, int initResourcePoints) {
 		
 		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);		
+				actionCosts,initResourcePoints);					
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
@@ -135,7 +135,9 @@ public class BasicActionMAPAgent extends Agent {
 			{
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
-				boolean needHelp = cost > BasicActionMAPAgent.requestThreshold;
+				boolean needHelp = 
+					(cost > BasicActionMAPAgent.requestThreshold) ||
+					(cost > resourcePoints());
 				if (needHelp)
 				{
 					logInf("Need help!");
@@ -172,7 +174,13 @@ public class BasicActionMAPAgent extends Agent {
 				setState(BAMAPState.R_BIDDING);
 			}
 			else
-				setState(BAMAPState.R_DO_OWN_ACT);
+			{
+				int cost = getCellCost(path().getNextPoint(pos()));
+				if (cost <= resourcePoints())
+					setState(BAMAPState.R_DO_OWN_ACT);
+				else
+					setState(BAMAPState.R_BLOCKED);
+			}				
 			break;
 		case S_SEEK_HELP:
 			setState(BAMAPState.R_GET_BIDS);
@@ -181,9 +189,13 @@ public class BasicActionMAPAgent extends Agent {
 			setState(BAMAPState.R_GET_BID_CONF);
 			break;
 		case S_DECIDE_OWN_ACT:
-			setState(BAMAPState.R_DO_OWN_ACT);
+			int cost = getCellCost(path().getNextPoint(pos()));
+			if (cost <= resourcePoints())
+				setState(BAMAPState.R_DO_OWN_ACT);
+			else
+				setState(BAMAPState.R_BLOCKED);			
 			break;
-		case S_DECIDE_HELP_ACT:
+		case S_DECIDE_HELP_ACT:			
 			setState(BAMAPState.R_DO_HELP_ACT);
 			break;
 		case S_RESPOND_BIDS:
@@ -263,7 +275,9 @@ public class BasicActionMAPAgent extends Agent {
 					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
 							", NTB= "+netTeamBenefit);
 					
-					if (netTeamBenefit > 0 && netTeamBenefit > maxNetTeamBenefit)
+					if (netTeamBenefit > 0 && 
+							netTeamBenefit > maxNetTeamBenefit &&
+							helpActCost < resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;

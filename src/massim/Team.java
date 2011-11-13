@@ -171,7 +171,7 @@ public class Team {
 		}
 				
 	
-		(new Scanner(System.in)).nextLine();
+		//(new Scanner(System.in)).nextLine();
 		
 		if (allDone)
 			return TeamRoundCode.DONE;
