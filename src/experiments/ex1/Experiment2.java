@@ -44,7 +44,7 @@ public class Experiment2 {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
-			Team.initResCoef = 200;
+			Team.initResCoef = 150;
 			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 1;
@@ -53,7 +53,7 @@ public class Experiment2 {
 			Agent.achievementReward = 20000;
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
-			AdvActionMAPAgent.lowCostThreshold = 70;
+			AdvActionMAPAgent.lowCostThreshold = 100;
 			BasicActionMAPAgent.requestThreshold = 299;
 			
 			/* vary the disturbance: */
