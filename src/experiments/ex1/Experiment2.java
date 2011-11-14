@@ -14,6 +14,12 @@ import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.nohelp.NoHelpTeam;
 
+/**
+ * This is the experiment for the Empathic Game
+ * 
+ * @author Omid
+ *
+ */
 public class Experiment2 {
 
 	public static void main(String[] args) {
