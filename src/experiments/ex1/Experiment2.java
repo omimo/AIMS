@@ -1,9 +1,6 @@
 package experiments.ex1;
 
 import java.text.DecimalFormat;
-import java.util.Scanner;
-
-import javax.swing.text.StyleContext.SmallAttributeSet;
 
 import massim.Agent;
 import massim.SimulationEngine;
@@ -14,6 +11,12 @@ import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.nohelp.NoHelpTeam;
 
+/**
+ * This is an experiment in the regular branch v1.2
+ *   
+ * @author Omid Almie
+ *
+ */
 public class Experiment2 {
 
 	public static void main(String[] args) {
