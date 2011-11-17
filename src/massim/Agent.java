@@ -62,27 +62,31 @@ public abstract class Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
+	 * @param actionCosts				The agent's action costs vector
+	 */
+	public void initializeRun(int[] actionCosts) {
+				
+		theBoard = null;
+
+		this.actionCosts = new int[actionCosts.length];
+		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
+				actionCosts.length);			
+	}
+	
+	/**
+	 * Initializes the agent for a new match within the current run.
+	 * 
 	 * @param initialPosition			The initial position of this agent
 	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
 		
-		goalPos = null;
-		pos = null;
-		theBoard = null;
 		path = null;
-		
 		this.pos = initialPosition;
 		this.goalPos = goalPosition;
-		
-		this.actionCosts = new int[actionCosts.length];
-		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
-				actionCosts.length);
-		
 		resourcePoints = 0;
 		incResourcePoints(initResourcePoints);
 	}

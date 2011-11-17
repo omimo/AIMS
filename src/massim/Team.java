@@ -1,17 +1,16 @@
 package massim;
 
 import java.util.Random;
-import java.util.Scanner;
 
-import massim.Agent.AgGameStatCode;
 import massim.Agent.AgCommStatCode;
+import massim.Agent.AgGameStatCode;
 
 /**
  * Team.java
  * 
  * 
  * @author Omid Alemi
- * @version 1.3 2011/11/10
+ * @version 2.0 2011/11/17
  */
 public class Team {
 
@@ -61,17 +60,14 @@ public class Team {
 	}
 
 	/**
-	 * Initializes the team and agents for a new run.
+	 * Initializes the team for a new run.
 	 * 
 	 * Called by the simulation engine (SimulationEngine.initializeRun())
 	 * It should reset necessary variables values.
 	 * 
-	 * @param initAgentsPos					Array of initial agents	position
-	 * @param goals							Array of initial goals position
 	 * @param actionCostMatrix				Matrix of action costs
 	 */
-	public void initializeRun(RowCol[] initAgentsPos, RowCol[] goals,
-			int[][] actionCostMatrix) {
+	public void initializeRun(int[][] actionCostMatrix) {
 		logInf("initilizing for a new run.");
 		commMedium.clear();
 
@@ -80,9 +76,30 @@ public class Team {
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-			agentsGameStatus[i] = AgGameStatCode.READY;				
+		{
+			agentsGameStatus[i] = AgGameStatCode.READY;
+			agents[i].initializeRun(actionCostsMatrix[i]);
+		}
 	}
 
+	/**
+	 * Initializes the team for a new match in the current run.
+	 *  
+	 * @param initAgentsPos					Array of initial agents	position
+	 * @param goals							Array of initial goals position
+	 */
+	public void initializeMatch(RowCol[] initAgentsPos, RowCol[] goals) {
+		
+		for(int i=0;i<Team.teamSize;i++)
+		{
+			int pathLength = calcDistance(initAgentsPos[i], goals[i]);
+			
+			agents[i].initializeMatch(initAgentsPos[i], goals[i], 
+					pathLength * initResCoef);
+		}
+	}
+	
+	
 	/**
 	 * Starts a new round of the simulation for this team.
 	 * 
@@ -180,6 +197,17 @@ public class Team {
 	
 	}
 
+	/**
+	 * Calculates the distance between two points in a board.
+	 * 
+	 * @param start					The position of the starting point
+	 * @param end					The position of the ending point
+	 * @return						The distance
+	 */
+	private int calcDistance(RowCol start, RowCol end) {
+		return  Math.abs(end.row-start.row) + Math.abs(end.col-start.col) + 1;
+	}	
+	
 	
 	/**
 	 * To get the collective reward points of the team members

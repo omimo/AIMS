@@ -9,7 +9,7 @@ import massim.Team.TeamRoundCode;
  * The main class of the simulator. 
  * 
  * @author Omid Alemi
- * @version 1.2 2011/10/16
+ * @version 2.0 2011/11/17
  * 
  */
 public class SimulationEngine {
@@ -87,23 +87,13 @@ public class SimulationEngine {
 	 * The method also invokes the Team.initializeRun() for all teams.
 	 */
 	public void initializeRun() {
-		logInf("--- The run initialized ---");
-		roundCounter = 0;
+		logInf("--- Initializing the run ---");
+
 		mainBoard = Board.randomBoard
 					(boardh, boardw,SimulationEngine.colorRange);
 		
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
-		
-		goals = new RowCol[Team.teamSize];
-		for (int i = 0; i < Team.teamSize; i++)
-			goals[i] = new RowCol(boardh-1, boardw-1);
-				//randomPos(boardh, boardw);
-
-		initAgentsPos = new RowCol[Team.teamSize];
-		for (int i = 0; i < Team.teamSize; i++)
-			initAgentsPos[i] =new RowCol(0, 0); 
-				//randomPos(boardh, boardw);
-
+			
 		Random rnd = new Random();
 		
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];
@@ -120,9 +110,34 @@ public class SimulationEngine {
 		}
 		
 		for (int t = 0; t < numOfTeams; t++)
-			teams[t].initializeRun(initAgentsPos, goals, actionCostsMatrix);
+			teams[t].initializeRun(actionCostsMatrix);
 	}
 
+	/**
+	 * Prepares the simulation parameters for a new match within the current
+	 * run.
+	 * 
+	 */
+	public void initializeMatch() {
+		
+		logInf("-| Initializing the match |-");
+		
+		roundCounter = 0;
+		
+		goals = new RowCol[Team.teamSize];
+		for (int i = 0; i < Team.teamSize; i++)
+			goals[i] = new RowCol(boardh-1, boardw-1);
+				//randomPos(boardh, boardw);
+
+		initAgentsPos = new RowCol[Team.teamSize];
+		for (int i = 0; i < Team.teamSize; i++)
+			initAgentsPos[i] =new RowCol(0, 0); 
+				//randomPos(boardh, boardw);
+		
+		for (int t = 0; t < numOfTeams; t++)
+			teams[t].initializeMatch(initAgentsPos, goals);
+	}
+	
 	/**
 	 * Executes one round of the simulation.
 	 * 
@@ -177,13 +192,30 @@ public class SimulationEngine {
 	 */
 	public SimRoundCode run() {
 		logInf("-- The run started --");
+		
+		// for(int match=1;match<=SimulationEngine.NUM_OF_MATCHES;match++) {
+		// initializeMatch(match);
 		SimRoundCode src = SimRoundCode.SIMOK;
 		while (src == SimRoundCode.SIMOK)
 			src = round();
-		logInf("-- The run ended --");
+		// }
+		logInf("-- The run ended --");		
 		return src;
 	}
 
+	
+	/*
+	 public initializeMatch(int m) {
+	 
+	 	agInitPos[] = ...
+	 	agGoalPos[] = ...
+	 	for each team t 
+	 		t.initializeMatch(agInitPos, agGoalPos)
+	 
+	 
+	 }
+	 */
+	
 	/**
 	 * Executes the simulation for one whole experiment. 
 	 * 
