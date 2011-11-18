@@ -36,22 +36,23 @@ public class NoHelpAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
-	 * @param initialPosition			The initial position of this agent
-	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
-	 * @param initResourcePoints		The initial resource points given
-	 * 									to the agent by its team.
+	 * @param actionCosts				The agent's action costs vector	 
 	 */
 	@Override
-	public void initializeRun(int[] actionCosts) {
-		
+	public void initializeRun(int[] actionCosts) {		
 		super.initializeRun(actionCosts);		
 		
 		logInf("Initialized for a new run.");
-
-				
 	}
-	
+		
+	/**
+	 * Initializes the agent for a new match within current run
+	 * 
+	 * @param initialPosition			The initial position of this agent
+	 * @param goalPosition				The goal position for this agent
+	 * @param initResourcePoints		The initial resource points given
+	 * 									to the agent by its team.
+	 */
 	@Override
 	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
 			 int initResourcePoints) {

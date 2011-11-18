@@ -31,16 +31,29 @@ public class EmpathicAgent extends Agent {
 	 * 									to the agent by its team.
 	 */
 	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
-		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);		
+	public void initializeRun(int[] actionCosts) {		
+		super.initializeRun(actionCosts);		
 		
 		logInf("Initialized for a new run.");
+
+	}
+	
+	/**
+	 * Initializes the agent for a new match within current run
+	 * 
+	 * @param initialPosition			The initial position of this agent
+	 * @param goalPosition				The goal position for this agent
+	 * @param initResourcePoints		The initial resource points given
+	 * 									to the agent by its team.
+	 */
+	@Override
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
+		super.initializeMatch(initialPosition, goalPosition, initResourcePoints);
+		
+		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
-				
 	}
 	
 	/** 
@@ -178,8 +191,6 @@ public class EmpathicAgent extends Agent {
 		logInf("Set the state to +"+state.toString());
 	}
 
-
-	
 	/**
 	 * The agent performs its own action (move) here.
 	 * 
