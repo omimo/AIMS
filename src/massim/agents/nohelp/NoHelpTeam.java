@@ -24,26 +24,6 @@ public class NoHelpTeam extends Team {
 		
 		setAgents(selfishAgents);
 	}	
-	
-	/**
-	 * The overridden Team.initializeRun() method.
-	 * 
-	 * This calls the same method of the superclass first.
-	 * 
-	 * Initialized the agents, giving them their initial position, goal
-	 * position, action costs, and their initial resources based on their
-	 * path length.
-	 */
-	@Override
-	public void initializeRun(
-		RowCol[] initAgentsPos, RowCol[] goals, int[][]actionCostsMatrix) {
-		
-		super.initializeRun(initAgentsPos, goals, actionCostsMatrix);
-						
-		
-	}
-	
-	
-		
+			
 }
 

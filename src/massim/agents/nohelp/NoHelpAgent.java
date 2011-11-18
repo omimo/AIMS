@@ -13,7 +13,7 @@ import massim.RowCol;
  */
 public class NoHelpAgent extends Agent {
 	
-	private boolean dbgInf = false;
+	private boolean dbgInf = true;
 	private boolean dbgErr = true;
 
 	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
@@ -43,16 +43,23 @@ public class NoHelpAgent extends Agent {
 	 * 									to the agent by its team.
 	 */
 	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeRun(int[] actionCosts) {
 		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);		
+		super.initializeRun(actionCosts);		
 		
 		logInf("Initialized for a new run.");
+
+				
+	}
+	
+	@Override
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
+		super.initializeMatch(initialPosition, goalPosition, initResourcePoints);
+		
+		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
-				
 	}
 	
 	/** 

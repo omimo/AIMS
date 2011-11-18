@@ -44,7 +44,7 @@ public class Team {
 		OK, DONE, ERR
 	}
 
-	private boolean debuggingInf = false;
+	private boolean debuggingInf = true;
 	public int testRunCounter;
 
 	/**
@@ -76,8 +76,7 @@ public class Team {
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-		{
-			agentsGameStatus[i] = AgGameStatCode.READY;
+		{			
 			agents[i].initializeRun(actionCostsMatrix[i]);
 		}
 	}
@@ -90,12 +89,15 @@ public class Team {
 	 */
 	public void initializeMatch(RowCol[] initAgentsPos, RowCol[] goals) {
 		
+		logInf("initilizing for a new match.");
+		
 		for(int i=0;i<Team.teamSize;i++)
 		{
+			agentsGameStatus[i] = AgGameStatCode.READY;
 			int pathLength = calcDistance(initAgentsPos[i], goals[i]);
 			
 			agents[i].initializeMatch(initAgentsPos[i], goals[i], 
-					pathLength * initResCoef);
+					pathLength * Team.initResCoef);
 		}
 	}
 	

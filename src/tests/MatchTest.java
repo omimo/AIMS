@@ -1,4 +1,4 @@
-package experiments.ex1;
+package tests;
 
 import java.text.DecimalFormat;
 import java.util.Scanner;
@@ -20,11 +20,12 @@ import massim.agents.nohelp.NoHelpTeam;
  * @author Omid
  *
  */
-public class Experiment2 {
+public class MatchTest {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 500;
-		
+	int numberOfRuns = 1;
+
+	SimulationEngine.numOfMatches = 5;
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
 	SimulationEngine.numOfColors =  
@@ -33,11 +34,9 @@ public class Experiment2 {
 		new int[] {10, 40, 70, 100, 300, 400, 450,  500};	
 	
 	/* Create the teams involved in the simulation */
-		Team.teamSize = 8;
-		Team[] teams = new Team[3];		
-		teams[0] = new BasicActionMAPTeam();
-		teams[1] = new AdvActionMapTeam();		
-		teams[2] = new NoHelpTeam();
+		Team.teamSize = 4;
+		Team[] teams = new Team[1];			
+		teams[0] = new NoHelpTeam();
 			
 		
 		

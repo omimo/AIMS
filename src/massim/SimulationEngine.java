@@ -19,6 +19,7 @@ public class SimulationEngine {
 									 
 	public static int numOfColors;
 	public static int numOfTeams;
+	public static int numOfMatches;
 	private int boardh = 10;
 	private int boardw = 10;
 
@@ -34,7 +35,7 @@ public class SimulationEngine {
 	private int[][] teamsScores;
 	private int numOfRuns;
 
-	private boolean debuggingInf = false;
+	private boolean debuggingInf = true;
 	private boolean debuggingErr = true;
 
 	/**
@@ -158,8 +159,7 @@ public class SimulationEngine {
 		mainBoard.disturb(disturbanceLevel);
 
 		TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
-		for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
-			//System.out.println(t+" hellllo!");
+		for (int t = 0; t < SimulationEngine.numOfTeams; t++) {		
 			tsc[t] = teams[t].round(mainBoard);
 			
 			logInf(teams[t].getClass().getSimpleName()
@@ -190,17 +190,26 @@ public class SimulationEngine {
 	 * 						invocation,	representing the return code 
 	 * 						of the run.
 	 */
-	public SimRoundCode run() {
+	public void run(int r) {
 		logInf("-- The run started --");
+				
+		for (int m=1;m<=SimulationEngine.numOfMatches;m++)
+		{
+			initializeMatch();
+			
+			SimRoundCode src = SimRoundCode.SIMOK;
+			while (src == SimRoundCode.SIMOK)
+				src = round();
+
+			for (int t=0;t<numOfTeams;t++)
+			{
+				teamsScores[t][r] += teams[t].teamRewardPoints();
+				logInf("Team "+ t+"'s scores for this match("+m+") ="+teams[t].teamRewardPoints());
+				logInf("Team "+ t+"'s total score = "+teamsScores[t][r]);
+			}				
+		}
 		
-		// for(int match=1;match<=SimulationEngine.NUM_OF_MATCHES;match++) {
-		// initializeMatch(match);
-		SimRoundCode src = SimRoundCode.SIMOK;
-		while (src == SimRoundCode.SIMOK)
-			src = round();
-		// }
-		logInf("-- The run ended --");		
-		return src;
+		logInf("-- The run ended --");				
 	}
 
 	
@@ -229,11 +238,10 @@ public class SimulationEngine {
 		logInf("---- The experiment started ----");
 		for (int r = 0; r < numOfRuns; r++) {
 			initializeRun();
-			run();
-			for (int t = 0; t < numOfTeams; t++) {
-				teamsScores[t][r] = teams[t].teamRewardPoints();
+			run(r);
+			for (int t = 0; t < numOfTeams; t++) {			
 				logInf("Team " + teams[t].getClass().getSimpleName()
-						+ " scored " + teams[t].teamRewardPoints()
+						+ " scored " + teamsScores[t][r]
 						+ " for this run.");
 			}
 		}
