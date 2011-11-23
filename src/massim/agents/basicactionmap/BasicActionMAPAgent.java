@@ -189,11 +189,14 @@ public class BasicActionMAPAgent extends Agent {
 			setState(BAMAPState.R_GET_BID_CONF);
 			break;
 		case S_DECIDE_OWN_ACT:
-			int cost = getCellCost(path().getNextPoint(pos()));
+		/*	int cost = getCellCost(path().getNextPoint(pos()));
 			if (cost <= resourcePoints())
 				setState(BAMAPState.R_DO_OWN_ACT);
-			else
-				setState(BAMAPState.R_BLOCKED);			
+			else  
+				setState(BAMAPState.R_BLOCKED);
+				*/ // it is already checked in the R_GET_BIDS state
+			setState(BAMAPState.R_DO_OWN_ACT);
+			
 			break;
 		case S_DECIDE_HELP_ACT:			
 			setState(BAMAPState.R_DO_HELP_ACT);
