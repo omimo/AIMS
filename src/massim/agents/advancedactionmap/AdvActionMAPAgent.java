@@ -367,10 +367,16 @@ public class AdvActionMAPAgent extends Agent {
 			else
 			{
 				logInf("Didn't received confirmation");				
-				setState(AAMAPState.S_DECIDE_OWN_ACT);								
+				RowCol nextCell = path().getNextPoint(pos());			
+				int nextCost = getCellCost(nextCell);
+				if (nextCost <= resourcePoints())
+					setState(AAMAPState.S_DECIDE_OWN_ACT);
+				else
+					setState(AAMAPState.S_BLOCKED);								
 			}
 			break;
 		case R_DO_OWN_ACT:
+			//TODO: Check this
 			int cost = getCellCost(path().getNextPoint(pos()));			
 			if (!reachedGoal() && cost <= resourcePoints())
 			{
