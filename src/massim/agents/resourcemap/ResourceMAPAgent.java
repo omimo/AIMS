@@ -24,6 +24,8 @@ public class ResourceMAPAgent extends Agent {
 	private final static int RMAP_BID_MSG = 2;
 	private final static int RMAP_HELP_CONF = 3;
 	
+	private final static int RESOURCE_OFFER_INTERVAL = 10; 
+	
 	private enum RMAPState {S_INIT,
 							S_RESPOND_TO_REQ, S_SEEKING_HELP, S_BLOCKED,
 							S_BIDDING, S_DECIDE_OWN_ACT, S_RESPOND_BIDS,
@@ -250,18 +252,51 @@ public class ResourceMAPAgent extends Agent {
 				logInf("Received "+helpReqMsgs.size()+" help requests");
 				
 				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				ArrayList<Integer> finalResOffers = new ArrayList<Integer>();
+				int finalCoef = -1;
 				
 				for (Message msg : helpReqMsgs)
 				{
 					
 					//TODO: Deliberation
 					
+					ArrayList<Integer> resOffers = new ArrayList<Integer>();
+					//ArrayList<Integer> coefList = new ArrayList<Integer>();
+					
+					int reqAmount = msg.getIntValue("reqAmount");
+					int teamBenefit = msg.getIntValue("teamBenefit");
+					int qi = teamBenefit/reqAmount;
+					int offer = reqAmount;
+					int maxCoef = -1;
+					while (offer > 1)
+					{
+						int teamLoss = calcTeamLoss(offer);
+						int coef = teamLoss/offer;
+						if (coef < qi)
+						{
+							resOffers.add(offer);
+							//coefList.add(coef);
+							if (coef > maxCoef)
+								maxCoef = coef;
+							
+							offer -= RESOURCE_OFFER_INTERVAL;
+						}
+					}
+					
+					int NTB = teamBenefit - resOffers.get(0);
+					if (NTB > maxNetTeamBenefit)
+					{
+						maxNetTeamBenefit = NTB;
+						finalCoef = maxCoef;
+						finalResOffers = resOffers;
+					}
+										
 				}
 			
 				if (agentToHelp != -1)
 				{					
 					logInf("Prepared to bid to help agent "+ agentToHelp);
-					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit);					
+					bidMsg = prepareBidMsg(agentToHelp, finalResOffers, finalCoef);					
 					bidding = true;					
 				}	
 			}
@@ -355,6 +390,42 @@ public class ResourceMAPAgent extends Agent {
 			returnCode = AgCommStatCode.DONE;
 		
 		return returnCode;		
+	}
+	
+	/**
+	 * Calculates the team loss considering spending the given amount 
+	 * of resource points to help. 
+	 * 
+	 * @param helpActCost				The cost of help action
+	 * @return							The team loss
+	 */
+	private int calcTeamLoss(int helpActCost)
+	{
+		decResourcePoints(Agent.calculationCost);
+		
+		int withHelpRewards = 
+			projectRewardPoints(resourcePoints()-helpActCost, pos());
+						
+		int noHelpRewards =
+			projectRewardPoints(resourcePoints(),pos());
+						
+		int withHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints()-helpActCost, pos()) -
+			1;
+					
+		int noHelpRemPathLength = 
+			path().getNumPoints() - 
+			findFinalPos(resourcePoints(), pos()) -
+			1;
+				
+		return  
+			(noHelpRewards - withHelpRewards) *
+			(1 + 
+			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
+			(withHelpRemPathLength-noHelpRemPathLength)) +
+			Agent.helpOverhead;
+							
 	}
 	
 	/**
@@ -548,10 +619,14 @@ public class ResourceMAPAgent extends Agent {
 	 * @param NTB					The net team benefit
 	 * @return						The message encoded in String
 	 */
-	private String prepareBidMsg(int requester, int NTB) {
-		TODO
+	private String prepareBidMsg(int requester, ArrayList<Integer> resOffers, int coef) {
+		String offers = Integer.toString(resOffers.get(0));
+		for (int o : resOffers)
+			offers += "," + o ;
+		
 		Message bidMsg = new Message(id(),requester,RMAP_BID_MSG);
-		bidMsg.putTuple("NTB", NTB);
+		bidMsg.putTuple("amounts", offers);
+		bidMsg.putTuple("coef", coef);
 		return bidMsg.toString();
 	}
 	
