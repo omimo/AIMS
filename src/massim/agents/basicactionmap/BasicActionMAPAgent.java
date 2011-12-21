@@ -253,7 +253,8 @@ public class BasicActionMAPAgent extends Agent {
 			{
 				logInf("Received "+helpReqMsgs.size()+" help requests");				
 				
-				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				int maxNetTeamBenefit = Integer.MIN_VALUE;		
+				
 				for (Message msg : helpReqMsgs)
 				{
 					RowCol reqHelpCell = 
@@ -358,12 +359,18 @@ public class BasicActionMAPAgent extends Agent {
 			}
 			else
 			{
-				logInf("Didn't received confirmation");
-				setState(BAMAPState.S_DECIDE_OWN_ACT);
+				logInf("Didn't received confirmation");				
+				RowCol nextCell = path().getNextPoint(pos());			
+				int nextCost = getCellCost(nextCell);
+				if (nextCost <= resourcePoints())
+					setState(BAMAPState.S_DECIDE_OWN_ACT);
+				else
+					setState(BAMAPState.S_BLOCKED);								
 			}
 			break;
 		case R_DO_OWN_ACT:
-			if (!reachedGoal())
+			int cost = getCellCost(path().getNextPoint(pos()));			
+			if (!reachedGoal() && cost <= resourcePoints())
 			{
 				logInf("Will do my own move.");
 				setRoundAction(actionType.OWN);
@@ -373,7 +380,7 @@ public class BasicActionMAPAgent extends Agent {
 				logInf("Nothing to do at this round.");
 				setRoundAction(actionType.SKIP);
 			}
-			break;
+			break;		
 		case R_DO_HELP_ACT:
 			logInf("Will help another agent");
 			setRoundAction(actionType.HELP_ANOTHER);

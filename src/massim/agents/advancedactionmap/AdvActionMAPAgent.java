@@ -10,6 +10,7 @@ import massim.Path;
 import massim.RowCol;
 import massim.Team;
 
+
 /**
  * Advanced Action MAP Implementation.
  * 
@@ -189,8 +190,20 @@ public class AdvActionMAPAgent extends Agent {
 				sendMsg(agentToHelp, bidMsg);
 				setState(AAMAPState.R_BIDDING);
 			}
-			else
+			/*  before
+			   else
 				setState(AAMAPState.R_DO_OWN_ACT);
+				
+				*/
+			
+			else
+			{
+				int cost = getCellCost(path().getNextPoint(pos()));
+				if (cost <= resourcePoints())
+					setState(AAMAPState.R_DO_OWN_ACT);
+				else
+					setState(AAMAPState.R_BLOCKED);
+			}							
 			break;
 		case S_SEEK_HELP:
 			setState(AAMAPState.R_GET_BIDS);
@@ -199,7 +212,13 @@ public class AdvActionMAPAgent extends Agent {
 			setState(AAMAPState.R_GET_BID_CONF);
 			break;
 		case S_DECIDE_OWN_ACT:
-			setState(AAMAPState.R_DO_OWN_ACT);
+			 setState(AAMAPState.R_DO_OWN_ACT);
+			/*int cost = getCellCost(path().getNextPoint(pos()));
+			if (cost <= resourcePoints())
+				setState(AAMAPState.R_DO_OWN_ACT);
+			else
+				setState(AAMAPState.R_BLOCKED);
+				*/		
 			break;
 		case S_DECIDE_HELP_ACT:
 			setState(AAMAPState.R_DO_HELP_ACT);
@@ -271,7 +290,8 @@ public class AdvActionMAPAgent extends Agent {
 					int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
-					if (canCalc())
+					
+					if (canCalc()) //TODO: Revise this
 					{
 						teamLoss = calcTeamLoss(helpActCost);
 						netTeamBenefit = teamBenefit - teamLoss;
