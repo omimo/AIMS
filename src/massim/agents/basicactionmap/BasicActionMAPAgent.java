@@ -152,6 +152,7 @@ public class BasicActionMAPAgent extends Agent {
 							logInf("Team benefit of help would be "+teamBenefit);
 							String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
 							broadcastMsg(helpReqMsg);
+							this.numOfHelpReq++;
 							setState(BAMAPState.R_IGNORE_HELP_REQ);
 						}
 						else
@@ -171,6 +172,7 @@ public class BasicActionMAPAgent extends Agent {
 			{
 				logInf("Sending a bid to agent"+agentToHelp);
 				sendMsg(agentToHelp, bidMsg);
+				this.numOfBids++;
 				setState(BAMAPState.R_BIDDING);
 			}
 			else
@@ -318,6 +320,7 @@ public class BasicActionMAPAgent extends Agent {
 			
 			if (bidMsgs.size() == 0)
 			{							
+				this.numOfUnSucHelpReq++;
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(BAMAPState.S_DECIDE_OWN_ACT);
@@ -355,6 +358,7 @@ public class BasicActionMAPAgent extends Agent {
 					(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
 			{
 				logInf("Received confirmation");
+				this.numOfSucOffers++;
 				setState(BAMAPState.S_DECIDE_HELP_ACT);
 			}
 			else

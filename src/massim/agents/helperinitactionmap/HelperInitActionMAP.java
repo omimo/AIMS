@@ -9,7 +9,6 @@ import massim.Message;
 import massim.Path;
 import massim.RowCol;
 import massim.Team;
-import massim.agents.advancedactionmap.AdvActionMAPAgent.AAMAPState;
 
 /**
  * The Helper-Initiated Action MAP Implementation.
@@ -137,18 +136,21 @@ public class HelperInitActionMAP extends Agent {
 		logInf("Send Cycle");	
 		
 		switch(state) {
-		case S_INIT:
-				// TODO: something here from diagram
-				int nextCost = getCellCost(path().getNextPoint(pos()));
+		case S_INIT:			
+				//int nextCost = getCellCost(path().getNextPoint(pos()));
 				double wellbeing = wellbeing();
 				//TODO: update WHH
 				boolean offerHelp = wellbeing > WHH;
 				
-				if (offerHelp) 
+				if (offerHelp && (!canCalc() || !canBCast()))
+				{
+					setState(HIAMAPState.R_BLOCKED);
+				}
+				else if (offerHelp && canCalc() && canBCast()) 
 				{
 					//TODO: Select action
 				}
-				else
+				else if (!offerHelp && !reachedGoal())
 				{
 					if (Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) < EPSILON)
 						if (canBCast()) {
@@ -157,6 +159,8 @@ public class HelperInitActionMAP extends Agent {
 						}											
 					setState(HIAMAPState.R_GET_HELP_OFFERS);						
 				}
+				else
+					setState(HIAMAPState.R_DO_OWN_ACT);//TODO: check this
 					
 			break;
 		case S_RESPOND_TO_OFFERS:
@@ -193,6 +197,9 @@ public class HelperInitActionMAP extends Agent {
 			else
 				setState(HIAMAPState.R_BLOCKED); 
 			break;
+		case S_BLOCKED:
+			setState(HIAMAPState.R_BLOCKED);
+			break;	
 		default:
 			logErr("Unimplemented send state: " + state.toString());
 		}
@@ -236,18 +243,21 @@ public class HelperInitActionMAP extends Agent {
 				bidMsg = "";
 				
 				for (Message msg : offerMsgs)
-				{
-					//TODO: check if the offered actions coincides with the agent's
-					//next act
-					int nextCost = getCellCost(path().getNextPoint(pos()));
-					int teamBenefit = calcTeamBenefit(path().getNextPoint(pos()));
-					int NTB=0; //TODO
-					
-					if (NTB > maxNetTeamBenefit)
+				{ 
+					if (canCalc())
 					{
-						maxNetTeamBenefit = NTB;
-						helperAgent = msg.sender();
-					}	
+						//TODO: check if the offered actions coincides with the agent's
+						//next act
+						int nextCost = getCellCost(path().getNextPoint(pos()));
+						int teamBenefit = calcTeamBenefit(path().getNextPoint(pos()));
+						int NTB=0; //TODO
+					
+						if (NTB > maxNetTeamBenefit)
+						{
+							maxNetTeamBenefit = NTB;
+							helperAgent = msg.sender();
+						}	
+					}
 				}
 				
 				if (helperAgent != -1)
@@ -257,6 +267,8 @@ public class HelperInitActionMAP extends Agent {
 					bidding = true;
 					setState(HIAMAPState.S_RESPOND_TO_OFFERS);
 				}
+				else
+					setState(HIAMAPState.S_BLOCKED);
 			}
 			else
 			{
@@ -311,7 +323,7 @@ public class HelperInitActionMAP extends Agent {
 						agentToHelp = helpeeAgent;
 					}
 				}
-				logInf("Agent "+ helperAgent+" won the bidding.");
+				logInf("Agent "+ agentToHelp+" won the bidding.");
 				setState(HIAMAPState.S_RESPOND_TO_BIDS);
 			}
 			break;			
@@ -334,6 +346,33 @@ public class HelperInitActionMAP extends Agent {
 				else
 					setState(HIAMAPState.S_BLOCKED);								
 			}
+			break;
+		case R_BLOCKED:
+			//TODO: ? skip the action
+			// or forfeit
+			setRoundAction(actionType.FORFEIT);
+			break;
+		case R_DO_OWN_ACT:
+			//TODO: Check this
+			int cost = getCellCost(path().getNextPoint(pos()));			
+			if (!reachedGoal() && cost <= resourcePoints())
+			{
+				logInf("Will do my own move.");
+				setRoundAction(actionType.OWN);
+			}
+			else
+			{
+				logInf("Nothing to do at this round.");
+				setRoundAction(actionType.SKIP);
+			}
+			break;
+		case R_DO_HELP_ACT:
+			logInf("Will help another agent");
+			setRoundAction(actionType.HELP_ANOTHER);
+			break;
+		case R_WAIT_TO_BE_HELPED:
+			logInf("Will receive help");
+			setRoundAction(actionType.HAS_HELP);
 			break;
 		default:			
 			logErr("Unimplemented receive state: " + state.toString());
@@ -386,7 +425,7 @@ public class HelperInitActionMAP extends Agent {
 	 */
 	private boolean isInFinalState() {
 		switch (state) { //TODO: check this for helper-init map
-			case R_ACCEPT_HELP_ACT:
+			case R_WAIT_TO_BE_HELPED:
 			case R_DO_HELP_ACT:
 			case R_DO_OWN_ACT:
 			case R_BLOCKED:

@@ -40,6 +40,12 @@ public abstract class Agent {
 
 	private actionType thisRoundAction = actionType.SKIP;
 	
+	/* TODO: make these private! */
+	public int numOfHelpReq = 0;
+	public int numOfBids = 0;
+	public int numOfSucOffers = 0;
+	public int numOfUnSucHelpReq = 0;
+	
 	/**
 	 * The constructor.
 	 * 
@@ -85,6 +91,12 @@ public abstract class Agent {
 		
 		resourcePoints = 0;
 		incResourcePoints(initResourcePoints);
+		/*
+		numOfHelpReq = 0;
+		numOfBids = 0;
+		numOfSucOffers = 0;
+		numOfUnSucHelpReq = 0;
+		*/
 	}
 
 	/** 

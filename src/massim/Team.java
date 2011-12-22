@@ -233,4 +233,32 @@ public class Team {
 		if (debuggingInf)
 			System.out.println("[Team " + id + "]: " + msg);
 	}
+
+	public int getHelpReqCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+		   sum += a.numOfHelpReq;
+		return sum;
+	}
+
+	public int getBidsCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+		   sum += a.numOfBids;
+		return sum;
+	}
+
+	public int getSucOffersCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+		   sum += a.numOfSucOffers;
+		return sum;
+	}
+
+	public int getUnSucHelpReqCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+		   sum += a.numOfUnSucHelpReq;
+		return sum;
+	}
 }

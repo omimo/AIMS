@@ -15,13 +15,14 @@ import massim.Team;
  * Advanced Action MAP Implementation.
  * 
  * @author Omid Alemi
- * @version 1.0 2011/11/07
+ * @version 1.1 2011/12/21
  * 
  */
 public class AdvActionMAPAgent extends Agent {
 
 	boolean dbgInf = false;
 	boolean dbgErr = true;
+	boolean dbgInf2 = false;
 	
 	private enum AAMAPState {
 		S_INIT, 
@@ -152,7 +153,7 @@ public class AdvActionMAPAgent extends Agent {
 				boolean needHelp = (cost > resourcePoints()) ||
 								   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
 								   (cost > AdvActionMAPAgent.requestThreshold);
-				logInf("My wellbeing = " + wellbeing);
+				logInf2("My wellbeing = " + wellbeing);
 				
 				if (needHelp)
 				{							
@@ -168,6 +169,7 @@ public class AdvActionMAPAgent extends Agent {
 							logInf("Team benefit of help would be "+teamBenefit);
 							String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
 							broadcastMsg(helpReqMsg);
+							this.numOfHelpReq++;
 							setState(AAMAPState.R_IGNORE_HELP_REQ);
 						}
 						else
@@ -188,6 +190,7 @@ public class AdvActionMAPAgent extends Agent {
 			{
 				logInf("Sending a bid to agent"+agentToHelp);
 				sendMsg(agentToHelp, bidMsg);
+				this.numOfBids++;
 				setState(AAMAPState.R_BIDDING);
 			}
 			/*  before
@@ -345,6 +348,7 @@ public class AdvActionMAPAgent extends Agent {
 				/* TODO: this may not be necessary as it will be checked
 				 * in the R_DO_OWN_ACT
 				 */
+				this.numOfUnSucHelpReq++;
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
@@ -382,6 +386,7 @@ public class AdvActionMAPAgent extends Agent {
 					(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
 			{
 				logInf("Received confirmation");
+				this.numOfSucOffers++;
 				setState(AAMAPState.S_DECIDE_HELP_ACT);
 			}
 			else
@@ -950,6 +955,17 @@ public class AdvActionMAPAgent extends Agent {
 	private void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[AdvActionMAP Agent " + id() + "]: " + msg);
+	}
+	
+	/**
+	 * Prints the log message into the output if the information debugging 
+	 * level is turned on (debuggingInf).
+	 * 
+	 * @param msg					The desired message to be printed
+	 */
+	private void logInf2(String msg) {
+		if (dbgInf2)
+			System.err.println("[AdvActionMAP Agent " + id() + "]: " + msg);
 	}
 	
 	/**

@@ -20,7 +20,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment2 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 500;
+	int numberOfRuns = 1500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};

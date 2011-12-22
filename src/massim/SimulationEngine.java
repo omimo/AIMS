@@ -2,6 +2,7 @@ package massim;
 
 import java.util.Calendar;
 import java.util.Random;
+import java.util.Scanner;
 
 import massim.Team.TeamRoundCode;
 
@@ -96,13 +97,13 @@ public class SimulationEngine {
 		
 		goals = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			goals[i] = new RowCol(boardh-1, boardw-1);
-				//randomPos(boardh, boardw);
+			goals[i] = //new RowCol(boardh-1, boardw-1);
+				randomPos(boardh, boardw);
 
 		initAgentsPos = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			initAgentsPos[i] =new RowCol(0, 0); 
-				//randomPos(boardh, boardw);
+			initAgentsPos[i] = //new RowCol(0, 0); 
+				randomPos(boardh, boardw);
 
 		Random rnd = new Random();
 		
@@ -181,6 +182,7 @@ public class SimulationEngine {
 		while (src == SimRoundCode.SIMOK)
 			src = round();
 		logInf("-- The run ended --");
+		//(new Scanner(System.in)).nextLine();
 		return src;
 	}
 
@@ -263,5 +265,37 @@ public class SimulationEngine {
 		Random rnd = new Random();
 		
 		return new RowCol(rnd.nextInt(h),rnd.nextInt(w));
+	}
+
+	public int[] getHelpReqCounts() {
+		int[] r = new int[numOfTeams];
+		for (int t = 0; t < numOfTeams; t++) {
+			r[t] = teams[t].getHelpReqCounts()/numOfRuns;
+		}
+		return r;
+	}
+
+	public int[] getBidsCounts() {
+		int[] r = new int[numOfTeams];
+		for (int t = 0; t < numOfTeams; t++) {
+			r[t] = teams[t].getBidsCounts()/numOfRuns;
+		}
+		return r;
+	}
+
+	public int[] getSucOffersCounts() {
+		int[] r = new int[numOfTeams];
+		for (int t = 0; t < numOfTeams; t++) {
+			r[t] = teams[t].getSucOffersCounts()/numOfRuns;
+		}
+		return r;
+	}
+
+	public int[] getUnSucHelpReqCounts() {
+		int[] r = new int[numOfTeams];
+		for (int t = 0; t < numOfTeams; t++) {
+			r[t] = teams[t].getUnSucHelpReqCounts()/numOfRuns;
+		}
+		return r;
 	}
 }
