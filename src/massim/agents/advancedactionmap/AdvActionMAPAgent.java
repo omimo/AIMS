@@ -141,6 +141,9 @@ public class AdvActionMAPAgent extends Agent {
 		
 		switch(state) {
 		case S_INIT:
+			double wellbeing = wellbeing();
+			logInf("My wellbeing = " + wellbeing);
+			
 			if (reachedGoal())
 			{
 				setState(AAMAPState.R_GET_HELP_REQ);
@@ -149,11 +152,13 @@ public class AdvActionMAPAgent extends Agent {
 			{
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
-				double wellbeing = wellbeing();
+				
 				boolean needHelp = (cost > resourcePoints()) ||
 								   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
 								   (cost > AdvActionMAPAgent.requestThreshold);
-				logInf2("My wellbeing = " + wellbeing);
+				
+				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
+				if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
 				
 				if (needHelp)
 				{							
