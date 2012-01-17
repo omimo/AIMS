@@ -14,7 +14,7 @@ import massim.agents.nohelp.NoHelpTeam;
 /**
  * This is an experiment in the regular branch v1.2
  *   
- * @author Omid Almie
+ * @author Omid Alemi
  *
  */
 public class Experiment2 {

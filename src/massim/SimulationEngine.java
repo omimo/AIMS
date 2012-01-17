@@ -24,6 +24,9 @@ public class SimulationEngine {
 	private int boardw = 10;
 
 	public static double disturbanceLevel;	
+	public static double pulseLevel;
+	public static double pulseProbability;
+	public static double stepProbability;
 
 	private Team[] teams;
 	private Board mainBoard;

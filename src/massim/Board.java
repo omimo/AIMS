@@ -127,6 +127,33 @@ public class Board {
 					mainBoard[i][j] = SimulationEngine.colorRange[rndColor
 							.nextInt(SimulationEngine.numOfColors)];
 	}
+	
+	/**
+	 * Adds random values (disturbance) to the cells of the board. 
+	 * 
+	 * Each cell on the board may be changed based on the probability defined by
+	 * disturbanecLevel.
+	 * 
+	 * @param disturbanceLevel		The level of disturbance, between 0 and 1.0
+	 */
+	public void disturb(double disturbanceLevel,double pulseLevel, double pulseProb) {
+
+		Random rndColor = new Random();
+		Random rndChange = new Random();
+
+		double dl;
+		
+		if (rndChange.nextDouble() < pulseProb)
+			dl = pulseLevel;
+		else
+			dl = disturbanceLevel;
+		
+		for (int i = 0; i < rows; i++)
+			for (int j = 0; j < cols; j++)
+				if (rndChange.nextDouble() < dl)
+					mainBoard[i][j] = SimulationEngine.colorRange[rndColor
+							.nextInt(SimulationEngine.numOfColors)];
+	}
 
 	/**
 	 * Converts the current setting of the board into a string.

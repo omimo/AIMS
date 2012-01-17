@@ -113,7 +113,7 @@ public class AdvActionMAPAgent extends Agent {
 		if (path() == null)
 		{		
 			findPath();			
-			logInf("Chose this path: "+ path().toString());
+			logInf("Initial Planning: Chose this path: "+ path().toString());
 		}
 		
 		
@@ -541,7 +541,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * 
 	 * @return						The agent's wellbeing
 	 */
-	private double wellbeing () {		
+	protected double wellbeing() {		
 		double eCost = estimatedCost(remainingPath(pos()));
 		if (eCost == 0)
 			return resourcePoints();
