@@ -8,9 +8,7 @@ package massim;
  */
 public abstract class Agent {
 
-	public static int cellReward;
-	public static int achievementReward;
-	public static int helpOverhead;
+
 	public static int calculationCost;
 	
 	protected static enum AgGameStatCode {
@@ -32,8 +30,12 @@ public abstract class Agent {
 
 	private int resourcePoints = 0;
 
+
+	private TeamTask tt;
+	private int mySubtask;
+	int[] subtaskAssignments;
+	
 	private RowCol pos;
-	private RowCol goalPos;
 	private Board theBoard;
 	
 	private CommMedium communicationMedium; 
@@ -56,10 +58,11 @@ public abstract class Agent {
 	public Agent(int id, CommMedium comMed) {
 		this.id = id;
 		communicationMedium = comMed;
-		goalPos = null;
-		pos = null;
+		tt = null;
 		theBoard = null;
 		path = null;
+		mySubtask = -1;
+		pos = null;
 	}
 
 	/**
@@ -68,22 +71,33 @@ public abstract class Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
-	 * @param initialPosition			The initial position of this agent
-	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
+	 * @param tt						The team task setting
+	 * @param subtaskAssignments		The subtask assignments for the team.
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
+	public void initializeRun(TeamTask tt, int[] subtaskAssignments , 
 			int[] actionCosts, int initResourcePoints) {
 		
-		goalPos = null;
-		pos = null;
+		this.tt = null;
 		theBoard = null;
 		path = null;
+		mySubtask = -1;
 		
-		this.pos = initialPosition;
-		this.goalPos = goalPosition;
+		this.tt = tt;
+		this.subtaskAssignments = new int[subtaskAssignments.length];
+		System.arraycopy(subtaskAssignments, 0, this.subtaskAssignments, 
+				0, subtaskAssignments.length);
+		
+		int i=0;
+		while (subtaskAssignments[i]!=id)
+			i++;
+		
+		if (i<Team.teamSize)
+			mySubtask = i;
+	   
+		if (mySubtask != -1)
+			pos = this.tt.startPos[mySubtask];
 		
 		this.actionCosts = new int[actionCosts.length];
 		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
@@ -189,9 +203,9 @@ public abstract class Agent {
 	 */
 	protected int calcRewardPoints(int resources, RowCol position) {
 		if (position.equals(path.getEndPoint()))
-			return Agent.achievementReward + resources;
+			return TeamTask.achievementReward + resources;
 		else
-			return (path.getIndexOf(position)) * Agent.cellReward;
+			return (path.getIndexOf(position)) * TeamTask.cellReward;
 			/* uses the index of position, starting from 0;
 		     * as if the agent has not moved at all, there should
 		     * be no reward points 
@@ -252,7 +266,7 @@ public abstract class Agent {
 	 * @return 							The position of the goal
 	 */
 	protected RowCol goalPos() {
-		return goalPos;
+		return tt.goalPos[mySubtask];
 	}
 
 	/**
@@ -314,7 +328,7 @@ public abstract class Agent {
 	protected void findPath() {
 		PolajnarPath2 pp = new PolajnarPath2();
 		Path shortestPath = new Path(pp.findShortestPath(
-				boardToCosts(theBoard.getBoard(), actionCosts), pos, goalPos));
+				boardToCosts(theBoard.getBoard(), actionCosts), pos, goalPos()));
 		path = new Path(shortestPath);
 	}
 

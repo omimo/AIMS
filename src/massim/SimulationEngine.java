@@ -30,9 +30,10 @@ public class SimulationEngine {
 
 	private Team[] teams;
 	private Board mainBoard;
+
 	private int[][] actionCostsMatrix;
-	private RowCol[] goals;
-	private RowCol[] initAgentsPos;
+	
+	private TeamTask tt;
 
 	private int roundCounter;
 	private int[][] teamsScores;
@@ -63,6 +64,8 @@ public class SimulationEngine {
 		logInf("SE created for " + teams.length + " teams.");
 		this.teams = teams;
 		SimulationEngine.numOfTeams = teams.length;
+		
+		tt = new TeamTask();
 	}
 
 	/**
@@ -98,14 +101,14 @@ public class SimulationEngine {
 		
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
 		
-		goals = new RowCol[Team.teamSize];
+		tt.goalPos = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			goals[i] = //new RowCol(boardh-1, boardw-1);
+			tt.goalPos[i] = //new RowCol(boardh-1, boardw-1);
 				randomPos(boardh, boardw);
 
-		initAgentsPos = new RowCol[Team.teamSize];
+		tt.startPos = new RowCol[Team.teamSize];
 		for (int i = 0; i < Team.teamSize; i++)
-			initAgentsPos[i] = //new RowCol(0, 0); 
+			tt.startPos[i] = //new RowCol(0, 0); 
 				randomPos(boardh, boardw);
 
 		Random rnd = new Random();
@@ -124,7 +127,7 @@ public class SimulationEngine {
 		}
 		
 		for (int t = 0; t < numOfTeams; t++)
-			teams[t].initializeRun(initAgentsPos, goals, actionCostsMatrix);
+			teams[t].initializeRun(tt,actionCostsMatrix);
 	}
 
 	/**

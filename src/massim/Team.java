@@ -19,7 +19,7 @@ public class Team {
 	private int id;
 
 	public static int teamSize;
-	public static int initResCoef;
+
 	public static double mutualAwareness;
 	public static int unicastCost;
 	public static int broadcastCost;
@@ -70,17 +70,30 @@ public class Team {
 	 * @param goals							Array of initial goals position
 	 * @param actionCostMatrix				Matrix of action costs
 	 */
-	public void initializeRun(RowCol[] initAgentsPos, RowCol[] goals,
-			int[][] actionCostMatrix) {
+	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix) {
 		logInf("initilizing for a new run.");
 		commMedium.clear();
 
 		for (int i = 0; i < teamSize; i++)
 			for (int j = 0; j < SimulationEngine.numOfColors; j++)
-				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
+				this.actionCostsMatrix[i][j] = actionCostsMatrix[i][j];
 		
 		for (int i = 0; i < teamSize; i++)
-			agentsGameStatus[i] = AgGameStatCode.READY;				
+			agentsGameStatus[i] = AgGameStatCode.READY;		
+		
+		// This part came from individual teams
+		int[] subtaskAssignments = new int[Team.teamSize];
+		
+		for(int i=0;i<Team.teamSize;i++)
+			subtaskAssignments[i]=i;
+		
+		for(int i=0;i<Team.teamSize;i++)
+		{
+			int pathLength = calcDistance(tt.startPos[i], tt.goalPos[i]);
+			
+			agent(i).initializeRun(tt,subtaskAssignments,this.actionCostsMatrix[i], 
+					pathLength * TeamTask.initResCoef);
+		}
 	}
 
 	/**
@@ -232,6 +245,17 @@ public class Team {
 	private void logInf(String msg) {
 		if (debuggingInf)
 			System.out.println("[Team " + id + "]: " + msg);
+	}
+	
+	/**
+	 * Calculates the distance between two points in a board.
+	 * 
+	 * @param start					The position of the starting point
+	 * @param end					The position of the ending point
+	 * @return						The distance
+	 */
+	private int calcDistance(RowCol start, RowCol end) {
+		return  Math.abs(end.row-start.row) + Math.abs(end.col-start.col) + 1;
 	}
 
 	public int getHelpReqCounts() {

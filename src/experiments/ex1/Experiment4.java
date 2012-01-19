@@ -1,10 +1,12 @@
 package experiments.ex1;
 
 import java.text.DecimalFormat;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.SimulationEngine;
 import massim.Team;
+import massim.TeamTask;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepTeam;
@@ -25,7 +27,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment4 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 10000;
+	int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -46,7 +48,7 @@ public class Experiment4 {
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 		
-		System.out.println("DISTURBANCE,AD-ACTION-MAP,REP-AD-ACTION-MAP,NO-HELP-REP-NO-HELP");
+		System.out.println("DISTURBANCE,AD-ACTION-MAP,REP-AD-ACTION-MAP,NO-HELP,REP-NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
@@ -54,13 +56,13 @@ public class Experiment4 {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
-			Team.initResCoef = 200;
+			TeamTask.initResCoef = 200;
 			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 7;
-			Agent.helpOverhead = 30;			
-			Agent.cellReward = 100;
-			Agent.achievementReward = 2000;
+			TeamTask.helpOverhead = 30;			
+			TeamTask.cellReward = 100;
+			TeamTask.achievementReward = 2000;
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;

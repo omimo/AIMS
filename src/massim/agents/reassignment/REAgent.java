@@ -1,10 +1,9 @@
-package massim.agents.nohelp;
+package massim.agents.reassignment;
 
 import massim.Agent;
 import massim.Board;
 import massim.CommMedium;
 import massim.RowCol;
-import massim.TeamTask;
 
 /**
  * The NO-HELP Agent Implementation
@@ -12,21 +11,21 @@ import massim.TeamTask;
  * @author Omid Alemi
  * @version 2.0  2011/11/11
  */
-public class NoHelpAgent extends Agent {
+public class REAgent extends Agent {
 	
 	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 
-	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
+	enum REAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
 	
-	NoHelpAgentStates state;
+	REAgentStates state;
 	
 	/**
 	 * The constructor
 	 * 
 	 * @param id			The given id of the agent
 	 */
-	public NoHelpAgent(int id, CommMedium comMed) {
+	public REAgent(int id, CommMedium comMed) {
 		super(id, comMed);
 	}
 	
@@ -37,15 +36,18 @@ public class NoHelpAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
-	 * @param tt						The team task setting
-	 * @param subtaskAssignments		The subtask assignments for the team.
+	 * @param initialPosition			The initial position of this agent
+	 * @param goalPosition				The goal position for this agent
+	 * @param actionCosts				The agent's action costs vector
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
-	public void initializeRun(TeamTask tt, int[] subtaskAssignments , 
-			int[] actionCosts,int initResourcePoints) {
+	@Override
+	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
+			int[] actionCosts, int initResourcePoints) {
 		
-		super.initializeRun(tt,subtaskAssignments,actionCosts,initResourcePoints);		
+		super.initializeRun(initialPosition, goalPosition, 
+				actionCosts,initResourcePoints);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
@@ -76,7 +78,7 @@ public class NoHelpAgent extends Agent {
 			logInf("Chose this path: "+ path().toString());
 		}
 		
-		state = NoHelpAgentStates.S_INIT;
+		state = REAgentStates.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
@@ -98,12 +100,12 @@ public class NoHelpAgent extends Agent {
 				RowCol nextCell = path().getNextPoint(pos());
 				int cost = getCellCost(nextCell);
 				if (cost  <= resourcePoints())
-					setState(NoHelpAgentStates.R_MOVE);
+					setState(REAgentStates.R_MOVE);
 				else
-					setState(NoHelpAgentStates.R_BLOCKED);				
+					setState(REAgentStates.R_BLOCKED);				
 			}
 			else
-				setState(NoHelpAgentStates.R_SKIP);
+				setState(REAgentStates.R_SKIP);
 			
 			returnCode = AgCommStatCode.NEEDING_TO_REC;
 			break;		
@@ -206,7 +208,7 @@ public class NoHelpAgent extends Agent {
 	 * 
 	 * @param newState				The new state
 	 */
-	private void setState(NoHelpAgentStates newState) {
+	private void setState(REAgentStates newState) {
 		logInf("In "+ state.toString() +" state");
 		state = newState;
 		logInf("Set the state to +"+state.toString());
