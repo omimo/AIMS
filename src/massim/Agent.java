@@ -35,7 +35,8 @@ public abstract class Agent {
 	private int mySubtask;
 	int[] subtaskAssignments;
 	
-	private RowCol pos;
+	//private RowCol pos;
+	private RowCol[] currentPos;
 	private Board theBoard;
 	
 	private CommMedium communicationMedium; 
@@ -47,6 +48,8 @@ public abstract class Agent {
 	public int numOfBids = 0;
 	public int numOfSucOffers = 0;
 	public int numOfUnSucHelpReq = 0;
+
+
 	
 	/**
 	 * The constructor.
@@ -62,7 +65,7 @@ public abstract class Agent {
 		theBoard = null;
 		path = null;
 		mySubtask = -1;
-		pos = null;
+		//pos = null;
 	}
 
 	/**
@@ -76,7 +79,8 @@ public abstract class Agent {
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
-	public void initializeRun(TeamTask tt, int[] subtaskAssignments , 
+	public void initializeRun(TeamTask tt, int[] subtaskAssignments ,
+			RowCol[] currentPos,
 			int[] actionCosts, int initResourcePoints) {
 		
 		this.tt = null;
@@ -97,7 +101,9 @@ public abstract class Agent {
 			mySubtask = i;
 	   
 		if (mySubtask != -1)
-			pos = this.tt.startPos[mySubtask];
+			currentPos[mySubtask] = tt.startPos[mySubtask];
+		
+		this.currentPos = currentPos;
 		
 		this.actionCosts = new int[actionCosts.length];
 		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
@@ -182,7 +188,8 @@ public abstract class Agent {
 	 */
 	public int rewardPoints() {		
 	
-		return calcRewardPoints(resourcePoints,pos);
+		return calcRewardPoints(resourcePoints,
+				currentPos[mySubtask]);
 	}
 
 	/**
@@ -248,7 +255,8 @@ public abstract class Agent {
 	 * @return							The current position
 	 */
 	protected RowCol pos() {
-		return pos;
+		//return pos;
+		return currentPos[mySubtask];
 	}
 
 	/**
@@ -257,7 +265,8 @@ public abstract class Agent {
 	 * @param newPos					The new position
 	 */
 	protected void setPos(RowCol newPos) {
-		pos = newPos;
+		//pos = newPos;
+		currentPos[mySubtask] = newPos;
 	}
 	
 	/**
@@ -328,7 +337,8 @@ public abstract class Agent {
 	protected void findPath() {
 		PolajnarPath2 pp = new PolajnarPath2();
 		Path shortestPath = new Path(pp.findShortestPath(
-				boardToCosts(theBoard.getBoard(), actionCosts), pos, goalPos()));
+				boardToCosts(theBoard.getBoard(), actionCosts), 
+				currentPos[mySubtask], goalPos()));
 		path = new Path(shortestPath);
 	}
 

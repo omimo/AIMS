@@ -43,9 +43,11 @@ public class NoHelpAgent extends Agent {
 	 * 									to the agent by its team.
 	 */
 	public void initializeRun(TeamTask tt, int[] subtaskAssignments , 
+			RowCol[] currentPos,
 			int[] actionCosts,int initResourcePoints) {
 		
-		super.initializeRun(tt,subtaskAssignments,actionCosts,initResourcePoints);		
+		super.initializeRun(tt,subtaskAssignments,
+				currentPos,actionCosts,initResourcePoints);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		

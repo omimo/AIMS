@@ -28,7 +28,7 @@ public class Team {
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 	
-	private RowCol[] agentsPos[];
+	private RowCol[] currentPos;
 
 	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[Team.teamSize];
 	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
@@ -83,6 +83,8 @@ public class Team {
 		for (int i = 0; i < teamSize; i++)
 			agentsGameStatus[i] = AgGameStatCode.READY;		
 		
+		currentPos = new RowCol[Team.teamSize];
+			
 		// This part came from individual teams
 		int[] subtaskAssignments = new int[Team.teamSize];
 		
@@ -93,7 +95,8 @@ public class Team {
 		{
 			int pathLength = calcDistance(tt.startPos[i], tt.goalPos[i]);
 			
-			agent(i).initializeRun(tt,subtaskAssignments,this.actionCostsMatrix[i], 
+			agent(i).initializeRun(tt,subtaskAssignments,currentPos,
+					this.actionCostsMatrix[i], 
 					pathLength * TeamTask.initResCoef);
 		}
 	}

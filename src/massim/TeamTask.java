@@ -16,4 +16,6 @@ public class TeamTask {
 	public RowCol[] goalPos;
 	public RowCol[] startPos;
 	public int goalReward[];
+	
+
 }
