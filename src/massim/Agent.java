@@ -4,7 +4,7 @@ package massim;
  * Agent.java An abstract class for all the agents to be used in the simulator
  * 
  * @author Omid Alemi
- * @version 2.0 2011/10/31
+ * @version 2.1 2012/01/19
  */
 public abstract class Agent {
 

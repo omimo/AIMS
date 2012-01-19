@@ -10,7 +10,7 @@ import massim.Team.TeamRoundCode;
  * The main class of the simulator. 
  * 
  * @author Omid Alemi
- * @version 1.2 2011/10/16
+ * @version 1.3 2012/01/19
  * 
  */
 public class SimulationEngine {

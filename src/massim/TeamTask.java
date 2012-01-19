@@ -1,5 +1,11 @@
 package massim;
 
+/**
+ * Class representing the task specification
+ * 
+ * @author Omid Alemi
+ * @version 1.0 2012/01/19
+ */
 public class TeamTask {
 
 	public static int initResCoef;

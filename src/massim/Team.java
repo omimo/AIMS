@@ -11,7 +11,7 @@ import massim.Agent.AgCommStatCode;
  * 
  * 
  * @author Omid Alemi
- * @version 1.3 2011/11/10
+ * @version 1.4 2012/01/19
  */
 public class Team {
 
@@ -27,6 +27,8 @@ public class Team {
 	private Agent[] agents;
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
+	
+	private RowCol[] agentsPos[];
 
 	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[Team.teamSize];
 	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
