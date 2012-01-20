@@ -112,7 +112,7 @@ public class AdvActionMAPAgent extends Agent {
 		
 		if (path() == null)
 		{		
-			findPath();			
+			findPath();
 			logInf("Initial Planning: Chose this path: "+ path().toString());
 		}
 		

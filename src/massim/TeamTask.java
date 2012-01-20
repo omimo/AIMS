@@ -12,6 +12,7 @@ public class TeamTask {
 	public static int cellReward;
 	public static int achievementReward;
 	public static int helpOverhead;
+	public static int assignmentOverhead;
 	
 	public RowCol[] goalPos;
 	public RowCol[] startPos;

@@ -31,12 +31,12 @@ public abstract class Agent {
 	private int resourcePoints = 0;
 
 
-	private TeamTask tt;
+	protected TeamTask tt;
 	private int mySubtask;
 	int[] subtaskAssignments;
 	
 	//private RowCol pos;
-	private RowCol[] currentPos;
+	protected RowCol[] currentPos;
 	private Board theBoard;
 	
 	private CommMedium communicationMedium; 
@@ -342,6 +342,21 @@ public abstract class Agent {
 		path = new Path(shortestPath);
 	}
 
+	/**
+	 * Finds the lowest cost path among shortest paths of a rectangular board
+	 * based on the Polajnar's algorithm V2.
+	 * 
+	 * The method uses s as the starting point and the r as the ending point 
+	 * of the path.
+	 */
+	protected Path findPath(RowCol s, RowCol r) {
+		PolajnarPath2 pp = new PolajnarPath2();
+		Path shortestPath = new Path(pp.findShortestPath(
+				boardToCosts(theBoard.getBoard(), actionCosts), 
+				s, r));
+		return shortestPath;
+	}
+	
 	/** 
 	 * Creates a two dimensional array representing the cell cost
 	 * based on the given action costs vector.
@@ -467,4 +482,12 @@ public abstract class Agent {
 		
 		return result;
 	}
+	
+	protected void mySubtask(int s) {
+		if (s>=0 && s<= Team.teamSize)
+			mySubtask = s;
+		else
+			mySubtask = -1;
+	}
+
 }

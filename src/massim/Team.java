@@ -1,10 +1,12 @@
 package massim;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
 import massim.Agent.AgGameStatCode;
 import massim.Agent.AgCommStatCode;
+import massim.agents.advancedactionmap.AdvActionMAPAgent;
 
 /**
  * Team.java
@@ -62,6 +64,9 @@ public class Team {
 			new int[Team.teamSize][SimulationEngine.numOfColors];
 	}
 
+
+	
+	
 	/**
 	 * Initializes the team and agents for a new run.
 	 * 
