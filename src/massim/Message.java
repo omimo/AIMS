@@ -53,6 +53,10 @@ public class Message {
 		//	return -1;
 	}
 	
+	public double getDoubleValue(String field) {
+		return Double.parseDouble(fields.get(field));
+
+	}
 	///
 	
 	public String toString() {

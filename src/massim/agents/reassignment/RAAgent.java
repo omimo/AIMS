@@ -21,10 +21,14 @@ import massim.TeamTask;
  */
 public class RAAgent extends Agent {
 	
-	private boolean dbgInf = true;
+	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 	
 	private static int leaderAgent = 0;
+	public static double EPSILON;
+
+	public static double WREASSIGN;
+	public static double WREASSIGNREQ;
 	
 	private enum RAAgentStates {
 		S_RACMD, R_RACMD, S_REPORT_ESTIMATE, R_GATHER, S_ASSIGN, R_ASSIGN,
@@ -36,9 +40,13 @@ public class RAAgent extends Agent {
 	private int[][] oldBoard;
 	private double disturbanceLevel;
 	
+	private double[] agentsWellbeing;
+	private double lastSentWellbeing;
+	
 	private int RE_REASSIGN_CMD_MSG = 1;
 	private int RE_REPORT_CMD_MSG = 2;
 	private int RE_ASSIGN_MSG = 3;
+	private int RE_WELL_UPDATE = 4;
 	
 	private int[] estSubtaskCosts;
 	int[] assignment; //to be used by the leader
@@ -77,6 +85,7 @@ public class RAAgent extends Agent {
 		
 		oldBoard = null;
 		
+		agentsWellbeing = new double[Team.teamSize];
 	}
 	
 	/** 
@@ -124,6 +133,12 @@ public class RAAgent extends Agent {
 		
 		logInf("Send Cycle");		
 		
+		if (mySubtask() == -1)
+		{
+			logInf("No Subtask to Do! Sleeping!");
+			return returnCode;
+		}
+		
 		switch (state) {
 		case S_INIT:
 			if (!reachedGoal())
@@ -162,6 +177,12 @@ public class RAAgent extends Agent {
 		
 		if (!reReceiveCycle())
 			return returnCode;
+		
+		if (mySubtask() == -1)
+		{
+			logInf("No Subtask to Do! Sleeping!");
+			return AgCommStatCode.DONE;
+		}
 		
 		logInf("Receive Cycle");		
 		
@@ -204,7 +225,15 @@ public class RAAgent extends Agent {
 		
 		logInf("Finalizing the round ...");
 		
+		keepBoard();
+		
 		boolean succeed = act();
+		
+		if (mySubtask() == -1)
+		{
+			logInf("No Subtask to Do! Sleeping!");
+			return AgGameStatCode.BLOCKED;
+		}
 		
 		if (reachedGoal())
 		{
@@ -236,14 +265,16 @@ public class RAAgent extends Agent {
 		case S_RACMD:
 			if (leaderAgent == id())
 			{
-				boolean needReassign = true; //TODO: use the real condition
-			
+				double twb = teamWellbeing();
+				double wellbeing = wellbeing();
+				logInf ("The team wellbeing is "+ twb);
+				boolean needReassign = (twb <= RAAgent.WREASSIGN );//&&
+//						wellbeing <= RAAgent.WREASSIGNREQ);
+						
 				if (needReassign)
 					logInf("Need to reassign.");
 			
 				if (needReassign && 
-						leaderAgent == id() &&
-						canBCast() &&
 						canAssign())				
 				{
 					logInf("Broadcasting reassignment command.");
@@ -251,6 +282,18 @@ public class RAAgent extends Agent {
 					reassigning = true;
 				}
 				
+			}
+			
+			if (!reassigning)
+			{
+				double wellbeing = wellbeing(); 
+				logInf("My current wellbeing = " + wellbeing);
+				if (Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) < EPSILON)
+					if (canBCast()) {
+						logInf("Broadcasting my wellbeing to the team");
+						String msg = prepareWellBeingUpdateMsg(wellbeing);
+						broadcastMsg(msg);						
+					}							
 			}
 			setState(RAAgentStates.R_RACMD);
 			break;		
@@ -275,7 +318,11 @@ public class RAAgent extends Agent {
 					if (assignment[s]==id())
 						mySubtask(s);
 					else
-						sendMsg(assignment[s], buildAssignmentMSG(assignment[s],s));
+						if (canSend())
+							sendMsg(assignment[s], buildAssignmentMSG(assignment[s],s));
+						else
+							logInf("No MORE RESOURCES TO SEND ASSIGNMENT SETTEING");
+						//TODO: Change above
 				}
 			}
 			setState(RAAgentStates.R_ASSIGN);
@@ -299,21 +346,41 @@ public class RAAgent extends Agent {
 			setState(RAAgentStates.S_INIT);
 			break;
 		case R_RACMD:
-			String msgStr = commMedium().receive(id());
-			if (leaderAgent == id() && reassigning)
+			String msgStr;
+			if (leaderAgent == id())
 			{
 				estSubtaskCosts = estimateSubtaskCosts();
-				setState(RAAgentStates.S_REPORT_ESTIMATE);
-			}
-			else if (!msgStr.equals("") && 
-					(new Message(msgStr)).isOfType(RE_REASSIGN_CMD_MSG))	
+			}		
+			
+			msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
 			{
-				logInf("Received reassignment command.");
-				estSubtaskCosts = estimateSubtaskCosts();
-				setState(RAAgentStates.S_REPORT_ESTIMATE);
+				logInf("Received a message: " + msgStr);
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(RE_WELL_UPDATE))
+				{
+					agentsWellbeing[msg.sender()] = msg.getDoubleValue("wellbeing");
+					logInf("Received agent "+msg.sender()+ "'s wellbeing = " +
+							agentsWellbeing[msg.sender()]);
+				}
+				else if (msg.isOfType(RE_REASSIGN_CMD_MSG))
+				{
+					reassigning = true;
+					
+					logInf("Received reassignment command. Now estimating the costs.");
+					estSubtaskCosts = estimateSubtaskCosts();
+					
+					agentsWellbeing[leaderAgent] = msg.getDoubleValue("wellbeing");
+					logInf("Received leader's wellbeing = " + agentsWellbeing[leaderAgent]);
+				}
+				
+				msgStr = commMedium().receive(id());	 
 			}
+			
+			if (reassigning)
+				setState(RAAgentStates.S_REPORT_ESTIMATE);
 			else
-				setState(RAAgentStates.S_CONT);
+				setState(RAAgentStates.S_CONT);			
 			break;
 		case R_GATHER:
 			if (leaderAgent == id())
@@ -331,7 +398,7 @@ public class RAAgent extends Agent {
 				}
 				
 				if (reports.size()>0)
-				{
+				{	
 					
 					// Fill the subtask / cost matrix
 					double[][] subtaskCost = new double[Team.teamSize][Team.teamSize];
@@ -351,9 +418,15 @@ public class RAAgent extends Agent {
 							subtaskCost[m.sender()][s] = 
 									m.getIntValue(Integer.toString(s));
 						}
+						
+						agentsWellbeing[m.sender()] = m.getDoubleValue("wellbeing");
+						logInf("Received agent "+m.sender()+ "'s wellbeing = " +
+								agentsWellbeing[m.sender()]);
 					}
 					
 					
+					if (dbgInf)
+					{
 					System.out.println("Subtask/Cost Matrix:");
 					for(int a=0;a<Team.teamSize;a++)
 					{
@@ -362,10 +435,12 @@ public class RAAgent extends Agent {
 							System.out.print("\t"+subtaskCost[a][s]);
 						System.out.println("");
 					}
-					
+					}
+					if (resourcePoints()<TeamTask.assignmentOverhead)
+						logErr("dfsfsdfs");
 					decResourcePoints(TeamTask.assignmentOverhead);
 					
-					//TODO: Run the Hungarian Algorithm on this
+					//Run the Hungarian Algorithm on this
 					assignment = new int[Team.teamSize]; 
 					//each item contains agent id
 					
@@ -378,6 +453,8 @@ public class RAAgent extends Agent {
 						assignment[subtask] = aha[i][0];
 					}
 					
+					if (dbgInf)
+					{
 					System.out.println("H.A Result:");
 					int sum = 0;
 					for (int i=0; i<aha.length; i++)
@@ -387,6 +464,7 @@ public class RAAgent extends Agent {
 								subtaskCost[aha[i][0]][aha[i][1]]);
 						sum = sum + (int)subtaskCost[aha[i][0]][aha[i][1]];
 						//</COMMENT>
+					}
 					}
 				}
 			}
@@ -410,9 +488,16 @@ public class RAAgent extends Agent {
 						mySubtask(newSubtask);
 					}
 				}
+				else // The leader didn't send a new assignment
+				{  //TODO: if had a subtask before, should it work on it?! or not
+					mySubtask(-1);
+				}
 			}
-			findPath();			
-			logInf("Chose this path: "+ path().toString());
+			if (mySubtask() != -1)
+			{
+				findPath();			
+				logInf("Chose this path: "+ path().toString());
+			}
 			setState(RAAgentStates.S_INIT);
 			break;
 		default:	
@@ -432,6 +517,11 @@ public class RAAgent extends Agent {
 	private String prepareREASSIGNMsg() {
 		
 		Message cmd = new Message(id(),-1,RE_REASSIGN_CMD_MSG);
+		
+		Double w = wellbeing();
+		cmd.putTuple("wellbeing", Double.toString(w));
+		lastSentWellbeing = w;
+		
 		return cmd.toString();
 	}
 	
@@ -448,6 +538,11 @@ public class RAAgent extends Agent {
 		{
 			report.putTuple(Integer.toString(s), estSubtaskCosts[s]);
 		}
+		
+		Double w = wellbeing();
+		report.putTuple("wellbeing", Double.toString(w));
+		lastSentWellbeing = w;
+		
 		return report.toString();
 	}
 	
@@ -463,6 +558,24 @@ public class RAAgent extends Agent {
 		report.putTuple("subtask", subtaskAssignment);
 	
 		return report.toString();
+	}
+	
+	/**
+	 * Prepares a message to update other agent's belief of the agent's
+	 * current well being.
+	 * 
+	 * @param wellbeing				The agent's current well being 								
+	 * @return						The message encoded in String
+	 */
+	private String prepareWellBeingUpdateMsg(double wellbeing) {
+		
+		Message update = new Message(id(),-1,RE_WELL_UPDATE);
+		
+		Double w = wellbeing();
+		update.putTuple("wellbeing", Double.toString(w));
+		lastSentWellbeing = w;
+		
+		return update.toString();
 	}
 	
 	private int[] estimateSubtaskCosts() {
@@ -542,6 +655,71 @@ public class RAAgent extends Agent {
 		return eCost;
 	}
 	
+	/**
+	 * Calculates the agent's wellbeing.
+	 * 
+	 * @return						The agent's wellbeing
+	 */
+	private double wellbeing () {		
+		double eCost = estimatedCost(remainingPath(pos()));
+		if (eCost == 0)
+			return resourcePoints();
+		else
+			return (double)resourcePoints()/eCost;
+	}
+	
+	/**
+	 * Finds the remaining path from the given cell.
+	 * 
+	 * The path DOES NOT include the given cell and the starting cell 
+	 * of the remaining path would be the next cell.
+	 * 
+	 * @param from					The cell the remaining path would be
+	 * 								generated from.
+	 * @return						The remaining path.
+	 */
+	private Path remainingPath(RowCol from) {
+		Path rp = new Path(path());
+		
+		while (!rp.getStartPoint().equals(from))
+			rp = rp.tail();
+		
+		return rp.tail();
+	}
+	
+	/**
+	 * Calculates the team well being
+	 * 
+	 * @return			Team well being
+	 */
+	private double teamWellbeing()
+	{
+		double sum = 0;
+		agentsWellbeing[id()] = wellbeing();
+		for (double w : agentsWellbeing)
+			sum+=w;
+		
+		return sum/agentsWellbeing.length;
+	}
+	
+	/**
+	 * Calculates the standard deviation of the team's well being
+	 * 
+	 * @return 			Standard deviation of the team's well being
+	 */
+	private double teamWellbeingStdDev() { 
+	
+		double tw = teamWellbeing();
+		
+		double sum = 0;
+		for (double w : agentsWellbeing)
+		{
+			sum+= (w-tw)*(w-tw);
+		}
+		
+		return Math.sqrt(sum/agentsWellbeing.length);
+	}
+	
 /*******************************************************************/
 	/**
 	 * Calculates the average of the given integer array.
@@ -564,6 +742,17 @@ public class RAAgent extends Agent {
 	 */
 	private boolean canSend() {
 		return (resourcePoints() >= Team.unicastCost);	
+	}
+	
+	/**
+	 * Tells whether the agent has enough resources to send a unicast
+	 * message or not
+	 * 
+	 * @return 					true if there are enough resources /
+	 * 							false if there aren't enough resources	
+	 */
+	private boolean canSend(int times) {
+		return (resourcePoints() >= Team.unicastCost * times);	
 	}
 	
 	/**
@@ -594,7 +783,9 @@ public class RAAgent extends Agent {
 	 * 							false if there aren't enough resources
 	 */
 	private boolean canAssign() {
-		return (resourcePoints() >= TeamTask.assignmentOverhead);
+		return (resourcePoints() >= TeamTask.assignmentOverhead
+				+Team.broadcastCost+
+				(Team.unicastCost*(Team.teamSize-1)));
 	}
 	
 	
@@ -604,6 +795,7 @@ public class RAAgent extends Agent {
 	 * @param msg				The String encoded message 
 	 */
 	private void broadcastMsg(String msg) {
+	
 		decResourcePoints(Team.broadcastCost);
 		commMedium().broadcast(id(), msg);
 	}
@@ -676,6 +868,7 @@ public class RAAgent extends Agent {
 			logInf("Moved from "+pos() +" to "+ nextCell);
 			
 			int cost = getCellCost(nextCell);
+		
 			decResourcePoints(cost);
 			setPos(nextCell);				
 			return true;

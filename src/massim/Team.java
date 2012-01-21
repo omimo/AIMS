@@ -31,6 +31,7 @@ public class Team {
 	private int[][] actionCostsMatrix;
 	
 	private RowCol[] currentPos;
+	private TeamTask myTT;
 
 	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[Team.teamSize];
 	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
@@ -64,9 +65,6 @@ public class Team {
 			new int[Team.teamSize][SimulationEngine.numOfColors];
 	}
 
-
-	
-	
 	/**
 	 * Initializes the team and agents for a new run.
 	 * 
@@ -81,6 +79,8 @@ public class Team {
 		logInf("initilizing for a new run.");
 		commMedium.clear();
 
+		myTT = tt;
+		
 		for (int i = 0; i < teamSize; i++)
 			for (int j = 0; j < SimulationEngine.numOfColors; j++)
 				this.actionCostsMatrix[i][j] = actionCostsMatrix[i][j];
@@ -96,9 +96,18 @@ public class Team {
 		for(int i=0;i<Team.teamSize;i++)
 			subtaskAssignments[i]=i;
 		
-		for(int i=0;i<Team.teamSize;i++)
+		//
+		
+		int pathLength = calcDistance(tt.startPos[0], tt.goalPos[0]);
+		
+		agent(0).initializeRun(tt,subtaskAssignments,currentPos,
+				this.actionCostsMatrix[0], 
+				pathLength * TeamTask.initResCoef + 2000);
+		//
+		
+		for(int i=1;i<Team.teamSize;i++)
 		{
-			int pathLength = calcDistance(tt.startPos[i], tt.goalPos[i]);
+			 pathLength = calcDistance(tt.startPos[i], tt.goalPos[i]);
 			
 			agent(i).initializeRun(tt,subtaskAssignments,currentPos,
 					this.actionCostsMatrix[i], 
@@ -212,8 +221,13 @@ public class Team {
 	 */
 	public int teamRewardPoints() {
 		int sum = 0;
-		for (Agent a: agents)
-		   sum += a.rewardPoints();
+		for(int s=0;s<Team.teamSize;s++)
+		{
+			if (currentPos[s].equals(myTT.goalPos[s]))
+				sum += TeamTask.achievementReward;
+			else
+				sum += calcDistance(myTT.startPos[s], currentPos[s]); 
+		}
 		return sum;
 	}
 

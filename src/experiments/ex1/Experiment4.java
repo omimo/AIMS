@@ -16,6 +16,7 @@ import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.nohelp.NoHelpRepAgent;
 import massim.agents.nohelp.NoHelpRepTeam;
 import massim.agents.nohelp.NoHelpTeam;
+import massim.agents.reassignment.RAAgent;
 import massim.agents.reassignment.RATeam;
 
 /**
@@ -28,7 +29,7 @@ import massim.agents.reassignment.RATeam;
 public class Experiment4 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1;
+	int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -38,7 +39,7 @@ public class Experiment4 {
 		new int[] {10, 40, 70, 100, 300, 400, 450,  500};	
 	
 	/* Create the teams involved in the simulation */
-		Team.teamSize = 3;
+		Team.teamSize = 8;
 		Team[] teams = new Team[3];		
 		teams[0] = new AdvActionMapTeam();
 		teams[1] =  new RATeam();
@@ -65,7 +66,7 @@ public class Experiment4 {
 			TeamTask.cellReward = 100;
 			TeamTask.achievementReward = 2000;
 			TeamTask.initResCoef = 200;
-			TeamTask.assignmentOverhead = 500;
+			TeamTask.assignmentOverhead = 10;
 			
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
@@ -74,6 +75,10 @@ public class Experiment4 {
 			
 			AdvActionMAPRepAgent.WREP = 1.0;
 			NoHelpRepAgent.WREP = 1.0;
+			
+			RAAgent.EPSILON = 0.4;
+			RAAgent.WREASSIGN = 0.7;
+			RAAgent.WREASSIGNREQ = 1.0;
 			
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1 * exp;;  
@@ -90,7 +95,7 @@ public class Experiment4 {
 				System.out.print(","+ 
 						teamScores[i]);
 			System.out.println("");
-			(new Scanner(System.in)).nextLine();
+//			(new Scanner(System.in)).nextLine();
 
 		}
 	}

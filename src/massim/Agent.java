@@ -43,6 +43,7 @@ public abstract class Agent {
 
 	private actionType thisRoundAction = actionType.SKIP;
 	
+	
 	/* TODO: make these private! */
 	public int numOfHelpReq = 0;
 	public int numOfBids = 0;
@@ -87,7 +88,7 @@ public abstract class Agent {
 		theBoard = null;
 		path = null;
 		mySubtask = -1;
-		
+
 		this.tt = tt;
 		this.subtaskAssignments = new int[subtaskAssignments.length];
 		System.arraycopy(subtaskAssignments, 0, this.subtaskAssignments, 
@@ -178,19 +179,19 @@ public abstract class Agent {
 		return id;
 	}
 
-	/**
-	 * Returns the amount reward points that the agent has earned.
-	 *  
-	 * This uses the Agent.calcRewardPoints() to get the reward 
-	 * points.
-	 *  
-	 * @return							The reward points
-	 */
-	public int rewardPoints() {		
-	
-		return calcRewardPoints(resourcePoints,
-				currentPos[mySubtask]);
-	}
+//	/**
+//	 * Returns the amount reward points that the agent has earned.
+//	 *  
+//	 * This uses the Agent.calcRewardPoints() to get the reward 
+//	 * points.
+//	 *  
+//	 * @return							The reward points
+//	 */
+//	public int rewardPoints() {		
+//	
+//		return calcRewardPoints(resourcePoints,
+//				currentPos[mySubtask]);
+//	}
 
 	/**
 	 * Calculates the agent's reward points based on the given 
@@ -210,7 +211,7 @@ public abstract class Agent {
 	 */
 	protected int calcRewardPoints(int resources, RowCol position) {
 		if (position.equals(path.getEndPoint()))
-			return TeamTask.achievementReward + resources;
+			return TeamTask.achievementReward; // + resources;
 		else
 			return (path.getIndexOf(position)) * TeamTask.cellReward;
 			/* uses the index of position, starting from 0;
@@ -335,11 +336,16 @@ public abstract class Agent {
 	 * position as the ending point of the path.
 	 */
 	protected void findPath() {
-		PolajnarPath2 pp = new PolajnarPath2();
-		Path shortestPath = new Path(pp.findShortestPath(
-				boardToCosts(theBoard.getBoard(), actionCosts), 
-				currentPos[mySubtask], goalPos()));
-		path = new Path(shortestPath);
+		if (mySubtask != -1)
+		{
+			PolajnarPath2 pp = new PolajnarPath2();
+			Path shortestPath = new Path(pp.findShortestPath(
+					boardToCosts(theBoard.getBoard(), actionCosts), 
+					currentPos[mySubtask], goalPos()));
+			path = new Path(shortestPath);
+		}
+		else 
+			path = null;
 	}
 
 	/**
@@ -489,5 +495,15 @@ public abstract class Agent {
 		else
 			mySubtask = -1;
 	}
+	
+	protected int mySubtask() {
+		return mySubtask;
+	}
+
+	protected void doPlan() {
+		if (mySubtask() != -1)
+			findPath();
+	}
+	
 
 }
