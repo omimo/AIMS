@@ -1,6 +1,7 @@
 package massim.agents.reassignment;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.Board;
@@ -268,12 +269,16 @@ public class RAAgent extends Agent {
 		
 		switch (state) {
 		case S_RA_INIT:
-			double twb = teamWellbeing();
-			double wellbeing = wellbeing();
-			logInf("My wellbeing = " + wellbeing);
-			logInf ("The team wellbeing = "+ twb);
-			boolean needReassign = (twb <= RAAgent.WREASSIGN ) ;//&&
-			//wellbeing <= RAAgent.WREASSIGNREQ;
+			boolean needReassign = false;
+			if (mySubtask() != -1)
+			{
+				double twb = teamWellbeing();
+				double wellbeing = wellbeing();
+				logInf("My wellbeing = " + wellbeing);
+				logInf ("The team wellbeing = "+ twb);
+				needReassign = (twb <= RAAgent.WREASSIGN ) ;//&&
+				//wellbeing <= RAAgent.WREASSIGNREQ;
+			}
 			
 			if (needReassign)
 				logInf("Need to reassign.");
@@ -284,9 +289,9 @@ public class RAAgent extends Agent {
 				broadcastMsg(buildRAReqMSG());
 			}
 
-			if (!needReassign)
+			if (!needReassign && mySubtask() != -1) 
 			{
-				wellbeing = wellbeing(); 
+				double wellbeing = wellbeing(); 
 				logInf("My current wellbeing = " + wellbeing);
 				if (Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) < EPSILON)
 					if (canBCast()) {
@@ -326,7 +331,7 @@ public class RAAgent extends Agent {
 					logInf("Assigning subtask "+s+ " to agent "+assignment[s]);
 					if (assignment[s]==id())
 						mySubtask(s);
-					else
+					else if (assignment[s] != -1)
 						if (canSend())
 							sendMsg(assignment[s], buildAssignmentMSG(assignment[s],s));
 						else
@@ -448,10 +453,10 @@ public class RAAgent extends Agent {
 							activeSubtasksMap[stCount++] = s;
 					
 					//Leader's
-					for(int sm=0;sm<activeAgentsMap.length;sm++)
+					for(int sm=0;sm<activeSubtasksMap.length;sm++)
 					{
 						subtaskCost[0][sm] = 
-								estSubtaskCosts[activeAgentsMap[sm]];
+								estSubtaskCosts[activeSubtasksMap[sm]];
 					}
 					
 					//Rest of the agents:
@@ -477,29 +482,47 @@ public class RAAgent extends Agent {
 					{
 					System.out.println("Subtask/Cost Matrix:");
 					for(int a=0;a<activeAgentsMap.length;a++)
-					{
-						System.out.print("Agent "+a);
-						for(int s=0;s<Team.teamSize;s++)
-							System.out.print("\t"+subtaskCost[a][s]);
-						System.out.println("");
+						{
+							System.out.print("Agent "+a);
+							for(int sm=0;sm<activeSubtasksMap.length;sm++)
+								System.out.print("\t"+subtaskCost[a][sm]);
+							System.out.println("");
+						}
 					}
-					}
-					if (resourcePoints()<TeamTask.assignmentOverhead)
-						logErr("dfsfsdfs");
+		
 					decResourcePoints(TeamTask.assignmentOverhead);
 					
 					//Run the Hungarian Algorithm on this
-					assignment = new int[Team.teamSize]; 
+					assignment = new int[currentPos.length]; 
 					//each item contains agent id
+					for (int s=0;s<currentPos.length;s++)
+						assignment[s] = -1;
 					
-					int[][] aha = new int[Team.teamSize][2];
+					boolean tr = false;
+					if (subtaskCost.length > subtaskCost[0].length)
+					{
+						logInf("subtask/cost matrix transposed. (because rows>columns)");
+						subtaskCost = HungarianAlgorithm.transpose(subtaskCost);
+						tr = true;
+					}
+					
+					int[][] aha = new int[activeSubtasksMap.length][2];
 					aha = HungarianAlgorithm.hgAlgorithm(subtaskCost, "min");	
-					
+									
 					for(int i=0;i<aha.length;i++)
 					{
-						int subtask = aha[i][1];
-						assignment[subtask] = aha[i][0];
+						int ag = tr ? 1:0;
+						int sb = tr ? 0:1;
+						
+						int a = aha[i][sb];
+						int subtask = activeSubtasksMap[a];
+						int b = aha[i][ag];
+					    assignment[subtask] = activeAgentsMap[b];
 					}
+					
+					logInf("New assignment:");
+					for (int s=0;s<currentPos.length;s++)
+						logInf("Subtask "+s +" -> Agent "+assignment[s]);
 					
 					if (dbgInf)
 					{
@@ -935,7 +958,13 @@ public class RAAgent extends Agent {
 			int cost = getCellCost(nextCell);
 		
 			decResourcePoints(cost);
-			setPos(nextCell);				
+			setPos(nextCell);	
+			
+			if (reachedGoal())
+			{
+				mySubtask(-1);
+				logInf("Just reached the goal. Setting my subtask to -1");
+			}
 			return true;
 		}
 	}

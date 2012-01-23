@@ -490,7 +490,7 @@ public abstract class Agent {
 	}
 	
 	protected void mySubtask(int s) {
-		if (s>=0 && s<= Team.teamSize)
+		if (s>=0 && s< Team.teamSize)
 			mySubtask = s;
 		else
 			mySubtask = -1;

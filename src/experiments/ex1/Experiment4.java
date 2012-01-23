@@ -95,7 +95,7 @@ public class Experiment4 {
 				System.out.print(","+ 
 						teamScores[i]);
 			System.out.println("");
-//			(new Scanner(System.in)).nextLine();
+			(new Scanner(System.in)).nextLine();
 
 		}
 	}
