@@ -58,9 +58,9 @@ public class Experiment4 {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
-			Team.unicastCost = 7;
+			Team.unicastCost = 1;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 7;
+			Agent.calculationCost = 1;
 			
 			TeamTask.helpOverhead = 30;			
 			TeamTask.cellReward = 100;
@@ -69,15 +69,15 @@ public class Experiment4 {
 			TeamTask.assignmentOverhead = 10;
 			
 			AdvActionMAPAgent.requestThreshold = 299;
-			AdvActionMAPAgent.WLL = 0.8;
+			AdvActionMAPAgent.WLL = 5.0;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 //			BasicActionMAPAgent.requestThreshold = 299;
 			
 			AdvActionMAPRepAgent.WREP = 1.0;
 			NoHelpRepAgent.WREP = 1.0;
 			
-			RAAgent.EPSILON = 0.4;
-			RAAgent.WREASSIGN = 0.7;
+			RAAgent.EPSILON = 0.2;
+			RAAgent.WREASSIGN = 0.3;
 			RAAgent.WREASSIGNREQ = 1.0;
 			
 			/* vary the disturbance: */
