@@ -40,19 +40,22 @@ public class Message {
 	}
 	
 	public String getValue(String field) {
-		//if (fields.containsKey(field))  /* commented for the moment */
-			return fields.get(field);
-		//else
-		//	return "";
+
+		return fields.get(field);
+
 	}
 	
 	public int getIntValue(String field) {
-		//if (fields.containsKey(field))
-			return Integer.parseInt(fields.get(field));
-		//else
-		//	return -1;
+
+		return Integer.parseInt(fields.get(field));
+
 	}
 	
+	public double getDoubleValue(String field) {
+
+		return Double.parseDouble(fields.get(field));
+
+	}
 	///
 	
 	public String toString() {

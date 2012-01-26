@@ -14,11 +14,13 @@ import massim.Team;
 /**
  * Advanced Action MAP Implementation.
  * 
+ * Having team wellbeing.
+ * 
  * @author Omid Alemi
- * @version 1.1 2011/12/21
+ * @version 2.0 2012/01/23
  * 
  */
-public class AdvActionMAPAgent extends Agent {
+public class AdvActionMAP2Agent extends Agent {
 
 	boolean dbgInf = false;
 	boolean dbgErr = true;
@@ -38,15 +40,21 @@ public class AdvActionMAPAgent extends Agent {
 	public static double WLL;
 	public static double requestThreshold;
 	public static double lowCostThreshold;
+	public static double EPSILON;
 	
 	private final static int MAP_HELP_REQ_MSG = 1;
 	private final static int MAP_BID_MSG = 2;
 	private final static int MAP_HELP_CONF = 3;
+	private final static int MAP_WB_UPDATE = 4;
+	
 	
 	private AAMAPState state;
 	
 	private int[][] oldBoard;
 	private double disturbanceLevel;
+	
+	private double[] agentsWellbeing;
+	private double lastSentWellbeing;
 	
 	private boolean bidding;
 	private int agentToHelp;
@@ -54,6 +62,13 @@ public class AdvActionMAPAgent extends Agent {
 	private String bidMsg;
 	
 	private int helperAgent;
+	
+	public static int cond1count = 0;
+	public static int cond2count = 0;
+	public static int cond3count = 0;
+	public static int cond21count = 0;
+	
+	public static int twbbcast = 0;
 	
 	/**
 	 * The Constructor
@@ -63,7 +78,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * @param comMed				The instance of the team's 
 	 * 								communication medium
 	 */
-	public AdvActionMAPAgent(int id, CommMedium comMed) {
+	public AdvActionMAP2Agent(int id, CommMedium comMed) {
 		super(id, comMed);
 	}
 
@@ -92,6 +107,9 @@ public class AdvActionMAPAgent extends Agent {
 		logInf("My goal position: " + goalPos().toString());	
 		
 		oldBoard = null;
+		
+		agentsWellbeing = new double[Team.teamSize];
+		lastSentWellbeing = -1;
 	}
 	
 	/** 
@@ -142,12 +160,33 @@ public class AdvActionMAPAgent extends Agent {
 		switch(state) {
 		case S_INIT:
 			double wellbeing = wellbeing();
+			double twb = teamWellbeing();
+			double twbSD = teamWellbeingStdDev();
+			logInf2("My wellbeing = " + wellbeing);
+			logInf2("Team wellbeing = "+twb);
+			logInf2("Team wellbeing std dev = " + twbSD);
 			
-			logInf("My wellbeing = " + wellbeing);
+		/*	if (twb < 0.8 && twbSD < 0.5)
+				WLL -= 0.3;
+			if (twb > 0.8 && twbSD > 0.5)
+				WLL += 0.1;
+			if (twb > 0.8 && twbSD < 0.5)
+				WLL += 0.3;*/
 			
+			
+			if (dbgInf2)
+			{
+				for(int i=0;i<Team.teamSize;i++)
+					System.out.println("Agent "+i+":"+agentsWellbeing[i]);
+			}
 			
 			if (reachedGoal())
 			{
+				if (Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) < EPSILON)
+					if (canBCast()) {
+					logInf2("Broadcasting my wellbeing to the team");
+					broadcastMsg(prepareWellbeingUpMsg(wellbeing));
+					}
 				setState(AAMAPState.R_GET_HELP_REQ);
 			}
 			else 
@@ -156,15 +195,19 @@ public class AdvActionMAPAgent extends Agent {
 				int cost = getCellCost(nextCell);
 				
 				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > lowCostThreshold) ||
-								   (cost > requestThreshold);
+								   (wellbeing < WLL && cost > lowCostThreshold);// ||
+								  // (cost > requestThreshold);
 				
-				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
-				if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
+				if (cost > resourcePoints()) cond1count++;
+				if ((wellbeing < WLL && cost > lowCostThreshold)) cond2count++;
+				if (cost > requestThreshold) cond3count++;
+				
+				if (wellbeing < WLL) cond21count++;
+				
 				
 				if (needHelp)
 				{							
-					logInf("Need help!");
+					logInf2("Need help!");
 					
 					if (canCalc())
 					{
@@ -187,6 +230,14 @@ public class AdvActionMAPAgent extends Agent {
 				}
 				else
 				{
+					//System.out.println((wellbeing - lastSentWellbeing)/lastSentWellbeing);
+					/*if (Math.abs(lastSentWellbeing + 1 ) < 0.00001 || 
+					(Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) <= EPSILON))
+						if (canBCast()) {
+							twbbcast++;
+						logInf2("Broadcasting my wellbeing to the team");
+						broadcastMsg(prepareWellbeingUpMsg(wellbeing));
+						} */
 					setState(AAMAPState.R_GET_HELP_REQ);
 				}
 			}
@@ -277,6 +328,12 @@ public class AdvActionMAPAgent extends Agent {
 				Message msg = new Message(msgStr);				
 				if (msg.isOfType(MAP_HELP_REQ_MSG))
 						helpReqMsgs.add(msg);
+				else if (msg.isOfType(MAP_WB_UPDATE))
+				{
+					agentsWellbeing[msg.sender()] = msg.getDoubleValue("wellbeing");
+					logInf("Received agent "+msg.sender()+ "'s wellbeing = " +
+					agentsWellbeing[msg.sender()]);
+				}
 				 msgStr = commMedium().receive(id());
 			}
 			
@@ -291,6 +348,10 @@ public class AdvActionMAPAgent extends Agent {
 				
 				for (Message msg : helpReqMsgs)
 				{
+					agentsWellbeing[msg.sender()] = msg.getDoubleValue("wellbeing");
+					logInf("Received agent "+msg.sender()+ "'s wellbeing = " +
+					agentsWellbeing[msg.sender()]);
+					
 					RowCol reqNextCell = 
 						new RowCol(msg.getIntValue("nextCellRow"), 
 								   msg.getIntValue("nextCellCol"));
@@ -330,6 +391,19 @@ public class AdvActionMAPAgent extends Agent {
 			setState(AAMAPState.S_RESPOND_TO_REQ);
 			break;
 		case R_IGNORE_HELP_REQ:
+			msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
+			{
+				logInf("Received a message: " + msgStr);
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(MAP_WB_UPDATE) || msg.isOfType(MAP_HELP_REQ_MSG) )
+				{
+					agentsWellbeing[msg.sender()] = msg.getDoubleValue("wellbeing");
+					logInf("Received agent "+msg.sender()+ "'s wellbeing = " +
+					agentsWellbeing[msg.sender()]);
+				}
+				 msgStr = commMedium().receive(id());
+			}
 			setState(AAMAPState.S_SEEK_HELP);
 			break;
 		case R_BIDDING:
@@ -472,6 +546,39 @@ public class AdvActionMAPAgent extends Agent {
 			}
 		}					
 	}
+
+	/**
+	 * Calculates the team well being
+	 *
+	 * @return Team well being
+	 */
+	private double teamWellbeing()
+	{
+		double sum = 0;
+		agentsWellbeing[id()] = wellbeing();
+		for (double w : agentsWellbeing)
+			sum+=w;
+
+		return sum/agentsWellbeing.length;
+	}
+
+	/**
+	* Calculates the standard deviation of the team's well being
+	*
+	* @return Standard deviation of the team's well being
+	*/
+	private double teamWellbeingStdDev() {
+
+		double tw = teamWellbeing();
+
+		double sum = 0;
+		for (double w : agentsWellbeing)
+		{
+			sum+= (w-tw)*(w-tw);
+		}
+		
+		return Math.sqrt(sum/agentsWellbeing.length);
+	}
 	
 	/**
 	 * Calculates the disturbance level of the board.
@@ -520,6 +627,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * @return						The estimated cost
 	 */
 	private double estimatedCost(Path p) {		
+		
 		int l = p.getNumPoints();
 		double sigma = 1 - disturbanceLevel;
 		double eCost = 0.0;		
@@ -678,7 +786,29 @@ public class AdvActionMAPAgent extends Agent {
 		helpReq.putTuple("teamBenefit", Integer.toString(teamBenefit));
 		helpReq.putTuple("nextCellRow", helpCell.row);
 		helpReq.putTuple("nextCellCol", helpCell.col);
+		
+		Double w = wellbeing();
+		helpReq.putTuple("wellbeing", Double.toString(w));
+		lastSentWellbeing = w;
+		
 		return helpReq.toString();
+	}
+	
+	/**
+	 * Prepares a help request message and returns its String encoding.
+	 * 
+	 * @param teamBenefit			The team benefit to be included in
+	 * 								the message.
+	 * @return						The message encoded in String
+	 */
+	private String prepareWellbeingUpMsg(double w) {
+		
+		Message wu = new Message(id(),-1,MAP_WB_UPDATE);
+		
+		wu.putTuple("wellbeing", Double.toString(w));
+		lastSentWellbeing = w;
+		
+		return wu.toString();
 	}
 	
 	/**
@@ -961,7 +1091,7 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	private void logInf(String msg) {
 		if (dbgInf)
-			System.out.println("[AdvActionMAP Agent " + id() + "]: " + msg);
+			System.out.println("[AdvActionMAP2 Agent " + id() + "]: " + msg);
 	}
 	
 	/**
@@ -972,7 +1102,7 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	private void logInf2(String msg) {
 		if (dbgInf2)
-			System.err.println("[AdvActionMAP Agent " + id() + "]: " + msg);
+			System.err.println("[AdvActionMAP2 Agent " + id() + "]: " + msg);
 	}
 	
 	/**
@@ -983,7 +1113,7 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	private void logErr(String msg) {
 		if (dbgErr)
-			System.out.println("[xxxxxxxxxxx][AdvActionMAP Agent " + id() + 
+			System.out.println("[xxxxxxxxxxx][AdvActionMAP2 Agent " + id() + 
 							   "]: " + msg);
 	}
 }
