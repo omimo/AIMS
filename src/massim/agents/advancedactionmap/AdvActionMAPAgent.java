@@ -156,7 +156,7 @@ public class AdvActionMAPAgent extends Agent {
 				int cost = getCellCost(nextCell);
 				
 				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > lowCostThreshold) ||
+								//  (wellbeing < WLL && cost > lowCostThreshold) ||
 								   (cost > requestThreshold);
 				
 				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);

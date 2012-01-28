@@ -166,12 +166,12 @@ public class AdvActionMAP2Agent extends Agent {
 			logInf2("Team wellbeing = "+twb);
 			logInf2("Team wellbeing std dev = " + twbSD);
 			
-		/*	if (twb < 0.8 && twbSD < 0.5)
+			if (twb < 0.8 && twbSD < 0.5)
 				WLL -= 0.3;
 			if (twb > 0.8 && twbSD > 0.5)
 				WLL += 0.1;
 			if (twb > 0.8 && twbSD < 0.5)
-				WLL += 0.3;*/
+				WLL += 0.3;
 			
 			
 			if (dbgInf2)
@@ -196,7 +196,7 @@ public class AdvActionMAP2Agent extends Agent {
 				
 				boolean needHelp = (cost > resourcePoints()) ||
 								   (wellbeing < WLL && cost > lowCostThreshold);// ||
-								  // (cost > requestThreshold);
+								//   (cost > requestThreshold);
 				
 				if (cost > resourcePoints()) cond1count++;
 				if ((wellbeing < WLL && cost > lowCostThreshold)) cond2count++;
@@ -231,13 +231,13 @@ public class AdvActionMAP2Agent extends Agent {
 				else
 				{
 					//System.out.println((wellbeing - lastSentWellbeing)/lastSentWellbeing);
-					/*if (Math.abs(lastSentWellbeing + 1 ) < 0.00001 || 
+					if (Math.abs(lastSentWellbeing + 1 ) < 0.00001 || 
 					(Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) <= EPSILON))
 						if (canBCast()) {
 							twbbcast++;
 						logInf2("Broadcasting my wellbeing to the team");
 						broadcastMsg(prepareWellbeingUpMsg(wellbeing));
-						} */
+						} 
 					setState(AAMAPState.R_GET_HELP_REQ);
 				}
 			}
@@ -697,12 +697,22 @@ public class AdvActionMAP2Agent extends Agent {
 		RowCol iCell = path().getNextPoint(startPos);		
 		int iIndex = path().getIndexOf(iCell);
 		
+		double m = getAverage(actionCosts()); /*TODO: check this! */			
+		
 		while (iIndex < path().getNumPoints())
 		{
-			int cost = getCellCost(iCell);
-			if (cost <= remainingResourcePoints)
+		
+			int jIndex = iIndex - path().getIndexOf(startPos);
+			
+			double sigma = 1 - disturbanceLevel;
+			
+			double eCost =  ((1-Math.pow(sigma, jIndex))) * m;		
+				eCost += Math.pow(sigma, jIndex) * getCellCost(path().getNthPoint(iIndex));
+			
+			//int cost = getCellCost(iCell);
+			if (eCost <= remainingResourcePoints)
 			{
-				remainingResourcePoints-=cost;
+				remainingResourcePoints-=eCost;
 				iCell=path().getNextPoint(iCell);
 				iIndex++;
 			}
@@ -736,12 +746,20 @@ public class AdvActionMAP2Agent extends Agent {
 		RowCol iCell = path().getNextPoint(startPos);		
 		int iIndex = path().getIndexOf(iCell);
 		
+		double m = getAverage(actionCosts()); /*TODO: check this! */	
+		
 		while (iIndex < path().getNumPoints())
 		{							
-			int cost = getCellCost(iCell);
-			if (cost <= remainingResourcePoints)
+			int jIndex = iIndex - path().getIndexOf(startPos);
+			
+			double sigma = 1 - disturbanceLevel;
+			
+			double eCost =  ((1-Math.pow(sigma, jIndex))) * m;		
+				eCost += Math.pow(sigma, jIndex) * getCellCost(path().getNthPoint(iIndex));
+				
+			if (eCost <= remainingResourcePoints)
 			{
-				remainingResourcePoints-=cost;
+				remainingResourcePoints-=eCost;
 				iCell=path().getNextPoint(iCell);
 				iIndex++;
 			}

@@ -54,19 +54,19 @@ public class Experiment5 {
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 7;
+			Team.unicastCost = 3;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 1;
+			Agent.calculationCost = 3;
 			Agent.helpOverhead = 30;			
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
-			AdvActionMAPAgent.requestThreshold = 299;
+			AdvActionMAPAgent.requestThreshold = 399;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			BasicActionMAPAgent.requestThreshold = 299;
 			
-			AdvActionMAP2Agent.EPSILON = 1.1;
-			AdvActionMAP2Agent.requestThreshold = 299;
+			AdvActionMAP2Agent.EPSILON = 0.2;
+			AdvActionMAP2Agent.requestThreshold = 399;
 			AdvActionMAP2Agent.WLL = 0.8;
 			AdvActionMAP2Agent.lowCostThreshold = 100;
 			
