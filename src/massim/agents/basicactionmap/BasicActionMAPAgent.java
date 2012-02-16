@@ -136,8 +136,8 @@ public class BasicActionMAPAgent extends Agent {
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
 				boolean needHelp = 
-					(cost > BasicActionMAPAgent.requestThreshold) ||
-					(cost > resourcePoints());
+					(cost > BasicActionMAPAgent.requestThreshold);// ||
+					//(cost > resourcePoints());
 				if (needHelp)
 				{
 					logInf("Need help!");

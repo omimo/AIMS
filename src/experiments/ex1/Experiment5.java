@@ -34,18 +34,18 @@ public class Experiment5 {
 	
 	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
-		Team[] teams = new Team[4];		
+		Team[] teams = new Team[3];		
 		teams[0] = new BasicActionMAPTeam();
 		teams[1] = new AdvActionMapTeam();
-		teams[2] = new AdvActionMAP2Team();	
-		teams[3] = new NoHelpTeam();
+		//teams[2] = new AdvActionMAP2Team();	
+		teams[2] = new NoHelpTeam();
 			
 		
 		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 				
-		System.out.println("DISTURBANCE,BasicActionMAP,AdvActionMAP,AdvActionMAP2,NO-HELP");
+		System.out.println("DISTURBANCE,BasicActionMAP,AdvActionMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
@@ -60,18 +60,18 @@ public class Experiment5 {
 			Agent.helpOverhead = 30;			
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
-			AdvActionMAPAgent.requestThreshold = 399;
+			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			BasicActionMAPAgent.requestThreshold = 299;
 			
 			AdvActionMAP2Agent.EPSILON = 0.2;
-			AdvActionMAP2Agent.requestThreshold = 399;
+			AdvActionMAP2Agent.requestThreshold = 299;
 			AdvActionMAP2Agent.WLL = 0.8;
 			AdvActionMAP2Agent.lowCostThreshold = 100;
 			
 			/* vary the disturbance: */
-			SimulationEngine.disturbanceLevel = 0.1 * exp;;  
+			SimulationEngine.disturbanceLevel = 0.1 * exp;
 			
 			/* Initialize and run the experiment */
 			se.initializeExperiment(numberOfRuns);			

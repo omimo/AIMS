@@ -195,8 +195,8 @@ public class AdvActionMAP2Agent extends Agent {
 				int cost = getCellCost(nextCell);
 				
 				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > lowCostThreshold);// ||
-								//   (cost > requestThreshold);
+								//   (wellbeing < WLL && cost > lowCostThreshold);// ||
+								   (cost > requestThreshold);
 				
 				if (cost > resourcePoints()) cond1count++;
 				if ((wellbeing < WLL && cost > lowCostThreshold)) cond2count++;
@@ -231,13 +231,13 @@ public class AdvActionMAP2Agent extends Agent {
 				else
 				{
 					//System.out.println((wellbeing - lastSentWellbeing)/lastSentWellbeing);
-					if (Math.abs(lastSentWellbeing + 1 ) < 0.00001 || 
+				/*	if (Math.abs(lastSentWellbeing + 1 ) < 0.00001 || 
 					(Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) <= EPSILON))
 						if (canBCast()) {
 							twbbcast++;
 						logInf2("Broadcasting my wellbeing to the team");
 						broadcastMsg(prepareWellbeingUpMsg(wellbeing));
-						} 
+						} */
 					setState(AAMAPState.R_GET_HELP_REQ);
 				}
 			}
