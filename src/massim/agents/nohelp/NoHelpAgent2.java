@@ -582,7 +582,7 @@ public class NoHelpAgent2 extends Agent {
 		
 		for(int s=0;s<Team.teamSize;s++)
 		{
-			Path subtaskPath = findPath(currentPos[s], tt.goalPos[s]);
+			Path subtaskPath = findPath(currentPositions[s], tt.goalPos[s]);
 			estimates[s] = (int)estimatedCost(subtaskPath);
 		}
 		

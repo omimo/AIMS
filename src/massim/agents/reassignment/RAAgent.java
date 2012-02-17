@@ -22,7 +22,7 @@ import massim.TeamTask;
  */
 public class RAAgent extends Agent {
 	
-	private boolean dbgInf = false;
+	private boolean dbgInf = true;
 	private boolean dbgErr = true;
 	
 	private static int leaderAgent = 0;
@@ -108,12 +108,15 @@ public class RAAgent extends Agent {
 		super.initializeRound(board, actionCostsMatrix);				
 		
 		logInf("Starting a new round ...");
-		
-		logInf("My current position: " + pos().toString());
-		if (path() == null)
-		{		
-			findPath();			
-			logInf("Chose this path: "+ path().toString());
+	
+		if (mySubtask() != -1)
+		{
+			logInf("My current position: " + pos().toString());
+			if (path() == null)
+			{		
+				findPath();			
+				logInf("Chose this path: "+ path().toString());
+			}
 		}
 		
 		state = RAAgentStates.S_RA_INIT;
@@ -233,13 +236,15 @@ public class RAAgent extends Agent {
 		
 		keepBoard();
 		
-		boolean succeed = act();
+		
 		
 		if (mySubtask() == -1)
 		{
 			logInf("No Subtask to Do! Sleeping!");
-			return AgGameStatCode.BLOCKED;
+			return AgGameStatCode.READY;
 		}
+		
+		boolean succeed = act();
 		
 		if (reachedGoal())
 		{
@@ -438,10 +443,10 @@ public class RAAgent extends Agent {
 					// get the number of incomplete subtasks
 					int countIncomp = 0;
 					for(int s=0;s<tt.goalPos.length;s++)
-						if (!currentPos[s].equals(tt.goalPos[s]))
+						if (!currentPositions[s].equals(tt.goalPos[s]))
 							countIncomp++;
 				
-					int[] activeSubtasksMap = new int[countIncomp];
+					int[] activeSubtasksMap = new int[countIncomp]; // a[i] = s; i:0..countIncomp, s:0..n#subtasks
 					int[] activeAgentsMap = new int[reports.size()+1];
 					
 					// Fill the subtask / cost matrix
@@ -449,7 +454,7 @@ public class RAAgent extends Agent {
 					
 					int stCount = 0;
 					for(int s=0;s<tt.goalPos.length;s++)
-						if (!currentPos[s].equals(tt.goalPos[s]))
+						if (!currentPositions[s].equals(tt.goalPos[s]))
 							activeSubtasksMap[stCount++] = s;
 					
 					//Leader's
@@ -493,9 +498,9 @@ public class RAAgent extends Agent {
 					decResourcePoints(TeamTask.assignmentOverhead);
 					
 					//Run the Hungarian Algorithm on this
-					assignment = new int[currentPos.length]; 
+					assignment = new int[currentPositions.length]; 
 					//each item contains agent id
-					for (int s=0;s<currentPos.length;s++)
+					for (int s=0;s<currentPositions.length;s++)
 						assignment[s] = -1;
 					
 					boolean tr = false;
@@ -512,16 +517,16 @@ public class RAAgent extends Agent {
 					for(int i=0;i<aha.length;i++)
 					{
 						int ag = tr ? 1:0;
-						int sb = tr ? 0:1;
+						int st = tr ? 0:1;
 						
-						int a = aha[i][sb];
+						int a = aha[i][st];
 						int subtask = activeSubtasksMap[a];
 						int b = aha[i][ag];
 					    assignment[subtask] = activeAgentsMap[b];
 					}
 					
 					logInf("New assignment:");
-					for (int s=0;s<currentPos.length;s++)
+					for (int s=0;s<currentPositions.length;s++)
 						logInf("Subtask "+s +" -> Agent "+assignment[s]);
 					
 					if (dbgInf)
@@ -564,9 +569,18 @@ public class RAAgent extends Agent {
 					mySubtask(-1);
 				}
 			}
-			if (mySubtask() != -1)
+			else
 			{
-				findPath();			
+				mySubtask(-1);
+				for(int s=0;s<Team.teamSize;s++)
+				{
+					if (assignment[s]==id())
+						mySubtask(s);
+				}
+			}
+			findPath();
+			if (mySubtask() != -1)
+			{			
 				logInf("Chose this path: "+ path().toString());
 			}
 			setState(RAAgentStates.S_INIT);
@@ -623,7 +637,7 @@ public class RAAgent extends Agent {
 
 		for(int s=0;s<Team.teamSize;s++)
 		{
-			if (!currentPos[s].equals(tt.goalPos[s])) //subtask is not complete
+			if (!currentPositions[s].equals(tt.goalPos[s])) //subtask is not complete
 				report.putTuple(Integer.toString(s), estSubtaskCosts[s]);
 		}
 		
@@ -671,7 +685,7 @@ public class RAAgent extends Agent {
 		
 		for(int s=0;s<Team.teamSize;s++)
 		{
-			Path subtaskPath = findPath(currentPos[s], tt.goalPos[s]);
+			Path subtaskPath = findPath(currentPositions[s], tt.goalPos[s]);
 			estimates[s] = (int)estimatedCost(subtaskPath);
 		}
 		
@@ -769,9 +783,16 @@ public class RAAgent extends Agent {
 	private Path remainingPath(RowCol from) {
 		Path rp = new Path(path());
 		
+		try {
 		while (!rp.getStartPoint().equals(from))
 			rp = rp.tail();
 		
+		}
+		catch (Exception e) 
+		{ 
+			System.err.println("my sub task >>>>>>>>>> " + mySubtask());
+			e.printStackTrace();
+		}
 		return rp.tail();
 	}
 	
@@ -962,8 +983,9 @@ public class RAAgent extends Agent {
 			
 			if (reachedGoal())
 			{
-				mySubtask(-1);
-				logInf("Just reached the goal. Setting my subtask to -1");
+			//	mySubtask(-1);
+			//	logInf("Just reached the goal. Setting my subtask to -1");
+				logInf("Just reached the goal.");
 			}
 			return true;
 		}

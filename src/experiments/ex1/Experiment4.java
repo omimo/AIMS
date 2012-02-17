@@ -29,7 +29,7 @@ import massim.agents.reassignment.RATeam;
 public class Experiment4 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 500;
+	int numberOfRuns = 1;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};

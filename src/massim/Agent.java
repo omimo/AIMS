@@ -36,7 +36,7 @@ public abstract class Agent {
 	int[] subtaskAssignments;
 	
 	//private RowCol pos;
-	protected RowCol[] currentPos;
+	protected RowCol[] currentPositions;
 	private Board theBoard;
 	
 	private CommMedium communicationMedium; 
@@ -95,16 +95,14 @@ public abstract class Agent {
 				0, subtaskAssignments.length);
 		
 		int i=0;
-		while (subtaskAssignments[i]!=id)
+		while (subtaskAssignments[i]!=id && i < subtaskAssignments.length)
 			i++;
-		
-		if (i<Team.teamSize)
-			mySubtask = i;
+		mySubtask = i;
 	   
 		if (mySubtask != -1)
 			currentPos[mySubtask] = tt.startPos[mySubtask];
 		
-		this.currentPos = currentPos;
+		this.currentPositions = currentPos;
 		
 		this.actionCosts = new int[actionCosts.length];
 		System.arraycopy(actionCosts, 0, this.actionCosts, 0,
@@ -257,7 +255,7 @@ public abstract class Agent {
 	 */
 	protected RowCol pos() {
 		//return pos;
-		return currentPos[mySubtask];
+		return currentPositions[mySubtask];
 	}
 
 	/**
@@ -267,7 +265,7 @@ public abstract class Agent {
 	 */
 	protected void setPos(RowCol newPos) {
 		//pos = newPos;
-		currentPos[mySubtask] = newPos;
+		currentPositions[mySubtask] = newPos;
 	}
 	
 	/**
@@ -341,7 +339,7 @@ public abstract class Agent {
 			PolajnarPath2 pp = new PolajnarPath2();
 			Path shortestPath = new Path(pp.findShortestPath(
 					boardToCosts(theBoard.getBoard(), actionCosts), 
-					currentPos[mySubtask], goalPos()));
+					currentPositions[mySubtask], goalPos()));
 			path = new Path(shortestPath);
 		}
 		else 
@@ -457,7 +455,10 @@ public abstract class Agent {
 	 * 						false o.w.
 	 */
 	protected boolean reachedGoal() {
-		return path().getEndPoint().equals(pos());
+		if (mySubtask == -1)
+			return false;
+		else
+			return path().getEndPoint().equals(pos());
 	}
 	
 	protected CommMedium commMedium() {
