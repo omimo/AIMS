@@ -1,9 +1,17 @@
 package massim.agents.empathic;
 
+import java.text.Bidi;
+import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
+
 import massim.Agent;
 import massim.Board;
 import massim.CommMedium;
+import massim.Message;
+import massim.Path;
 import massim.RowCol;
+import massim.SimulationEngine;
+import massim.Team;
 
 
 public class EmpathicAgent extends Agent {
@@ -11,8 +19,37 @@ public class EmpathicAgent extends Agent {
 	private boolean dbgInf = true;
 	private boolean dbgErr = true;
 	
-	private enum EmpaticAgentState {S_INIT}
+	private enum EmpaticAgentState {
+		S_INIT, 
+		S_SEEK_HELP, S_RESPOND_TO_REQ, 
+		S_DECIDE_OWN_ACT, S_BLOCKED, S_RESPOND_BIDS, S_BIDDING,
+		S_DECIDE_HELP_ACT, 
+		R_IGNORE_HELP_REQ, R_GET_HELP_REQ,
+		R_GET_BIDS, R_BIDDING, R_DO_OWN_ACT,
+		R_BLOCKED, R_ACCEPT_HELP_ACT,R_GET_BID_CONF,
+		R_DO_HELP_ACT
+	}
+	
+	private final static int EMP_HELP_REQ_MSG = 1;
+	private final static int EMP_BID_MSG = 2;
+	private final static int EMP_HELP_CONF = 3;
+	
+	private int[][] oldBoard;
+	private double disturbanceLevel;
+	
+	private boolean bidding;
+	private int agentToHelp;
+	private RowCol helpeeNextCell;
+	private String bidMsg;
+	private int helperAgent;
+	
+	private int[] experience;
+	private int[] originalActionCost;
+	
 	private EmpaticAgentState state;
+	
+	private double ET; // The average emotional state of the team
+	private double WTH_Threshhold;
 	
 	public EmpathicAgent(int id, CommMedium comMed) {
 		super(id, comMed); 
@@ -54,6 +91,13 @@ public class EmpathicAgent extends Agent {
 		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
+		
+		experience = new int[SimulationEngine.numOfColors];
+		for (int i=0; i<experience.length; i++){
+			experience[i]=0;
+		}
+		
+		
 	}
 	
 	/** 
@@ -84,6 +128,7 @@ public class EmpathicAgent extends Agent {
 		
 		setRoundAction(actionType.SKIP);
 		
+		disturbanceLevel = calcDistrubanceLevel();
 	}
 	
 	/**
@@ -97,8 +142,62 @@ public class EmpathicAgent extends Agent {
 		logInf("Send Cycle");		
 		
 		switch (state) {
-		case S_INIT:			
+		case S_INIT:
+			if (reachedGoal()){
+				setState(EmpaticAgentState.R_GET_HELP_REQ);
+			}
+			else{
+				RowCol nextCell = path().getNextPoint(pos());
+				int cost = getCellCost(nextCell);
+				double emotionalState = emotionalState();
+				boolean needHelp = (cost>resourcePoints() || emotionalState < ET);
+				if (needHelp){
+					double salience = salience();
+					if (canBCast()){
+						String helpReqMsg = prepareHelpReqMsg(salience, nextCell);
+						broadcastMsg(helpReqMsg);
+						setState(EmpaticAgentState.R_IGNORE_HELP_REQ);
+					}
+					else
+						setState(EmpaticAgentState.R_BLOCKED);
+				}
+				else{
+					setState(EmpaticAgentState.R_GET_HELP_REQ);
+				}
+			}
+			break;
 			
+		case S_RESPOND_TO_REQ:
+			if (bidding && canSend()){
+				sendMsg(agentToHelp, bidMsg);
+				setState(EmpaticAgentState.R_BIDDING);
+			}
+			else
+				setState(EmpaticAgentState.R_DO_OWN_ACT);
+			break;
+			
+		case S_SEEK_HELP:
+			setState(EmpaticAgentState.R_GET_BIDS);
+			break;
+		case S_BIDDING:
+			setState(EmpaticAgentState.R_GET_BID_CONF);
+			break;
+		case S_DECIDE_OWN_ACT:
+			setState(EmpaticAgentState.R_DO_OWN_ACT);
+			break;
+		case S_DECIDE_HELP_ACT:
+			setState(EmpaticAgentState.R_DO_HELP_ACT);
+			break;
+			
+		case S_RESPOND_BIDS:
+			if (canSend())
+			{
+				String msg = prepareConfirmMsg(helperAgent);
+				sendMsg(helperAgent, msg);
+				setState(EmpaticAgentState.R_ACCEPT_HELP_ACT);
+			}
+			else
+				setState(EmpaticAgentState.R_BLOCKED);
 			break;		
 		default:
 			logErr("Undefined state: " + state.toString());
@@ -113,16 +212,149 @@ public class EmpathicAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode receiveCycle() {
-		AgCommStatCode returnCode = AgCommStatCode.DONE;
+		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;
+		// TODO Why is it DONE in here different from map?
 		
 		logInf("Receive Cycle");		
 		
 		switch (state) {
+		case R_GET_HELP_REQ:
+			ArrayList<Message> helpReqMsgs = new ArrayList<Message>();
+			String msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
+			{
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(EMP_HELP_REQ_MSG))
+						helpReqMsgs.add(msg);
+				 msgStr = commMedium().receive(id());
+			}
+			
+			bidding = false;
+			agentToHelp = -1;
+			
+			if(helpReqMsgs.size()>0){
+				
+				 double maxWTH = Double.MIN_VALUE;
+				 for (Message msg : helpReqMsgs){
+					 
+					 RowCol reqNextCell = new RowCol(msg.getIntValue("nextCellRow"), msg.getIntValue("nextCellCol"));
+					 double wth = -1;
+					 // TODO does wth have calculation cost?
+					 wth = willingnessToHelp();
+					 // TODO complete the function and arguments
+					 int requesterAgent = msg.sender();
+					 int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
+					 
+					 if (wth>0 && wth>maxWTH && helpActCost<resourcePoints()){
+						 maxWTH = wth;
+						 agentToHelp = requesterAgent;
+						 helpeeNextCell = reqNextCell;
+					 }
+				 }
+				 
+				 if (agentToHelp!=-1){
+					 bidMsg = prepareBidMsg(agentToHelp, maxWTH);
+					 bidding=true;
+				 }
+			}
+			setState(EmpaticAgentState.S_RESPOND_TO_REQ);
+			break;
+			
+		case R_IGNORE_HELP_REQ:
+			setState(EmpaticAgentState.S_SEEK_HELP);
+			break;
+		case R_BIDDING:
+			setState(EmpaticAgentState.S_BIDDING);
+			break;
+		case R_GET_BIDS:
+			ArrayList<Message> bidMsgs = new ArrayList<Message>();
+			msgStr = commMedium().receive(id());
+			while (!msgStr.equals(""))
+			{
+				logInf("Received a message: " + msgStr);
+				Message msg = new Message(msgStr);				
+				if (msg.isOfType(EMP_BID_MSG))
+					bidMsgs.add(msg);
+				 msgStr = commMedium().receive(id());
+			}
+			
+			helperAgent = -1;
+			
+			if (bidMsgs.size() == 0)
+			{							
+				/* TODO: this may not be necessary as it will be checked
+				 * in the R_DO_OWN_ACT
+				 */
+				int cost = getCellCost(path().getNextPoint(pos()));
+				if (cost <= resourcePoints())
+					setState(EmpaticAgentState.S_DECIDE_OWN_ACT);
+				else
+					setState(EmpaticAgentState.S_BLOCKED);
+			}
+			else{
+				double maxBid = Double.MIN_VALUE;					
+				for (Message bid : bidMsgs)
+				{
+					double bidWTH = bid.getIntValue("WTH");
+					int offererAgent = bid.sender();
+					
+					if (bidWTH > maxBid)
+					{
+						maxBid = bidWTH;
+						helperAgent = offererAgent;
+					}
+				}
+				setState(EmpaticAgentState.S_RESPOND_BIDS);
+			}
+			break;
+			
+		case R_BLOCKED:
+			//TODO: ? skip the action
+			// or forfeit
+			setRoundAction(actionType.FORFEIT);
+			break;
+		case R_GET_BID_CONF:
+			msgStr = commMedium().receive(id());
+			if(!msgStr.equals("") && (new Message(msgStr)).isOfType(EMP_HELP_CONF)){
+				logInf("Received confirmation");
+				setState(EmpaticAgentState.S_DECIDE_HELP_ACT);
+			}
+			else{
+				logInf("Didn't received confirmation");				
+				setState(EmpaticAgentState.S_DECIDE_OWN_ACT);	
+			}
+			break;
+		
+		case R_DO_OWN_ACT:
+			int cost = getCellCost(path().getNextPoint(pos()));
+			if (!reachedGoal() && cost <= resourcePoints())
+			{
+				logInf("Will do my own move.");
+				setRoundAction(actionType.OWN);
+			}
+			else
+			{
+				logInf("Nothing to do at this round.");
+				setRoundAction(actionType.SKIP);
+			}
+			break;
+			
+		case R_DO_HELP_ACT:
+			logInf("Will help another agent");
+			setRoundAction(actionType.HELP_ANOTHER);
+			break;
+			
+		case R_ACCEPT_HELP_ACT:
+			logInf("Will receive help");
+			setRoundAction(actionType.HAS_HELP);
+			break;
 		
 		default:	
 			logErr("Undefined state: " + state.toString());
 		}
 		
+		if (isInFinalState())
+			returnCode = AgCommStatCode.DONE;
 		return returnCode;
 	}
 
@@ -138,6 +370,7 @@ public class EmpathicAgent extends Agent {
 	protected AgGameStatCode finalizeRound() {
 		
 		logInf("Finalizing the round ...");
+		keepBoard();
 		
 		if (pos().equals(goalPos()))
 		{
@@ -155,6 +388,27 @@ public class EmpathicAgent extends Agent {
 				}
 		}					
 	}
+	
+	
+	/**
+	 * Keeps the current state of the board for calculating the disturbance
+	 * in the next round of the game.
+	 * 
+	 * This copied theBoard into oldBoard. 
+	 */
+	private void keepBoard() {
+		
+		int rows = theBoard().rows();
+		int cols = theBoard().cols();
+		
+		if (oldBoard == null) /* first round */
+			oldBoard = new int[rows][cols];
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				oldBoard[i][j] = theBoard().getBoard()[i][j];	
+	}
+	
 	
 	
 	/**
@@ -198,6 +452,196 @@ public class EmpathicAgent extends Agent {
 	 */
 	@Override
 	protected boolean doOwnAction() {
-		return true;		
+		RowCol nextCell = path().getNextPoint(pos());
+		int cost = getCellCost(nextCell);
+		logInf("Should do my own move!");
+		if (resourcePoints() >= cost )
+		{			
+			decResourcePoints(cost);
+			experience[theBoard().getBoard()[pos().row][pos().col]]++;
+			setPos(nextCell);
+			logInf("Moved to " + pos().toString());
+			
+			return true;
+		}
+		else
+		{
+			logErr("Could not do my own move :(");
+			return false;
+		}	
+	}
+	
+	/**
+	 * Enables the agent to perform an action on behalf of another 
+	 * agent (Help). 
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	@Override
+	protected boolean doHelpAnother() {
+		boolean result;		
+		int cost = getCellCost(helpeeNextCell);			
+		logInf("Should help agent "+agentToHelp);
+		
+		if (resourcePoints() >= cost )
+		{			
+			logInf("Helped agent " + agentToHelp);
+			decResourcePoints(cost);			
+			result = true;
+		}
+		else
+		{
+			logErr(""+resourcePoints());
+			logErr(""+cost);
+			logErr("Failed to help :(");
+			result = false;
+		}
+		helpeeNextCell = null;
+		agentToHelp = -1;
+		return result;
+	}
+	
+	
+	/*
+	 *  Calculating agent's emotional state
+	 */
+	private double emotionalState() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	private double salience(){
+		// TODO auto-generated
+		return 0;
+	}
+	
+	private double willingnessToHelp(){
+		
+		return 0;
+	}
+	
+	/**
+	 * Tells whether the agent has enough resources to send a broadcast
+	 * message or not
+	 * 
+	 * @return 					true if there are enough resources /
+	 * 							false if there aren't enough resources	
+	 */
+	private boolean canBCast() {
+		return (resourcePoints() >= Team.broadcastCost);	
+	}
+	
+	/**
+	 * Prepares a help request message and returns its String encoding.
+	 * 
+	 * @param teamBenefit			The team benefit to be included in
+	 * 								the message.
+	 * @return						The message encoded in String
+	 */
+	private String prepareHelpReqMsg(double salience, RowCol helpCell) {
+		Message helpReq = new Message(id(),-1,EMP_HELP_REQ_MSG);
+		helpReq.putTuple("salience", Double.toString(salience));
+		helpReq.putTuple("nextCellRow", helpCell.row);
+		helpReq.putTuple("nextCellCol", helpCell.col);
+		return helpReq.toString();
+	}
+	
+	/**
+	 * Broadcast the given String encoded message.
+	 * 
+	 * @param msg				The String encoded message 
+	 */
+	private void broadcastMsg(String msg) {
+		decResourcePoints(Team.broadcastCost);
+		commMedium().broadcast(id(), msg);
+	}
+
+	/**
+	 * Tells whether the agent has enough resources to send a unicast
+	 * message or not
+	 * 
+	 * @return 					true if there are enough resources /
+	 * 							false if there aren't enough resources	
+	 */
+	private boolean canSend() {
+		return (resourcePoints() >= Team.unicastCost);	
+	}
+	
+	/**
+	 * Sends the given String encoded message to the specified
+	 * receiver through the communication medium.
+	 * 
+	 * @param receiver			The receiver's id
+	 * @param msg				The String encoded message
+	 */
+	private void sendMsg(int receiver, String msg) {
+		decResourcePoints(Team.unicastCost);
+		commMedium().send(id(), receiver, msg);
+	}
+	
+	/**
+	 * Prepares a help confirmation message returns its String 
+	 * encoding.
+	 * 
+	 * @param helper				The helper agent
+	 * @return						The message encoded in String
+	 */
+	private String prepareConfirmMsg(int helper) {
+		Message confMsg = new Message(id(),helper,EMP_HELP_CONF);
+		return confMsg.toString();
+	}
+	
+	/**
+	 * Prepares a bid message and returns its String encoding.
+	 * 
+	 * @param requester				The help requester agent
+	 * @param NTB					The net team benefit
+	 * @return						The message encoded in String
+	 */
+	private String prepareBidMsg(int requester, double WTH) {
+		Message bidMsg = new Message(id(),requester,EMP_BID_MSG);
+		bidMsg.putTuple("WTH", WTH);
+		return bidMsg.toString();
+	}
+	
+	/**
+	 * Checks whether the agent is in a final state or not.
+	 * 
+	 * @return						true if is in a final state /
+	 * 								false otherwise	
+	 */
+	private boolean isInFinalState() {
+		switch (state) {
+			case R_ACCEPT_HELP_ACT:
+			case R_DO_HELP_ACT:
+			case R_DO_OWN_ACT:
+			case R_BLOCKED:
+				return true;				
+			default:
+				return false;
+		}
+	}
+	
+	/**
+	 * Calculates the disturbance level of the board.
+	 * 
+	 * This compares the current state of the board with the stored state
+	 * from the previous round.
+	 * 
+	 * @return				The level of disturbance.
+	 */
+	private double calcDistrubanceLevel() {
+		if (oldBoard == null)
+			return 0.0;
+		
+		int changeCount = 0;		
+		for (int i=0;i<theBoard().rows();i++)
+			for (int j=0;j<theBoard().cols();j++)
+				if (theBoard().getBoard()[i][j] != oldBoard[i][j])
+					changeCount++;	
+		
+		return (double)changeCount / (theBoard().rows() * theBoard().cols());
 	}
 }
