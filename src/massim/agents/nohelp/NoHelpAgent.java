@@ -13,7 +13,7 @@ import massim.RowCol;
  */
 public class NoHelpAgent extends Agent {
 	
-	private boolean dbgInf = true;
+	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 
 	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};

@@ -199,6 +199,9 @@ public class EmpathicAgent extends Agent {
 			else
 				setState(EmpaticAgentState.R_BLOCKED);
 			break;		
+		case S_BLOCKED:
+			setState(EmpaticAgentState.R_BLOCKED);
+			break;
 		default:
 			logErr("Undefined state: " + state.toString());
 		}
