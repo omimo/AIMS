@@ -39,6 +39,11 @@ public class Message {
 		fields.put(field,Integer.toString(value));
 	}
 	
+	public void putTuple(String field, double value) {
+		fields.put(field,Double.toString(value));
+	}
+	
+	
 	public String getValue(String field) {
 		//if (fields.containsKey(field))  /* commented for the moment */
 			return fields.get(field);
