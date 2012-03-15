@@ -11,6 +11,8 @@ import massim.Team;
  */
 public class NoHelpTeam extends Team {	
 	
+	public static boolean useExp = false;
+	
 	/**
 	 * The default constructor
 	 */
@@ -20,8 +22,11 @@ public class NoHelpTeam extends Team {
 		NoHelpAgent[] selfishAgents = new NoHelpAgent[Team.teamSize];
 		
 		for(int i=0;i<Team.teamSize;i++)
+		{
 			selfishAgents[i] = new NoHelpAgent(i,commMedium());
-		
+			if (useExp)
+				selfishAgents[i].useExperience(useExp);
+		}
 		setAgents(selfishAgents);
 	}	
 			

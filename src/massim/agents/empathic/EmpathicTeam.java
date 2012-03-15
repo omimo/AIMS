@@ -11,13 +11,20 @@ import massim.Team;
  */
 public class EmpathicTeam extends Team {
 
+	public static boolean useExp = false;
+	
 	public EmpathicTeam() {
 		super();		
-			
+		
+	
 		EmpathicAgent[] empAgents = new EmpathicAgent[Team.teamSize];
 		
 		for(int i=0;i<Team.teamSize;i++)
-			empAgents[i] = new EmpathicAgent(i,commMedium());
+			{ 
+				empAgents[i] = new EmpathicAgent(i,commMedium());
+				if (useExp)
+					empAgents[i].useExperience(useExp);
+			}
 		
 		setAgents(empAgents);
 	}	

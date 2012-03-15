@@ -44,7 +44,7 @@ public class Team {
 		OK, DONE, ERR
 	}
 
-	private boolean debuggingInf = true;
+	private boolean debuggingInf = false;
 	public int testRunCounter;
 
 	/**

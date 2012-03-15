@@ -465,16 +465,24 @@ public abstract class Agent {
 	 * 
 	 * @param b
 	 */
-	protected void useExperience(boolean b) {
+	public void useExperience(boolean b) {
 		useExperience = b;
 	}
 	
 	/**
 	 * Increases the experience of the agent for the given color by one.
 	 * 
-	 * @param color
+	 * @param colorIndex
 	 */
-	protected void incExperience(int color) {
-		experience[color]++;
+	protected void incExperience(int colorIndex) {
+		experience[colorIndex]++;
+	}
+	
+	/**
+	 * Calculating the level of past experience with a specific action
+	 * 
+	 */
+	protected int pastExperience(int colorIndex){
+		return experience[colorIndex];
 	}
 }

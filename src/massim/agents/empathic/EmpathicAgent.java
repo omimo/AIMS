@@ -69,19 +69,13 @@ public class EmpathicAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
-	 * @param initialPosition			The initial position of this agent
-	 * @param goalPosition				The goal position for this agent
 	 * @param actionCosts				The agent's action costs vector
-	 * @param initResourcePoints		The initial resource points given
-	 * 									to the agent by its team.
 	 */
 	@Override
 	public void initializeRun(int[] actionCosts) {		
 		super.initializeRun(actionCosts);		
 		
 		logInf("Initialized for a new run.");
-
-
 	}
 	
 	/**
@@ -725,13 +719,7 @@ public class EmpathicAgent extends Agent {
 		return (double)sum/array.length;
 	}
 	
-	/**
-	 * Calculating the level of past experience with a specific action
-	 * 
-	 */
-	private int pastExperience(int colorIndex){
-		return experience[colorIndex];
-	}
+	
 }
 
 

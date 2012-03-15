@@ -10,6 +10,7 @@ import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMapTeam;
 import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
+import massim.agents.empathic.EmpathicAgent;
 import massim.agents.empathic.EmpathicTeam;
 import massim.agents.nohelp.NoHelpTeam;
 
@@ -36,16 +37,20 @@ public class Experiment1 {
 	
 	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
-		Team[] teams = new Team[2];		
+		EmpathicTeam.useExp = true;
+		AdvActionMapTeam.useExp = true;
+		NoHelpTeam.useExp = true;
+		Team[] teams = new Team[3];		
 		teams[0] = new EmpathicTeam();
-		teams[1] = new NoHelpTeam();
+		teams[1] = new AdvActionMapTeam();
+		teams[2] = new NoHelpTeam();
 		
 			
 		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 		
-		System.out.println("DISTURBANCE,AD-ACTION-MAP,REASSIGN,NO-HELP");
+		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
@@ -61,6 +66,11 @@ public class Experiment1 {
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
 
+			EmpathicAgent.WTH_Threshhold = 200;
+		  	EmpathicAgent.emotState_W = 0.5;
+		  	EmpathicAgent.salience_W = 0.5;
+		  	EmpathicAgent.pastExp_W = 0.5;
+		  	
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1 * exp;
 
@@ -78,7 +88,7 @@ public class Experiment1 {
 			System.out.printf(",%d",
 			teamScores[i]);
 			System.out.println("");
-			 (new Scanner(System.in)).nextLine();
+//			 (new Scanner(System.in)).nextLine();
 
 		}
 	}

@@ -10,17 +10,19 @@ import massim.Path;
 import massim.RowCol;
 import massim.Team;
 
+
 /**
  * Advanced Action MAP Implementation.
  * 
  * @author Omid Alemi
- * @version 1.0 2011/11/07
+ * @version 1.1 2011/12/21
  * 
  */
 public class AdvActionMAPAgent extends Agent {
 
 	boolean dbgInf = false;
 	boolean dbgErr = true;
+	boolean dbgInf2 = false;
 	
 	private enum AAMAPState {
 		S_INIT, 
@@ -71,25 +73,32 @@ public class AdvActionMAPAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
+	 * @param actionCosts				The agent's action costs vector
+	 */
+	@Override
+	public void initializeRun(int[] actionCosts) {		
+		super.initializeRun(actionCosts);		
+		
+		logInf("Initialized for a new run.");
+	}
+	
+	/**
+	 * Initializes the agent for a new match within current run
+	 * 
 	 * @param initialPosition			The initial position of this agent
 	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
 	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
+		super.initializeMatch(initialPosition, goalPosition, initResourcePoints);
 		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);		
-		
-		logInf("Initialized for a new run.");
+		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
-		logInf("My initial position: "+ pos());
-		logInf("My goal position: " + goalPos().toString());	
+		logInf("My goal position: " + goalPos().toString());
 		
-		oldBoard = null;
 	}
 	
 	/** 
@@ -111,7 +120,7 @@ public class AdvActionMAPAgent extends Agent {
 		if (path() == null)
 		{		
 			findPath();			
-			logInf("Chose this path: "+ path().toString());
+			logInf("Initial Planning: Chose this path: "+ path().toString());
 		}
 		
 		
@@ -139,6 +148,11 @@ public class AdvActionMAPAgent extends Agent {
 		
 		switch(state) {
 		case S_INIT:
+			double wellbeing = wellbeing();
+			
+			logInf("My wellbeing = " + wellbeing);
+			
+			
 			if (reachedGoal())
 			{
 				setState(AAMAPState.R_GET_HELP_REQ);
@@ -147,11 +161,13 @@ public class AdvActionMAPAgent extends Agent {
 			{
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
-				double wellbeing = wellbeing();
+				
 				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
-								   (cost > AdvActionMAPAgent.requestThreshold);
-				logInf("My wellbeing = " + wellbeing);
+								//  (wellbeing < WLL && cost > lowCostThreshold) ||
+								   (cost > requestThreshold);
+				
+				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
+				if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
 				
 				if (needHelp)
 				{							
@@ -167,6 +183,7 @@ public class AdvActionMAPAgent extends Agent {
 							logInf("Team benefit of help would be "+teamBenefit);
 							String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
 							broadcastMsg(helpReqMsg);
+							
 							setState(AAMAPState.R_IGNORE_HELP_REQ);
 						}
 						else
@@ -187,10 +204,23 @@ public class AdvActionMAPAgent extends Agent {
 			{
 				logInf("Sending a bid to agent"+agentToHelp);
 				sendMsg(agentToHelp, bidMsg);
+
 				setState(AAMAPState.R_BIDDING);
 			}
-			else
+			/*  before
+			   else
 				setState(AAMAPState.R_DO_OWN_ACT);
+				
+				*/
+			
+			else
+			{
+				int cost = getCellCost(path().getNextPoint(pos()));
+				if (cost <= resourcePoints())
+					setState(AAMAPState.R_DO_OWN_ACT);
+				else
+					setState(AAMAPState.R_BLOCKED);
+			}							
 			break;
 		case S_SEEK_HELP:
 			setState(AAMAPState.R_GET_BIDS);
@@ -199,7 +229,13 @@ public class AdvActionMAPAgent extends Agent {
 			setState(AAMAPState.R_GET_BID_CONF);
 			break;
 		case S_DECIDE_OWN_ACT:
-			setState(AAMAPState.R_DO_OWN_ACT);
+			 setState(AAMAPState.R_DO_OWN_ACT);
+			/*int cost = getCellCost(path().getNextPoint(pos()));
+			if (cost <= resourcePoints())
+				setState(AAMAPState.R_DO_OWN_ACT);
+			else
+				setState(AAMAPState.R_BLOCKED);
+				*/		
 			break;
 		case S_DECIDE_HELP_ACT:
 			setState(AAMAPState.R_DO_HELP_ACT);
@@ -271,7 +307,8 @@ public class AdvActionMAPAgent extends Agent {
 					int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
-					if (canCalc())
+					
+					if (canCalc()) //TODO: Revise this
 					{
 						teamLoss = calcTeamLoss(helpActCost);
 						netTeamBenefit = teamBenefit - teamLoss;
@@ -325,6 +362,7 @@ public class AdvActionMAPAgent extends Agent {
 				/* TODO: this may not be necessary as it will be checked
 				 * in the R_DO_OWN_ACT
 				 */
+
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(AAMAPState.S_DECIDE_OWN_ACT);
@@ -362,15 +400,22 @@ public class AdvActionMAPAgent extends Agent {
 					(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
 			{
 				logInf("Received confirmation");
+
 				setState(AAMAPState.S_DECIDE_HELP_ACT);
 			}
 			else
 			{
 				logInf("Didn't received confirmation");				
-				setState(AAMAPState.S_DECIDE_OWN_ACT);								
+				RowCol nextCell = path().getNextPoint(pos());			
+				int nextCost = getCellCost(nextCell);
+				if (nextCost <= resourcePoints())
+					setState(AAMAPState.S_DECIDE_OWN_ACT);
+				else
+					setState(AAMAPState.S_BLOCKED);								
 			}
 			break;
 		case R_DO_OWN_ACT:
+			//TODO: Check this
 			int cost = getCellCost(path().getNextPoint(pos()));			
 			if (!reachedGoal() && cost <= resourcePoints())
 			{
@@ -505,7 +550,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * 
 	 * @return						The agent's wellbeing
 	 */
-	private double wellbeing () {		
+	protected double wellbeing() {		
 		double eCost = estimatedCost(remainingPath(pos()));
 		if (eCost == 0)
 			return resourcePoints();
@@ -756,6 +801,7 @@ public class AdvActionMAPAgent extends Agent {
 		if (resourcePoints() >= cost )
 		{			
 			decResourcePoints(cost);
+			incExperience(theBoard().getBoard()[pos().row][pos().col]);
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			return true;
@@ -924,6 +970,17 @@ public class AdvActionMAPAgent extends Agent {
 	private void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[AdvActionMAP Agent " + id() + "]: " + msg);
+	}
+	
+	/**
+	 * Prints the log message into the output if the information debugging 
+	 * level is turned on (debuggingInf).
+	 * 
+	 * @param msg					The desired message to be printed
+	 */
+	private void logInf2(String msg) {
+		if (dbgInf2)
+			System.err.println("[AdvActionMAP Agent " + id() + "]: " + msg);
 	}
 	
 	/**
