@@ -1,5 +1,7 @@
 package massim.agents.empathic;
 
+// :D
+
 import java.text.Bidi;
 import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
