@@ -319,7 +319,8 @@ public class AdvActionMAPAgent extends Agent {
 					
 					if (netTeamBenefit > 0 && 
 							netTeamBenefit > maxNetTeamBenefit &&
-							(helpActCost+Agent.calculationCost+Team.unicastCost*2+1) < resourcePoints())
+							(helpActCost + Agent.helpOverhead+ Agent.calculationCost+Team.unicastCost*2+1)
+								< resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;
@@ -824,7 +825,7 @@ public class AdvActionMAPAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = getCellCost(helpeeNextCell);			
+		int cost = getCellCost(helpeeNextCell) + Agent.helpOverhead;			
 		logInf("Should help agent "+agentToHelp);
 		
 		if (resourcePoints() >= cost )

@@ -62,7 +62,7 @@ public abstract class Agent {
 		pos = null;
 		theBoard = null;
 		path = null;
-		useExperience = false;
+		//useExperience = false;
 	}
 
 	/**
@@ -285,7 +285,7 @@ public abstract class Agent {
 		int originalCost = actionCosts()[color];
 		if (useExperience && originalCost>40){
 			int exp = experience[theBoard.getBoard()[cell.row][cell.col]];
-			int discount = exp * 10;
+			int discount = exp * 20;
 			if ((originalCost-discount)>40) return originalCost-discount;
 			else return 40;
 		}

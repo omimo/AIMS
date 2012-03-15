@@ -30,6 +30,7 @@ public class EmpathicAgent extends Agent {
 		R_BLOCKED, R_ACCEPT_HELP_ACT,R_GET_BID_CONF,
 		R_DO_HELP_ACT
 	}
+	public static double requestThreshold;
 	
 	private final static int EMP_HELP_REQ_MSG = 1;
 	private final static int EMP_BID_MSG = 2;
@@ -155,7 +156,8 @@ public class EmpathicAgent extends Agent {
 				int cost = getCellCost(nextCell);
 				//double emotionalState = emotionalState();
 				//TODO change this, we shouldn't use ET
-				boolean needHelp = (cost>resourcePoints() /* || emotionalState < ET*/);  
+				boolean needHelp = (cost>resourcePoints() 
+						/* || emotionalState < ET*/);  
 				if (needHelp){
 					double salience = salience();
 					if (canBCast()){
@@ -497,7 +499,7 @@ public class EmpathicAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = getCellCost(helpeeNextCell);			
+		int cost = getCellCost(helpeeNextCell)  + Agent.helpOverhead;			
 		logInf("Should help agent "+agentToHelp);
 		
 		if (resourcePoints() >= cost )

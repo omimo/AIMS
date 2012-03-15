@@ -59,7 +59,7 @@ public class Experiment1 {
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 7;
+			Team.unicastCost = 3;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 3;
 			Agent.helpOverhead = 30;
@@ -74,6 +74,7 @@ public class Experiment1 {
 		  	EmpathicAgent.emotState_W = 0.5;
 		  	EmpathicAgent.salience_W = 0.5;
 		  	EmpathicAgent.pastExp_W = 0.5;
+		  	EmpathicAgent.requestThreshold = 299;
 		  	
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1 * exp;
