@@ -40,6 +40,13 @@ public abstract class Agent {
 
 	private actionType thisRoundAction = actionType.SKIP;
 	
+	
+	/* 
+	 * Experience stuff
+	 * */
+	
+	protected int[] experience;
+	
 	/**
 	 * The constructor.
 	 * 
@@ -268,7 +275,17 @@ public abstract class Agent {
 	 */
 	protected int getCellCost(RowCol cell) {
 		int color = theBoard.getBoard()[cell.row][cell.col];
-		return actionCosts()[color];
+		int originalCost = actionCosts()[color];
+		if (originalCost>40){
+			int exp = experience[theBoard.getBoard()[cell.row][cell.col]];
+			int discount = exp * 10;
+			if ((originalCost-discount)>40) return originalCost-discount;
+			else return 40;
+		}
+		else{
+			return originalCost;
+		}
+		
 	}
 
 	/**

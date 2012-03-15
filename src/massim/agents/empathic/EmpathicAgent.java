@@ -1,10 +1,9 @@
 package massim.agents.empathic;
 
-// :D
-
 import java.text.Bidi;
 import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
+import java.io.*;
 
 import massim.Agent;
 import massim.Board;
@@ -18,7 +17,7 @@ import massim.Team;
 
 public class EmpathicAgent extends Agent {
 
-	private boolean dbgInf = true;
+	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 	
 	private enum EmpaticAgentState {
@@ -45,13 +44,20 @@ public class EmpathicAgent extends Agent {
 	private String bidMsg;
 	private int helperAgent;
 	
-	private int[] experience;
-	private int[] originalActionCost;
+	//private int[] experience;
+	//private int[] originalActionCost;
 	
 	private EmpaticAgentState state;
 	
-	private double ET; // The average emotional state of the team
-	private double WTH_Threshhold;
+	//private double ET; // The average emotional state of the team
+	public static double WTH_Threshhold;
+	
+	// empathy parameters' weight TODO should come from the file
+	public static double salience_W;
+	public static double emotState_W;
+	public static double pastExp_W;
+	
+	
 	
 	public EmpathicAgent(int id, CommMedium comMed) {
 		super(id, comMed); 
@@ -75,6 +81,7 @@ public class EmpathicAgent extends Agent {
 		
 		logInf("Initialized for a new run.");
 
+
 	}
 	
 	/**
@@ -93,6 +100,7 @@ public class EmpathicAgent extends Agent {
 		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
+		
 		
 		experience = new int[SimulationEngine.numOfColors];
 		for (int i=0; i<experience.length; i++){
@@ -143,6 +151,13 @@ public class EmpathicAgent extends Agent {
 		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");		
 		
+		/* was just a test... 
+		logInf("&&&&"+Double.toString(this.WTH_Threshhold));
+		logInf("&&&&"+Double.toString(this.emotState_W));
+		logInf("&&&&"+Double.toString(this.salience_W));
+		logInf("&&&&"+Double.toString(this.pastExp_W));
+		*/
+		
 		switch (state) {
 		case S_INIT:
 			if (reachedGoal()){
@@ -151,8 +166,9 @@ public class EmpathicAgent extends Agent {
 			else{
 				RowCol nextCell = path().getNextPoint(pos());
 				int cost = getCellCost(nextCell);
-				double emotionalState = emotionalState();
-				boolean needHelp = (cost>resourcePoints() || emotionalState < ET);
+				//double emotionalState = emotionalState();
+				//TODO change this, we shouldn't use ET
+				boolean needHelp = (cost>resourcePoints() /* || emotionalState < ET*/);  
 				if (needHelp){
 					double salience = salience();
 					if (canBCast()){
@@ -242,15 +258,21 @@ public class EmpathicAgent extends Agent {
 				 double maxWTH = Double.MIN_VALUE;
 				 for (Message msg : helpReqMsgs){
 					 
+					 double ObjectSalience = msg.getDoubleValue("salience");
 					 RowCol reqNextCell = new RowCol(msg.getIntValue("nextCellRow"), msg.getIntValue("nextCellCol"));
 					 double wth = -1;
+					 
+					 int colorIndex = theBoard().getBoard()[reqNextCell.row][reqNextCell.col];
 					 // TODO does wth have calculation cost?
-					 wth = willingnessToHelp();
+					 wth = willingnessToHelp(ObjectSalience,colorIndex);
+					 logInf("** WTH IS: "+Double.toString(wth));
 					 // TODO complete the function and arguments
 					 int requesterAgent = msg.sender();
 					 int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
 					 
-					 if (wth>0 && wth>maxWTH && helpActCost<resourcePoints()){
+					 //TODO replace the number with threshhold
+					 if (wth>WTH_Threshhold && helpActCost<resourcePoints()){
+						 logInf("## Helping!");
 						 maxWTH = wth;
 						 agentToHelp = requesterAgent;
 						 helpeeNextCell = reqNextCell;
@@ -300,7 +322,7 @@ public class EmpathicAgent extends Agent {
 				double maxBid = Double.MIN_VALUE;					
 				for (Message bid : bidMsgs)
 				{
-					double bidWTH = bid.getIntValue("WTH");
+					double bidWTH = bid.getDoubleValue("WTH");
 					int offererAgent = bid.sender();
 					
 					if (bidWTH > maxBid)
@@ -467,6 +489,7 @@ public class EmpathicAgent extends Agent {
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			
+			// TODO: Must decrease the cost
 			return true;
 		}
 		else
@@ -513,18 +536,22 @@ public class EmpathicAgent extends Agent {
 	 *  Calculating agent's emotional state
 	 */
 	private double emotionalState() {
-		// TODO Auto-generated method stub
-		return 0;
+		// TODO refine the method
+		double eCost = estimatedCost(remainingPath(pos()));
+		if (eCost == 0)
+			return resourcePoints();
+		else
+			return (double)resourcePoints()/eCost;
+		
 	}
 	
 	private double salience(){
-		// TODO auto-generated
-		return 0;
+		// TODO refine the method
+		return 1/emotionalState();
 	}
 	
-	private double willingnessToHelp(){
-		
-		return 0;
+	private double willingnessToHelp(double salience, int colorIndex){
+		return ((salience*salience_W) + (emotionalState()*emotState_W)) + (pastExperience(colorIndex)*pastExp_W) / (salience_W + emotState_W + pastExp_W);
 	}
 	
 	/**
@@ -649,4 +676,70 @@ public class EmpathicAgent extends Agent {
 		
 		return (double)changeCount / (theBoard().rows() * theBoard().cols());
 	}
+	
+	
+	/**
+	* Finds the remaining path from the given cell.
+	*
+	* The path DOES NOT include the given cell and the starting cell
+	* of the remaining path would be the next cell.
+	*
+	* @param from The cell the remaining path would be
+	* generated from.
+	* @return The remaining path.
+	*/
+	private Path remainingPath(RowCol from) {
+		Path rp = new Path(path());
+		while (!rp.getStartPoint().equals(from))
+		rp = rp.tail();
+		return rp.tail();
+	}
+	
+	/**
+	* Calculated the estimated cost for the agent to move through path p.
+	*
+	* @param p The agent's path
+	* @return The estimated cost
+	*/
+	private double estimatedCost(Path p) {
+		int l = p.getNumPoints();
+		double sigma = 1 - disturbanceLevel;
+		double eCost = 0.0;
+		if (Math.abs(sigma-1) < 0.000001)
+		{
+		for (int k=0;k<l;k++)
+		eCost += getCellCost(p.getNthPoint(k));
+		}
+		else
+		{
+		double m = getAverage(actionCosts()); /*TODO: check this! */
+		eCost = (l - ((1-Math.pow(sigma, l))/(1-sigma))) * m;
+		for (int k=0;k<l;k++)
+		eCost += Math.pow(sigma, k) * getCellCost(p.getNthPoint(k));
+		}
+		return eCost;
+	}
+	
+	/**
+	* Calculates the average of the given integer array.
+	*
+	* @return The average.
+	*/
+	private double getAverage(int[] array) {
+		int sum = 0;
+		for (int i=0;i<array.length;i++)
+		sum+=array[i];
+		return (double)sum/array.length;
+	}
+	
+	/**
+	 * Calculating the level of past experience with a specific action
+	 * 
+	 */
+	private int pastExperience(int colorIndex){
+		return experience[colorIndex];
+	}
 }
+
+
+
