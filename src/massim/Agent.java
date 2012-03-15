@@ -45,7 +45,8 @@ public abstract class Agent {
 	 * Experience stuff
 	 * */
 	
-	protected int[] experience;
+	private int[] experience;
+	private boolean useExperience;
 	
 	/**
 	 * The constructor.
@@ -61,6 +62,7 @@ public abstract class Agent {
 		pos = null;
 		theBoard = null;
 		path = null;
+		useExperience = false;
 	}
 
 	/**
@@ -96,6 +98,11 @@ public abstract class Agent {
 		this.goalPos = goalPosition;
 		resourcePoints = 0;
 		incResourcePoints(initResourcePoints);
+		
+		experience = new int[SimulationEngine.numOfColors];
+		for (int i=0; i<experience.length; i++){
+			experience[i]=0;
+		}
 	}
 
 	/** 
@@ -276,7 +283,7 @@ public abstract class Agent {
 	protected int getCellCost(RowCol cell) {
 		int color = theBoard.getBoard()[cell.row][cell.col];
 		int originalCost = actionCosts()[color];
-		if (originalCost>40){
+		if (useExperience && originalCost>40){
 			int exp = experience[theBoard.getBoard()[cell.row][cell.col]];
 			int discount = exp * 10;
 			if ((originalCost-discount)>40) return originalCost-discount;
@@ -451,5 +458,23 @@ public abstract class Agent {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Switch on/off the use of experience when evaluating a cell cost
+	 * 
+	 * @param b
+	 */
+	protected void useExperience(boolean b) {
+		useExperience = b;
+	}
+	
+	/**
+	 * Increases the experience of the agent for the given color by one.
+	 * 
+	 * @param color
+	 */
+	protected void incExperience(int color) {
+		experience[color]++;
 	}
 }

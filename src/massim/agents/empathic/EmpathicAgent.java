@@ -101,13 +101,6 @@ public class EmpathicAgent extends Agent {
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
 		
-		
-		experience = new int[SimulationEngine.numOfColors];
-		for (int i=0; i<experience.length; i++){
-			experience[i]=0;
-		}
-		
-		
 	}
 	
 	/** 
@@ -485,7 +478,7 @@ public class EmpathicAgent extends Agent {
 		if (resourcePoints() >= cost )
 		{			
 			decResourcePoints(cost);
-			experience[theBoard().getBoard()[pos().row][pos().col]]++;
+			incExperience(theBoard().getBoard()[pos().row][pos().col]);
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			
