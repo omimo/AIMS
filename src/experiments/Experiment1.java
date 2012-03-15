@@ -25,7 +25,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment1 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1;
+	int numberOfRuns = 1000;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -33,12 +33,12 @@ public class Experiment1 {
 		SimulationEngine.colorRange.length;
 	SimulationEngine.actionCostsRange = 
 		new int[] {10, 40, 70, 100, 300, 400, 450,  500};	
-	SimulationEngine.numOfMatches = 2;
+	SimulationEngine.numOfMatches = 5;
 	
 	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		EmpathicTeam.useExp = true;
-		AdvActionMapTeam.useExp = true;
+		AdvActionMapTeam.useExp = false;
 		NoHelpTeam.useExp = true;
 		Team[] teams = new Team[3];		
 		teams[0] = new EmpathicTeam();
@@ -59,13 +59,17 @@ public class Experiment1 {
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 3;
+			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 3;
 			Agent.helpOverhead = 30;
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
 
+			AdvActionMAPAgent.requestThreshold = 299;
+			AdvActionMAPAgent.WLL = 0.8;
+			AdvActionMAPAgent.lowCostThreshold = 100;
+			
 			EmpathicAgent.WTH_Threshhold = 200;
 		  	EmpathicAgent.emotState_W = 0.5;
 		  	EmpathicAgent.salience_W = 0.5;

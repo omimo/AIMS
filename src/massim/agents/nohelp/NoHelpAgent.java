@@ -245,7 +245,7 @@ public class NoHelpAgent extends Agent {
 			
 			int cost = getCellCost(nextCell);
 			decResourcePoints(cost);
-			incExperience(theBoard().getBoard()[pos().row][pos().col]);
+			incExperience(theBoard().getBoard()[nextCell.row][nextCell.col]);
 			setPos(nextCell);				
 			return true;
 		}

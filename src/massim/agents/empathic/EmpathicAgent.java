@@ -472,7 +472,7 @@ public class EmpathicAgent extends Agent {
 		if (resourcePoints() >= cost )
 		{			
 			decResourcePoints(cost);
-			incExperience(theBoard().getBoard()[pos().row][pos().col]);
+			incExperience(theBoard().getBoard()[nextCell.row][nextCell.col]);
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			

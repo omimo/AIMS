@@ -164,7 +164,7 @@ public class AdvActionMAPAgent extends Agent {
 				
 				boolean needHelp = (cost > resourcePoints()) ||
 								//  (wellbeing < WLL && cost > lowCostThreshold) ||
-								   (cost > requestThreshold);
+								  (cost > requestThreshold);
 				
 				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
 				if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
@@ -319,7 +319,7 @@ public class AdvActionMAPAgent extends Agent {
 					
 					if (netTeamBenefit > 0 && 
 							netTeamBenefit > maxNetTeamBenefit &&
-							helpActCost < resourcePoints())
+							(helpActCost+Agent.calculationCost+Team.unicastCost*2+1) < resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;
@@ -801,7 +801,7 @@ public class AdvActionMAPAgent extends Agent {
 		if (resourcePoints() >= cost )
 		{			
 			decResourcePoints(cost);
-			incExperience(theBoard().getBoard()[pos().row][pos().col]);
+			incExperience(theBoard().getBoard()[nextCell.row][nextCell.col]);
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			return true;
