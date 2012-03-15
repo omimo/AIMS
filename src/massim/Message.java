@@ -58,6 +58,12 @@ public class Message {
 		//	return -1;
 	}
 	
+	public double getDoubleValue(String field) {
+		//if (fields.containsKey(field))
+			return Double.parseDouble(fields.get(field));
+		//else
+		//	return -1;
+	}
 	///
 	
 	public String toString() {
