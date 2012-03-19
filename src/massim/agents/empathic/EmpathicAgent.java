@@ -536,7 +536,12 @@ public class EmpathicAgent extends Agent {
 	
 	private double salience(){
 		// TODO refine the method
-		return 1/emotionalState();
+		if (emotionalState()==0){
+			return 1/00.1;
+		}
+		else{
+			return 1/emotionalState();
+		}
 	}
 	
 	private double willingnessToHelp(double salience, int colorIndex){
