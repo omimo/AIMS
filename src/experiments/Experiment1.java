@@ -70,10 +70,10 @@ public class Experiment1 {
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			
-			EmpathicAgent.WTH_Threshhold = 200;
-		  	EmpathicAgent.emotState_W = 0.5;
-		  	EmpathicAgent.salience_W = 0.5;
-		  	EmpathicAgent.pastExp_W = 0.5;
+			EmpathicAgent.WTH_Threshhold = 2.343;
+		  	EmpathicAgent.emotState_W = 0.417;
+		  	EmpathicAgent.salience_W = 2.611;
+		  	EmpathicAgent.pastExp_W = 1.072;
 		  	EmpathicAgent.requestThreshold = 299;
 		  	
 			/* vary the disturbance: */

@@ -545,7 +545,7 @@ public class EmpathicAgent extends Agent {
 	}
 	
 	private double willingnessToHelp(double salience, int colorIndex){
-		return ((salience*salience_W) + (emotionalState()*emotState_W)) + (pastExperience(colorIndex)*pastExp_W) / (salience_W + emotState_W + pastExp_W);
+		return ((salience*salience_W) * (emotionalState()*emotState_W)) * (pastExperience(colorIndex)*pastExp_W) / (salience_W * emotState_W * pastExp_W);
 	}
 	
 	/**
