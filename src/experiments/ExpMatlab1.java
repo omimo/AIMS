@@ -88,7 +88,7 @@ public class ExpMatlab1 {
 			BufferedWriter out = new BufferedWriter(fstream);
 			for (int i=0;i<teams.length;i++){
 				// int i = 1;
-				double r = teamScores[i]/1000;
+				double r = teamScores[i]/100;
 				r = Math.ceil(r+0.5);
 				int roundedTeamScore = (int)r;
 				System.out.printf("%d",	-roundedTeamScore);

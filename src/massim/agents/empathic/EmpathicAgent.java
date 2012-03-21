@@ -260,7 +260,9 @@ public class EmpathicAgent extends Agent {
 					 int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
 					 
 					 //TODO replace the number with threshhold
-					 if (wth>WTH_Threshhold && helpActCost<resourcePoints()){
+					 if (wth>WTH_Threshhold && 
+							 helpActCost+ Agent.helpOverhead+Team.unicastCost+1
+							 <resourcePoints()){
 						 logInf("## Helping!");
 						 maxWTH = wth;
 						 agentToHelp = requesterAgent;
@@ -545,7 +547,7 @@ public class EmpathicAgent extends Agent {
 	}
 	
 	private double willingnessToHelp(double salience, int colorIndex){
-		return ((salience*salience_W) * (emotionalState()*emotState_W)) * (pastExperience(colorIndex)*pastExp_W) / (salience_W * emotState_W * pastExp_W);
+		return ((salience*salience_W) * (emotionalState()*emotState_W)) * (pastExperience(colorIndex)*pastExp_W);
 	}
 	
 	/**

@@ -74,7 +74,7 @@ public class Experiment1 {
 		  	EmpathicAgent.emotState_W = 0.417;
 		  	EmpathicAgent.salience_W = 2.611;
 		  	EmpathicAgent.pastExp_W = 1.072;
-		  	EmpathicAgent.requestThreshold = 299;
+		  	EmpathicAgent.requestThreshold = 99;
 		  	
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1 * exp;
