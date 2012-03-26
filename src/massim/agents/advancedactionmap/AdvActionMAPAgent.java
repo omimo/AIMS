@@ -319,7 +319,7 @@ public class AdvActionMAPAgent extends Agent {
 					
 					if (netTeamBenefit > 0 && 
 							netTeamBenefit > maxNetTeamBenefit &&
-							(helpActCost + Agent.helpOverhead+ Agent.calculationCost+Team.unicastCost*2+1)
+							(helpActCost + Agent.calculationCost+Team.unicastCost*2+1)
 								< resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;

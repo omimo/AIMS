@@ -80,7 +80,6 @@ public class ExpMatlab1 {
 			se.initializeExperiment(numberOfRuns);
 			int[] teamScores = se.runExperiment();
 
-
 			/* Print the results */
 			DecimalFormat df = new DecimalFormat("0.0");
 			
