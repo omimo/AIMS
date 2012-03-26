@@ -1,6 +1,7 @@
 package massim.agents.advancedactionmap;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import massim.Agent;
 import massim.Board;
@@ -295,6 +296,7 @@ public class AdvActionMAPAgent extends Agent {
 				logInf("Received "+helpReqMsgs.size()+" help requests");
 				
 				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				int helpActCost = 0;
 				
 				for (Message msg : helpReqMsgs)
 				{
@@ -304,7 +306,7 @@ public class AdvActionMAPAgent extends Agent {
 					
 					int teamBenefit = msg.getIntValue("teamBenefit");
 					int requesterAgent = msg.sender();
-					int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
+					helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
 					
@@ -317,23 +319,28 @@ public class AdvActionMAPAgent extends Agent {
 					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
 							", NTB= "+netTeamBenefit);
 					
-					if (netTeamBenefit > 0 && 
+					/*if (netTeamBenefit > 0 && 
 							netTeamBenefit > maxNetTeamBenefit &&
 							(helpActCost + Agent.calculationCost+Team.unicastCost*2+1)
-								< resourcePoints())
+								< resourcePoints())*/
+					if (netTeamBenefit > 0 && 
+							netTeamBenefit > maxNetTeamBenefit)
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;
-						helpeeNextCell = reqNextCell;
+						helpeeNextCell = new RowCol(reqNextCell);
 					}
 				}
 				
-				if (agentToHelp != -1)
-				{					
+				
+				if (agentToHelp != -1 &&
+					((getCellCost(helpeeNextCell)+ Agent.helpOverhead + (Team.unicastCost*2)) 
+							< resourcePoints()))
+				{	
 					logInf("Prepared to bid to help agent "+ agentToHelp);
 					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit);					
-					bidding = true;					
-				}									
+					bidding = true;				
+				}		
 			}
 			setState(AAMAPState.S_RESPOND_TO_REQ);
 			break;
@@ -836,8 +843,9 @@ public class AdvActionMAPAgent extends Agent {
 		}
 		else
 		{
-			logErr(""+resourcePoints());
-			logErr(""+cost);
+
+			logErr("help cost: "+ cost);
+			logErr("res: "+ getCellCost(helpeeNextCell));
 			logErr("Failed to help :(");
 			result = false;
 		}
