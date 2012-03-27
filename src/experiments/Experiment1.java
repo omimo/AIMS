@@ -61,7 +61,7 @@ public class Experiment1 {
 			Team.initResCoef = 200;
 			Team.unicastCost = 3;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 7;
+			Agent.calculationCost = 25;
 			Agent.helpOverhead = 5;
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
@@ -70,10 +70,10 @@ public class Experiment1 {
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			
-			EmpathicAgent.WTH_Threshhold = 0;
-		  	EmpathicAgent.emotState_W = 1;
-		  	EmpathicAgent.salience_W = 1;
-		  	EmpathicAgent.pastExp_W = 1;
+			EmpathicAgent.WTH_Threshhold = 3.57;
+		  	EmpathicAgent.emotState_W = 0.09;
+		  	EmpathicAgent.salience_W = 0.08;
+		  	EmpathicAgent.pastExp_W = 1.06;
 		  	EmpathicAgent.requestThreshold = 299;
 		  	
 			/* vary the disturbance: */

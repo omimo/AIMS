@@ -72,6 +72,7 @@ public class ExpMatlab1 {
 			Agent.helpOverhead = 30;
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
+			
 
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.1;
