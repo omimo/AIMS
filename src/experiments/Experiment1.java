@@ -55,13 +55,17 @@ public class Experiment1 {
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
 		{
+			// percentage
+			EmpathicAgent.nHelpActs = 0;
+			EmpathicAgent.nHelpRequests =0;
+			
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 3;
+			Team.unicastCost = 5;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 25;
+			Agent.calculationCost = 35;
 			Agent.helpOverhead = 5;
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
@@ -94,6 +98,7 @@ public class Experiment1 {
 			teamScores[i]);
 			System.out.println("");
 //			 (new Scanner(System.in)).nextLine();
+			System.out.println(EmpathicAgent.nHelpActs + " from " + EmpathicAgent.nHelpRequests);
 
 		}
 	}

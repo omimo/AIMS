@@ -4,6 +4,7 @@ import java.text.Bidi;
 import java.util.ArrayList;
 import java.util.concurrent.BrokenBarrierException;
 import java.io.*;
+import java.util.Random;
 
 import massim.Agent;
 import massim.Board;
@@ -59,6 +60,10 @@ public class EmpathicAgent extends Agent {
 	public static double pastExp_W;
 	
 	
+	/* experimental values to calculate the percentage of help in empathic agents
+	 */
+	public static int nHelpRequests;
+	public static int nHelpActs;
 	
 	public EmpathicAgent(int id, CommMedium comMed) {
 		super(id, comMed); 
@@ -163,6 +168,11 @@ public class EmpathicAgent extends Agent {
 					if (canBCast()){
 						String helpReqMsg = prepareHelpReqMsg(salience, nextCell);
 						broadcastMsg(helpReqMsg);
+						
+						// percentage
+						logInf("asking for help");
+						nHelpRequests++;
+						
 						setState(EmpaticAgentState.R_IGNORE_HELP_REQ);
 					}
 					else
@@ -243,9 +253,55 @@ public class EmpathicAgent extends Agent {
 			agentToHelp = -1;
 			
 			if(helpReqMsgs.size()>0){
-				
+				 
+				Random gent = new Random();
 				 double maxWTH = Double.MIN_VALUE;
 				 for (Message msg : helpReqMsgs){
+					 
+					 
+					 
+					  /*
+					  // ACTIVATE FOR RANDOM HELP
+					   
+						int r = gent.nextInt(11);
+						RowCol reqNextCell = new RowCol(msg.getIntValue("nextCellRow"), msg.getIntValue("nextCellCol"));
+						int requesterAgent = msg.sender();
+						int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
+						
+						if (SimulationEngine.disturbanceLevel < 0.4){
+							if (r>4 && helpActCost+ Agent.helpOverhead+Team.unicastCost+1
+									 <resourcePoints()){
+								agentToHelp = requesterAgent;
+								helpeeNextCell = reqNextCell;
+								//break;
+							}
+						}
+						else if (SimulationEngine.disturbanceLevel < 0.8){
+							if (r>3 && helpActCost+ Agent.helpOverhead+Team.unicastCost+1
+									 <resourcePoints()){
+								agentToHelp = requesterAgent;
+								helpeeNextCell = reqNextCell;
+								//break;
+							}
+						}
+						else {
+							if (r>2 && helpActCost+ Agent.helpOverhead+Team.unicastCost+1
+									 <resourcePoints()){
+								agentToHelp = requesterAgent;
+								helpeeNextCell = reqNextCell;
+								//break;
+							}
+						}
+						
+						
+						//END OF RANDOM HELP PART 1
+						
+						*/
+					 
+					 
+					
+					 
+					 // ACTIVATE FOR EMPATHIC HELP
 					 
 					 double ObjectSalience = msg.getDoubleValue("salience");
 					 RowCol reqNextCell = new RowCol(msg.getIntValue("nextCellRow"), msg.getIntValue("nextCellCol"));
@@ -263,17 +319,26 @@ public class EmpathicAgent extends Agent {
 					 if (wth>WTH_Threshhold && 
 							 helpActCost+ Agent.helpOverhead+Team.unicastCost+1
 							 <resourcePoints()){
-						 logInf("## Helping!");
+
+						 
+						 
 						 maxWTH = wth;
 						 agentToHelp = requesterAgent;
 						 helpeeNextCell = reqNextCell;
 					 }
+					 
+					 // END OF EMPATHIC PART 1
+					 
+					 
+					 
 				 }
 				 
 				 if (agentToHelp!=-1){
 					 bidMsg = prepareBidMsg(agentToHelp, maxWTH);
 					 bidding=true;
 				 }
+				 
+				 
 			}
 			setState(EmpaticAgentState.S_RESPOND_TO_REQ);
 			break;
@@ -310,6 +375,20 @@ public class EmpathicAgent extends Agent {
 					setState(EmpaticAgentState.S_BLOCKED);
 			}
 			else{
+				
+				/*
+				// ACTIVATE FOR RANDOM
+				Random g = new Random();
+				int r = g.nextInt(bidMsgs.size());
+				helperAgent = r;
+				// END
+				*/
+				
+				
+				
+			
+				 // ACTIVATE FOR EMPATHIC 
+				 
 				double maxBid = Double.MIN_VALUE;					
 				for (Message bid : bidMsgs)
 				{
@@ -320,9 +399,21 @@ public class EmpathicAgent extends Agent {
 					{
 						maxBid = bidWTH;
 						helperAgent = offererAgent;
+						// percentage
+						 logInf("## Helping!");
+						
 					}
 				}
+				
+				nHelpActs++;
+				// END OF EMPATHIC
+				
+			
+				
+				//TODO: DE-EMPATHIC
+				
 				setState(EmpaticAgentState.S_RESPOND_BIDS);
+				
 			}
 			break;
 			
@@ -547,7 +638,7 @@ public class EmpathicAgent extends Agent {
 	}
 	
 	private double willingnessToHelp(double salience, int colorIndex){
-		return ((salience*salience_W) * (emotionalState()*emotState_W)) * (pastExperience(colorIndex)*pastExp_W);
+		return ((salience*salience_W) + (emotionalState()*emotState_W) + (pastExperience(colorIndex)*pastExp_W)) / (salience_W+emotState_W+pastExp_W+0.0001);
 	}
 	
 	/**
