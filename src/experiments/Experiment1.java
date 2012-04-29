@@ -41,17 +41,18 @@ public class Experiment1 {
 		AdvActionMapTeam.useExp = false;
 		
 		NoHelpTeam.useExp = true;
-		Team[] teams = new Team[3];		
+		Team[] teams = new Team[4];		
 		teams[0] = new EmpathicTeam();
-		teams[1] = new AdvActionMapTeam();
-		teams[2] = new NoHelpTeam();
+		teams[1] = new BasicActionMAPTeam();
+		teams[2] = new AdvActionMapTeam();
+		teams[3] = new NoHelpTeam();
 		
 			
 		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 		
-		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
+		System.out.println("DISTURBANCE,EMP,BAMAP,AAMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
@@ -71,6 +72,8 @@ public class Experiment1 {
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
 
+			BasicActionMAPAgent.requestThreshold = 299;
+			
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;

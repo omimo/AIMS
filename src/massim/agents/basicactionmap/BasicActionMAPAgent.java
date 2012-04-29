@@ -66,23 +66,32 @@ public class BasicActionMAPAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
+	 * @param actionCosts				The agent's action costs vector
+	 */
+	@Override
+	public void initializeRun(int[] actionCosts) {		
+		super.initializeRun(actionCosts);		
+		
+		logInf("Initialized for a new run.");
+	}
+	
+	/**
+	 * Initializes the agent for a new match within current run
+	 * 
 	 * @param initialPosition			The initial position of this agent
 	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
 	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
+		super.initializeMatch(initialPosition, goalPosition, initResourcePoints);
 		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);					
-		
-		logInf("Initialized for a new run.");
+		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
-		logInf("My initial position: "+ pos());
-		logInf("My goal position: " + goalPos().toString());			
+		logInf("My goal position: " + goalPos().toString());
+		
 	}
 	
 	/** 
@@ -136,8 +145,8 @@ public class BasicActionMAPAgent extends Agent {
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
 				boolean needHelp = 
-					(cost > BasicActionMAPAgent.requestThreshold) ||
-					(cost > resourcePoints());
+					(cost > BasicActionMAPAgent.requestThreshold);// ||
+					//(cost > resourcePoints());
 				if (needHelp)
 				{
 					logInf("Need help!");
@@ -189,14 +198,11 @@ public class BasicActionMAPAgent extends Agent {
 			setState(BAMAPState.R_GET_BID_CONF);
 			break;
 		case S_DECIDE_OWN_ACT:
-		/*	int cost = getCellCost(path().getNextPoint(pos()));
+			int cost = getCellCost(path().getNextPoint(pos()));
 			if (cost <= resourcePoints())
 				setState(BAMAPState.R_DO_OWN_ACT);
-			else  
-				setState(BAMAPState.R_BLOCKED);
-				*/ // it is already checked in the R_GET_BIDS state
-			setState(BAMAPState.R_DO_OWN_ACT);
-			
+			else
+				setState(BAMAPState.R_BLOCKED);			
 			break;
 		case S_DECIDE_HELP_ACT:			
 			setState(BAMAPState.R_DO_HELP_ACT);
@@ -256,7 +262,8 @@ public class BasicActionMAPAgent extends Agent {
 			{
 				logInf("Received "+helpReqMsgs.size()+" help requests");				
 				
-				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				int maxNetTeamBenefit = Integer.MIN_VALUE;		
+				
 				for (Message msg : helpReqMsgs)
 				{
 					RowCol reqHelpCell = 
@@ -288,7 +295,9 @@ public class BasicActionMAPAgent extends Agent {
 					}
 				}
 				
-				if (agentToHelp != -1)
+				if (agentToHelp != -1 &&
+						((getCellCost(helpeeNextCell)+ Agent.helpOverhead + (Team.unicastCost*2)) 
+								< resourcePoints()))
 				{					
 					logInf("Prepared to bid to help agent "+ agentToHelp);
 					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit);					
@@ -361,12 +370,18 @@ public class BasicActionMAPAgent extends Agent {
 			}
 			else
 			{
-				logInf("Didn't received confirmation");
-				setState(BAMAPState.S_DECIDE_OWN_ACT);
+				logInf("Didn't received confirmation");				
+				RowCol nextCell = path().getNextPoint(pos());			
+				int nextCost = getCellCost(nextCell);
+				if (nextCost <= resourcePoints())
+					setState(BAMAPState.S_DECIDE_OWN_ACT);
+				else
+					setState(BAMAPState.S_BLOCKED);								
 			}
 			break;
 		case R_DO_OWN_ACT:
-			if (!reachedGoal())
+			int cost = getCellCost(path().getNextPoint(pos()));			
+			if (!reachedGoal() && cost <= resourcePoints())
 			{
 				logInf("Will do my own move.");
 				setRoundAction(actionType.OWN);
@@ -376,7 +391,7 @@ public class BasicActionMAPAgent extends Agent {
 				logInf("Nothing to do at this round.");
 				setRoundAction(actionType.SKIP);
 			}
-			break;
+			break;		
 		case R_DO_HELP_ACT:
 			logInf("Will help another agent");
 			setRoundAction(actionType.HELP_ANOTHER);
@@ -561,6 +576,7 @@ public class BasicActionMAPAgent extends Agent {
 		if (resourcePoints() >= cost )
 		{			
 			decResourcePoints(cost);
+			incExperience(theBoard().getBoard()[nextCell.row][nextCell.col]);
 			setPos(nextCell);
 			logInf("Moved to " + pos().toString());
 			return true;
