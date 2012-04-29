@@ -38,7 +38,7 @@ public class ExpMatlab1 {
   	EmpathicAgent.salience_W = Double.parseDouble(params[2]);
   	EmpathicAgent.pastExp_W = Double.parseDouble(params[3]);
 		
-	int numberOfRuns = 1000;
+	int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -52,14 +52,8 @@ public class ExpMatlab1 {
 		Team.teamSize = 8;
 		Team[] teams = new Team[1];		
 		teams[0] = new EmpathicTeam();
-	
-		
-			
-		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
-		
-		
 		/* The experiments loop */
 		
 			/* Set the experiment-wide parameters: */
@@ -86,6 +80,7 @@ public class ExpMatlab1 {
 			
 			FileWriter fstream = new FileWriter("C:\\result.txt");
 			BufferedWriter out = new BufferedWriter(fstream);
+			/*
 			for (int i=0;i<teams.length;i++){
 				// int i = 1;
 				double r = teamScores[i]/10;
@@ -93,13 +88,13 @@ public class ExpMatlab1 {
 				int roundedTeamScore = (int)r;
 				System.out.printf("%d",	-roundedTeamScore);
 				out.write(Integer.toString(-teamScores[i]));
+			}*/
+			for (int i=0;i<teams.length;i++){
+				System.out.printf("%d", -teamScores[i]);
+				out.write(Integer.toString(-teamScores[i]));
 			}
 			System.out.println("");
 			out.close();
-			
-
-
-		
 	}
 
 

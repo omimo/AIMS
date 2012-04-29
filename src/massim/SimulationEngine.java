@@ -38,6 +38,10 @@ public class SimulationEngine {
 	private boolean debuggingInf = false;
 	private boolean debuggingErr = true;
 
+	
+	//
+	Random rnd = new Random(123);
+	//
 	/**
 	 * SIMOK: The round executed without any problem and there is
 	 *        at least one active team.
@@ -95,7 +99,7 @@ public class SimulationEngine {
 		
 		logInf("The board setting for this run is:\n" + mainBoard.toString());
 			
-		Random rnd = new Random();
+		//Random rnd = new Random();
 		
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];
 		
@@ -298,7 +302,7 @@ public class SimulationEngine {
 	 * @return					The generated position
 	 */
 	private RowCol randomPos(int h, int w) {
-		Random rnd = new Random();
+		//Random rnd = new Random();
 		
 		return new RowCol(rnd.nextInt(h),rnd.nextInt(w));
 	}

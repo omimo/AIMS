@@ -25,7 +25,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment1 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1000;
+	int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -39,6 +39,7 @@ public class Experiment1 {
 		Team.teamSize = 8;
 		EmpathicTeam.useExp = true;
 		AdvActionMapTeam.useExp = false;
+		
 		NoHelpTeam.useExp = true;
 		Team[] teams = new Team[3];		
 		teams[0] = new EmpathicTeam();
@@ -63,7 +64,7 @@ public class Experiment1 {
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 5;
+			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 35;
 			Agent.helpOverhead = 5;
@@ -74,10 +75,10 @@ public class Experiment1 {
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			
-			EmpathicAgent.WTH_Threshhold = 3.57;
-		  	EmpathicAgent.emotState_W = 0.09;
-		  	EmpathicAgent.salience_W = 0.08;
-		  	EmpathicAgent.pastExp_W = 1.06;
+			EmpathicAgent.WTH_Threshhold = 3.5;
+		  	EmpathicAgent.emotState_W = 0.3;
+		  	EmpathicAgent.salience_W = 1.5;
+		  	EmpathicAgent.pastExp_W = 2.0;
 		  	EmpathicAgent.requestThreshold = 299;
 		  	
 			/* vary the disturbance: */
@@ -94,11 +95,10 @@ public class Experiment1 {
 			df.format(SimulationEngine.disturbanceLevel));
 			for (int i=0;i<teams.length;i++)
 			// int i = 1;
-			System.out.printf(",%d",
-			teamScores[i]);
+			System.out.printf(",%d", teamScores[i]);
 			System.out.println("");
 //			 (new Scanner(System.in)).nextLine();
-			System.out.println(EmpathicAgent.nHelpActs + " from " + EmpathicAgent.nHelpRequests);
+			//System.out.println(EmpathicAgent.nHelpActs + " from " + EmpathicAgent.nHelpRequests);
 
 		}
 	}

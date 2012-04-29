@@ -9,7 +9,7 @@ import java.util.Random;
  * @version 1.1
  */
 public class Board {
-	private static Random rndBoardGen = new Random();
+	private static Random rnd = new Random(456);
 
 	private int[][] mainBoard;
 
@@ -104,7 +104,7 @@ public class Board {
 
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
-				b.mainBoard[i][j] = colorRange[rndBoardGen.nextInt(colorRange.length)];
+				b.mainBoard[i][j] = colorRange[rnd.nextInt(colorRange.length)];
 		return b;
 	}
 
@@ -118,13 +118,13 @@ public class Board {
 	 */
 	public void disturb(double disturbanceLevel) {
 
-		Random rndColor = new Random();
-		Random rndChange = new Random();
+		//Random rndColor = new Random();
+		//Random rndChange = new Random();
 
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
-				if (rndChange.nextDouble() < disturbanceLevel)
-					mainBoard[i][j] = SimulationEngine.colorRange[rndColor
+				if (rnd.nextDouble() < disturbanceLevel)
+					mainBoard[i][j] = SimulationEngine.colorRange[rnd
 							.nextInt(SimulationEngine.numOfColors)];
 	}
 

@@ -295,8 +295,8 @@ public class EmpathicAgent extends Agent {
 						
 						
 						//END OF RANDOM HELP PART 1
-						
 						*/
+						
 					 
 					 
 					
@@ -407,7 +407,7 @@ public class EmpathicAgent extends Agent {
 				
 				nHelpActs++;
 				// END OF EMPATHIC
-				
+			
 			
 				
 				//TODO: DE-EMPATHIC
