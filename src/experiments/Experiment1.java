@@ -39,6 +39,7 @@ public class Experiment1 {
 		Team.teamSize = 8;
 		EmpathicTeam.useExp = true;
 		AdvActionMapTeam.useExp = false;
+		BasicActionMAPTeam.useExp = false;
 		
 		NoHelpTeam.useExp = true;
 		Team[] teams = new Team[4];		
