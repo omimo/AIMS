@@ -1,9 +1,10 @@
-package experiments;
+package frontends;
 
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
 import massim.Agent;
+import massim.SEControl;
 import massim.SimulationEngine;
 import massim.Team;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
@@ -40,7 +41,7 @@ public class Experiment1 {
 		EmpathicTeam.useExp = true;
 		AdvActionMapTeam.useExp = false;
 		
-		NoHelpTeam.useExp = true;
+		NoHelpTeam.useExp = false;
 		Team[] teams = new Team[3];		
 		teams[0] = new EmpathicTeam();
 		teams[1] = new AdvActionMapTeam();
@@ -50,6 +51,11 @@ public class Experiment1 {
 		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
+		SEControl sec = se;
+		
+		
+		sec.addParam("env.disturbance", (Double)0.0);
+		sec.addParam("agent.helpoverhead", 5);
 		
 		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
 		
@@ -67,7 +73,7 @@ public class Experiment1 {
 			Team.unicastCost = 7;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			Agent.calculationCost = 35;
-			Agent.helpOverhead = 5;
+			
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
 
@@ -82,17 +88,19 @@ public class Experiment1 {
 		  	EmpathicAgent.requestThreshold = 299;
 		  	
 			/* vary the disturbance: */
-			SimulationEngine.disturbanceLevel = 0.1 * exp;
-
+			//SimulationEngine.disturbanceLevel = 0.1 * exp;
+			sec.changeParam("env.disturbance", 0.0);//0.1 * exp);
+			
 			/* Initialize and run the experiment */
-			se.initializeExperiment(numberOfRuns);
-			int[] teamScores = se.runExperiment();
+			sec.setupExeperiment(numberOfRuns);
+			int[] teamScores = sec.startExperiment();
 
 
 			/* Print the results */
 			DecimalFormat df = new DecimalFormat("0.0");
 			System.out.print(exp+","+
-			df.format(SimulationEngine.disturbanceLevel));
+			//df.format(SimulationEngine.disturbanceLevel));
+			df.format(sec.getParamD("env.disturbance")));
 			for (int i=0;i<teams.length;i++)
 			// int i = 1;
 			System.out.printf(",%d", teamScores[i]);

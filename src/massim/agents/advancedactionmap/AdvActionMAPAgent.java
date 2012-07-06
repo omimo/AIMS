@@ -9,6 +9,7 @@ import massim.CommMedium;
 import massim.Message;
 import massim.Path;
 import massim.RowCol;
+import massim.SimulationEngine;
 import massim.Team;
 
 
@@ -306,7 +307,7 @@ public class AdvActionMAPAgent extends Agent {
 					
 					int teamBenefit = msg.getIntValue("teamBenefit");
 					int requesterAgent = msg.sender();
-					helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
+					helpActCost = getCellCost(reqNextCell) + SimulationEngine.pList.paramI("agent.helpoverhead");
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
 					
@@ -334,7 +335,7 @@ public class AdvActionMAPAgent extends Agent {
 				
 				
 				if (agentToHelp != -1 &&
-					((getCellCost(helpeeNextCell)+ Agent.helpOverhead + (Team.unicastCost*2)) 
+					((getCellCost(helpeeNextCell)+ SimulationEngine.pList.paramI("agent.helpoverhead") + (Team.unicastCost*2)) 
 							< resourcePoints()))
 				{	
 					logInf("Prepared to bid to help agent "+ agentToHelp);
@@ -753,7 +754,7 @@ public class AdvActionMAPAgent extends Agent {
 			(1 + 
 			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
 			(withHelpRemPathLength-noHelpRemPathLength)) +
-			Agent.helpOverhead;
+			SimulationEngine.pList.paramI("agent.helpoverhead");
 							
 	}
 	
@@ -832,7 +833,7 @@ public class AdvActionMAPAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = getCellCost(helpeeNextCell) + Agent.helpOverhead;			
+		int cost = getCellCost(helpeeNextCell) + SimulationEngine.pList.paramI("agent.helpoverhead");			
 		logInf("Should help agent "+agentToHelp);
 		
 		if (resourcePoints() >= cost )

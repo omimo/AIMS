@@ -9,11 +9,14 @@ import massim.Team.TeamRoundCode;
  * The main class of the simulator. 
  * 
  * @author Omid Alemi
- * @version 2.0 2011/11/17
+ * @version 3.0 2012/07/05
  * 
  */
-public class SimulationEngine {
+public class SimulationEngine implements SEControl{
 
+	
+	public static ParamList pList;
+	
 	public static int[] colorRange;
 	public static int[] actionCostsRange; 
 									 
@@ -23,7 +26,7 @@ public class SimulationEngine {
 	private int boardh = 10;
 	private int boardw = 10;
 
-	public static double disturbanceLevel;	
+	//public static double disturbanceLevel;	
 
 	private Team[] teams;
 	private Board mainBoard;
@@ -61,6 +64,9 @@ public class SimulationEngine {
 	 * 								the simulations.
 	 */
 	public SimulationEngine(Team[] teams) {
+		
+		pList = new ParamList();
+		
 		logInf("SE created for " + teams.length + " teams.");
 		this.teams = teams;
 		SimulationEngine.numOfTeams = teams.length;
@@ -102,7 +108,6 @@ public class SimulationEngine {
 		//Random rnd = new Random();
 		
 		actionCostsMatrix = new int[Team.teamSize][numOfColors];
-		
 		for (int i = 0; i < Team.teamSize; i++)
 		{
 			for (int j = 0; j < numOfColors; j++)
@@ -113,7 +118,7 @@ public class SimulationEngine {
 					actionCostsMatrix[i][j] = actionCostsRange[actionCostsRange.length/2+
 					   					                    rnd.nextInt(actionCostsRange.length/2)];
 		}
-		
+
 		for (int t = 0; t < numOfTeams; t++)
 			teams[t].initializeRun(actionCostsMatrix);
 	}
@@ -156,6 +161,8 @@ public class SimulationEngine {
 		roundCounter++;
 		logInf("Round #" + roundCounter + " started ...");
 
+		double disturbanceLevel = getParamD("env.disturbance");
+		
 		logInf("Changing the board setting based on the disturbance level of "+
 				disturbanceLevel);
 		mainBoard.disturb(disturbanceLevel);
@@ -305,5 +312,42 @@ public class SimulationEngine {
 		//Random rnd = new Random();
 		
 		return new RowCol(rnd.nextInt(h),rnd.nextInt(w));
+	}
+	
+	public void addParam(String p, int v) {
+		pList.add(p, v);
+	}
+	
+	public void addParam(String p, double v) {
+		pList.add(p, v);
+	}
+	
+	public int getParamI(String p) {
+		return pList.paramI(p);
+	}
+	
+	public double getParamD(String p) {
+		return pList.paramD(p);
+	}
+	
+	public void changeParam(String p, int nv) {
+		pList.change(p, nv);
+	}
+	
+	public void changeParam(String p, double nv) {
+		pList.change(p, nv);
+	}
+
+	@Override
+	public int[] startExperiment() {
+		
+		return runExperiment();
+		
+	}
+
+	@Override
+	public void setupExeperiment(int numberOfRuns) {
+		initializeExperiment(numberOfRuns);
+		
 	}
 }

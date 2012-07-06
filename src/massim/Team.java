@@ -71,6 +71,7 @@ public class Team {
 		logInf("initilizing for a new run.");
 		commMedium.clear();
 
+
 		for (int i = 0; i < teamSize; i++)
 			for (int j = 0; j < SimulationEngine.numOfColors; j++)
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];

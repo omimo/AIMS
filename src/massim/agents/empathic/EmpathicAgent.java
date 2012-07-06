@@ -313,11 +313,11 @@ public class EmpathicAgent extends Agent {
 					 logInf("** WTH IS: "+Double.toString(wth));
 					 // TODO complete the function and arguments
 					 int requesterAgent = msg.sender();
-					 int helpActCost = getCellCost(reqNextCell) + Agent.helpOverhead;
+					 int helpActCost = getCellCost(reqNextCell) + SimulationEngine.pList.paramI("agent.helpoverhead");
 					 
 					 //TODO replace the number with threshhold
 					 if (wth>WTH_Threshhold && 
-							 helpActCost+ Agent.helpOverhead+Team.unicastCost+1
+							 helpActCost+ SimulationEngine.pList.paramI("agent.helpoverhead")+Team.unicastCost+1
 							 <resourcePoints()){
 
 						 
@@ -592,7 +592,7 @@ public class EmpathicAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = getCellCost(helpeeNextCell)  + Agent.helpOverhead;			
+		int cost = getCellCost(helpeeNextCell)  + SimulationEngine.pList.paramI("agent.helpoverhead");			
 		logInf("Should help agent "+agentToHelp);
 		
 		if (resourcePoints() >= cost )

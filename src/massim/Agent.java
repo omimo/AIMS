@@ -10,7 +10,7 @@ public abstract class Agent {
 
 	public static int cellReward;
 	public static int achievementReward;
-	public static int helpOverhead;
+	//public static int helpOverhead;
 	public static int calculationCost;
 	
 	protected static enum AgGameStatCode {
