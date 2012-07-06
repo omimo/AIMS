@@ -17,10 +17,11 @@ public class SimpleSim extends JFrame {
 	ControlBox controlBox; 
 	NumericalResultBox resultsBox;
 	ParametersBox paramBox;
+	SimpleChartBox chartBox;
 	
 	public SimpleSim() {
 		   setTitle("Simple Simulator");
-	       setSize(500, 600);
+	       setSize(500, 500);
 	       setLocationRelativeTo(null);
 	       setNativeLookAndFeel();
 	       setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -83,11 +84,12 @@ public class SimpleSim extends JFrame {
 		ss.controlBox = new ControlBox(ss);
 		ss.paramBox = new ParametersBox(ss);
 		ss.resultsBox = new NumericalResultBox();
+		ss.chartBox = new SimpleChartBox();
 		
 		ss.add(ss.controlBox);
 		ss.add(ss.paramBox);
 		ss.add(ss.resultsBox);
-		
+		ss.add(ss.chartBox);
 		ss.setVisible(true);
 	}
 	

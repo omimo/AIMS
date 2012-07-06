@@ -2,6 +2,7 @@ package frontends.simplegui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 
 import javax.swing.*;
 
@@ -14,10 +15,10 @@ public class NumericalResultBox extends JPanel {
 		this.setLayout(new BorderLayout());
 		txtResults = new JTextArea();
 		txtResults.setBorder(BorderFactory.createLineBorder(Color.black));
-		txtResults.setSize(300, 200);
+		txtResults.setSize(300, 100);
 		
 		scMain = new JScrollPane(txtResults);
-		
+		setPreferredSize(new Dimension(500,100));
 		this.add(scMain,BorderLayout.CENTER);
 	}
 	

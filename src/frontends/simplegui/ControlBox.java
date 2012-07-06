@@ -27,13 +27,16 @@ public class ControlBox extends JPanel {
 	        	   
 	        	   st = new Thread(new Runnable() {
 	                   public void run() {
-	                	   
+	                	   int count = 0;
 	                	   loop = chkLoop.isSelected();
 	                	   do {
+	                		   count++;
 	                		   lblStat.setText("Working...");
 	                		   ((SimpleSim)parent).sec.setupExeperiment(500);
 	                		   int[] ts = ((SimpleSim)parent).sec.startExperiment();
 	                		   ((SimpleSim)parent).resultsBox.addResults(Integer.toString(ts[0]));
+	                		   //((SimpleSim)parent).sec.getParamD("env.disturbance")
+	                		   ((SimpleSim)parent).chartBox.add((double)(count),(double)ts[0]);
 	                		   lblStat.setText("Done");
 	                	   }  while(loop);
 	    	               }
