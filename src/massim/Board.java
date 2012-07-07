@@ -9,7 +9,7 @@ import java.util.Random;
  * @version 1.1
  */
 public class Board {
-	private static Random rnd = new Random(456);
+	private static Random rnd = new Random();
 
 	private int[][] mainBoard;
 

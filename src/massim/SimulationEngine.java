@@ -43,7 +43,7 @@ public class SimulationEngine implements SEControl{
 
 	
 	//
-	Random rnd = new Random(123);
+	Random rnd = new Random();
 	//
 	/**
 	 * SIMOK: The round executed without any problem and there is
