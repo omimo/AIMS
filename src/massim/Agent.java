@@ -1,5 +1,7 @@
 package massim;
 
+import java.util.logging.Logger;
+
 /**
  * Agent.java An abstract class for all the agents to be used in the simulator
  * 
@@ -7,7 +9,8 @@ package massim;
  * @version 2.0 2011/10/31
  */
 public abstract class Agent {
-
+	protected  Logger logger = Logger.getLogger("all");
+	
 	public static int cellReward;
 	public static int achievementReward;
 	//public static int helpOverhead;

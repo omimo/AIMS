@@ -1,7 +1,9 @@
 package massim;
 
-import java.util.Calendar;
+import java.io.IOException;
+import java.util.Map;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import massim.Team.TeamRoundCode;
 
@@ -13,7 +15,7 @@ import massim.Team.TeamRoundCode;
  * 
  */
 public class SimulationEngine implements SEControl{
-
+	private Logger logger = Logger.getLogger("all"); 
 	
 	public static ParamList pList;
 	
@@ -38,7 +40,7 @@ public class SimulationEngine implements SEControl{
 	private int[][] teamsScores;
 	private int numOfRuns;
 
-	private boolean debuggingInf = false;
+	private boolean debuggingInf = true;
 	private boolean debuggingErr = true;
 
 	
@@ -207,9 +209,11 @@ public class SimulationEngine implements SEControl{
 			initializeMatch();
 			
 			SimRoundCode src = SimRoundCode.SIMOK;
-			while (src == SimRoundCode.SIMOK)
+			while (src == SimRoundCode.SIMOK) {
 				src = round();
-
+				//Thread.currentThread().suspend();
+			}
+			
 			for (int t=0;t<numOfTeams;t++)
 			{
 				teamsScores[t][r] += teams[t].teamRewardPoints();
@@ -287,7 +291,11 @@ public class SimulationEngine implements SEControl{
 	 */
 	private void logInf(String msg) {
 		if (debuggingInf)
-			System.out.println("[SimulationEngine]: " + msg);
+		{
+		    logger.info("[SimulationEngine]: " +msg);
+			//System.out.println("[SimulationEngine]: " + msg);
+			
+		}
 	}
 
 	/**
@@ -350,4 +358,65 @@ public class SimulationEngine implements SEControl{
 		initializeExperiment(numberOfRuns);
 		
 	}
+
+	@Override
+	public int[][] getBoardInstance() {
+		int[][] b = new int[boardh][boardw];
+		
+		for (int i=0;i<boardh;i++)
+			for (int j=0;j<boardw;j++)
+				b[i][j]=mainBoard.getBoard()[i][j];
+		
+		return b;
+	}
+
+	@Override
+	public void loadFromFile(String filename) throws IOException {
+		pList.loadFromFile(filename);
+		
+	}
+
+	@Override
+	public Map<String, Object> getList() {
+		return pList.getList();
+	}
+
+	@Override
+	public Logger getLogger() {
+		return logger;
+	}
+
+	/**
+	 * 
+	 * return: 
+	 *    0 : normal
+	 *    1 : done     
+	 */
+	@Override
+	public int stepExp() {
+		
+		
+		
+		logInf("---- The experiment ended ----");
+		return 0;
+	}
+
+	@Override
+	public void setupDebugExp() {
+		teamsScores = new int[numOfTeams][numOfRuns];
+		
+	}
+
+	@Override
+	public int[] getDebugResults() {
+		
+
+		int[] averageTeamScores = new int[numOfTeams];
+		for (int t = 0; t < numOfTeams; t++)
+			averageTeamScores[t] = average(teamsScores[t]);
+
+		return averageTeamScores;
+	}
 }
+
+

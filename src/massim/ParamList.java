@@ -1,6 +1,11 @@
 package massim;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 
 public class ParamList {
@@ -92,4 +97,55 @@ public class ParamList {
 		else
 			throw new RuntimeException("The requested parameter does not exist in the list.");
 	}
+	
+	
+	/**
+	 * Loads the parameters from a file
+	 * 
+	 * File format: 
+	 * paramname,paramtype,paramvalue
+	 * 
+	 * paramtype can be:
+	 *   D: double
+	 *   I: integer
+	 *   S: String
+	 * 
+	 * @param filename
+	 * @throws IOException
+	 */
+	public void loadFromFile(String filename) throws IOException {
+		BufferedReader br = new BufferedReader( new FileReader(filename));
+		
+		list.clear();
+		
+		String paramEntry;
+		String paramName;
+		String paramType;
+		StringTokenizer st = null;
+		
+		while ((paramEntry = br.readLine()) != null)   {
+			System.out.println(paramEntry);
+			st = new StringTokenizer(paramEntry, ",");
+            
+            if (st.hasMoreTokens())
+            {
+            	
+                   paramName = st.nextToken();
+                   paramType = st.nextToken();
+                   if (paramType.equals(("D")))
+                	   add(paramName, Double.parseDouble(st.nextToken()));
+                   else if (paramType.equals("I"))
+                	   add(paramName, Integer.parseInt((st.nextToken())));
+            }
+		}
+	}
+	
+	/*
+	 * 
+	 * NOTE: this should be changed to make a clone.
+	 */
+	public Map<String,Object> getList() {
+		return new HashMap<String,Object>(list);
+	}
+	
 }

@@ -196,7 +196,8 @@ public class NoHelpAgent extends Agent {
 	 */
 	private void logInf(String msg) {
 		if (dbgInf)
-			System.out.println("[NoHelpAgent " + id() + "]: " + msg);
+			logger.info("[NoHelpAgent " + id() + "]: " + msg);
+			//System.out.println("[NoHelpAgent " + id() + "]: " + msg);
 	}
 	
 	/**
@@ -207,7 +208,7 @@ public class NoHelpAgent extends Agent {
 	 */
 	private void logErr(String msg) {
 		if (dbgErr)
-			System.err.println("[xx][NoHelpAgent " + id() + 
+			logger.warning("[xx][NoHelpAgent " + id() + 
 							   "]: " + msg);
 	}
 	
