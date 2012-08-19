@@ -29,7 +29,7 @@ import massim.agents.reassignment.RATeam;
 public class Experiment4 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1;
+	int numberOfRuns = 10;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -40,17 +40,16 @@ public class Experiment4 {
 	
 	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
-		Team[] teams = new Team[3];		
+		Team[] teams = new Team[2];		
 		teams[0] = new AdvActionMapTeam();
-		teams[1] =  new RATeam();
-		teams[2] = new NoHelpTeam();
+		teams[1] = new NoHelpTeam();
 		
 			
 		
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine(teams);
 		
-		System.out.println("DISTURBANCE,AD-ACTION-MAP,REASSIGN,NO-HELP");
+		System.out.println("DISTURBANCE,AD-ACTION-MAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
@@ -95,7 +94,7 @@ public class Experiment4 {
 				System.out.print(","+ 
 						teamScores[i]);
 			System.out.println("");
-			(new Scanner(System.in)).nextLine();
+		//	(new Scanner(System.in)).nextLine();
 
 		}
 	}

@@ -22,7 +22,7 @@ import massim.TeamTask;
  */
 public class RAAgent extends Agent {
 	
-	private boolean dbgInf = true;
+	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 	
 	private static int leaderAgent = 0;

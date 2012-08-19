@@ -17,7 +17,7 @@ import massim.TeamTask;
  * @author Omid Alemi
  * @version 1.0 2011/11/27
  */
-public class HelperInitActionMAP extends Agent {
+public class HelperInitActionMAPAgent extends Agent {
 
 	boolean dbgInf = false;
 	boolean dbgErr = true;
@@ -58,7 +58,7 @@ public class HelperInitActionMAP extends Agent {
 	/*
 	 * The constructor
 	 */
-	public HelperInitActionMAP(int id, CommMedium comMed) {
+	public HelperInitActionMAPAgent(int id, CommMedium comMed) {
 		super(id, comMed);
 
 	}
