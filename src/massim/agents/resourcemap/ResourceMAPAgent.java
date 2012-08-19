@@ -8,6 +8,7 @@ import massim.CommMedium;
 import massim.Message;
 import massim.RowCol;
 import massim.Team;
+import massim.TeamTask;
 
 /**
  * Resource MAP Agent Implementation
@@ -65,18 +66,17 @@ public class ResourceMAPAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
-	 * @param initialPosition			The initial position of this agent
-	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
+	 * @param tt						The team task setting
+	 * @param subtaskAssignments		The subtask assignments for the team.
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
-	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeRun(TeamTask tt, int[] subtaskAssignments ,
+			RowCol[] currentPos,
+			int[] actionCosts,int initResourcePoints) {
 		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);		
+		super.initializeRun(tt,subtaskAssignments,
+				currentPos,actionCosts,initResourcePoints);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
@@ -84,6 +84,7 @@ public class ResourceMAPAgent extends Agent {
 		logInf("My goal position: " + goalPos().toString());	
 		
 		oldBoard = null;
+	
 	}
 	
 	/** 
@@ -424,7 +425,7 @@ public class ResourceMAPAgent extends Agent {
 			(1 + 
 			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
 			(withHelpRemPathLength-noHelpRemPathLength)) +
-			Agent.helpOverhead;
+			TeamTask.helpOverhead;
 							
 	}
 	
