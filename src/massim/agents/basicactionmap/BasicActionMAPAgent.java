@@ -7,6 +7,7 @@ import massim.Board;
 import massim.CommMedium;
 import massim.Message;
 import massim.RowCol;
+import massim.SimulationEngine;
 import massim.Team;
 
 /**
@@ -66,23 +67,32 @@ public class BasicActionMAPAgent extends Agent {
 	 * Called by Team.initializeRun()
 
 	 * 
+	 * @param actionCosts				The agent's action costs vector
+	 */
+	@Override
+	public void initializeRun(int[] actionCosts) {		
+		super.initializeRun(actionCosts);		
+		
+		logInf("Initialized for a new run.");
+	}
+	
+	/**
+	 * Initializes the agent for a new match within current run
+	 * 
 	 * @param initialPosition			The initial position of this agent
 	 * @param goalPosition				The goal position for this agent
-	 * @param actionCosts				The agent's action costs vector
 	 * @param initResourcePoints		The initial resource points given
 	 * 									to the agent by its team.
 	 */
 	@Override
-	public void initializeRun(RowCol initialPosition, RowCol goalPosition,
-			int[] actionCosts, int initResourcePoints) {
+	public void initializeMatch(RowCol initialPosition, RowCol goalPosition,
+			 int initResourcePoints) {
+		super.initializeMatch(initialPosition, goalPosition, initResourcePoints);
 		
-		super.initializeRun(initialPosition, goalPosition, 
-				actionCosts,initResourcePoints);					
-		
-		logInf("Initialized for a new run.");
+		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
-		logInf("My initial position: "+ pos());
-		logInf("My goal position: " + goalPos().toString());			
+		logInf("My goal position: " + goalPos().toString());
+		
 	}
 	
 	/** 
@@ -265,7 +275,7 @@ public class BasicActionMAPAgent extends Agent {
 					
 					int teamBenefit = msg.getIntValue("teamBenefit");
 					int requesterAgent = msg.sender();
-					int helpActCost = getCellCost(reqHelpCell) + Agent.helpOverhead;
+					int helpActCost = getCellCost(reqHelpCell) + SimulationEngine.pList.paramI("agent.helpoverhead");
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
 					

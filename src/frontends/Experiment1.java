@@ -11,6 +11,7 @@ import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMapTeam;
 import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
+import massim.agents.basicresourcemap.BasicResourceMAPTeam;
 import massim.agents.empathic.EmpathicAgent;
 import massim.agents.empathic.EmpathicTeam;
 import massim.agents.nohelp.NoHelpTeam;
@@ -43,8 +44,8 @@ public class Experiment1 {
 		
 		NoHelpTeam.useExp = false;
 		Team[] teams = new Team[3];		
-		teams[0] = new EmpathicTeam();
-		teams[1] = new AdvActionMapTeam();
+		teams[0] = new BasicActionMAPTeam();
+		teams[1] = new BasicResourceMAPTeam();
 		teams[2] = new NoHelpTeam();
 		
 			
@@ -80,6 +81,9 @@ public class Experiment1 {
 			AdvActionMAPAgent.requestThreshold = 299;
 			AdvActionMAPAgent.WLL = 0.8;
 			AdvActionMAPAgent.lowCostThreshold = 100;
+			
+			BasicActionMAPAgent.requestThreshold = 299;
+	
 			
 			EmpathicAgent.WTH_Threshhold = 3.5;
 		  	EmpathicAgent.emotState_W = 0.3;
