@@ -27,7 +27,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment1 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 500;
+	int numberOfRuns = 1;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -109,7 +109,7 @@ public class Experiment1 {
 			// int i = 1;
 			System.out.printf(",%d", teamScores[i]);
 			System.out.println("");
-//			 (new Scanner(System.in)).nextLine();
+			 (new Scanner(System.in)).nextLine();
 			//System.out.println(EmpathicAgent.nHelpActs + " from " + EmpathicAgent.nHelpRequests);
 
 		}

@@ -2,6 +2,11 @@ package massim.agents.basicresourcemap;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.runner.manipulation.Sortable;
 
 import massim.Agent;
 import massim.Board;
@@ -47,6 +52,47 @@ public class BasicResourceMAPAgent extends Agent {
 	private int agentToHelp;
 	private String bidMsg;
 	private int resAmountToGive;
+	
+	Set<Offer> chosenOffers;
+	
+	
+	class Offer implements Comparable<Offer>{
+		int amount;
+		int coef;
+		int agent;
+		public Offer(int am,int co, int ag) {
+			amount=am;
+			coef=co;
+			agent=ag;
+		}
+		
+		@Override
+		public int compareTo(Offer o) {
+			return o.amount-amount;
+		}
+	}
+
+	class Bid implements Comparable<Bid>{
+		public Bid (int a, int c) {
+			agent=a;coef=c;
+		}
+		void offers(String[] a) {
+			offers = new Offer[a.length];
+			int c=0;
+			for (String s: a)
+				offers[c++]=new Offer(Integer.parseInt(s),coef,agent);
+			Arrays.sort(offers);
+		}
+		Offer[] offers;
+		int agent;
+		int coef;
+		int chosenAmount;
+		
+		public int compareTo(Bid o) {
+			return coef-o.coef;
+		}
+	}
+	
 	
 	/**
 	 * The Constructor
@@ -215,9 +261,17 @@ public class BasicResourceMAPAgent extends Agent {
 			setState(RMAPState.R_DO_HELP_ACT);
 			break;
 		case S_RESPOND_BIDS:
-			int l = 0; // TODO: number of helping agents
-			if (canSend(l))
+			if (canSend(chosenOffers.size()))
+			{
+				for (Offer o : chosenOffers)
+				{
+					logInf("Confirming the help offer of agent "+ o.agent);
+					String msg = prepareConfirmMsg(o.agent,o.amount);
+					sendMsg(o.agent, msg);
+				}
+				
 				setState(RMAPState.R_ACCEPT_HELP_ACT);
+			}
 			else
 				setState(RMAPState.R_BLOCKED);				
 			break;
@@ -266,7 +320,9 @@ public class BasicResourceMAPAgent extends Agent {
 				
 				int maxNetTeamBenefit = Integer.MIN_VALUE;				
 				ArrayList<Integer> finalResOffers = new ArrayList<Integer>();
-				int finalCoef = -1;
+				//ArrayList<Integer> finalCoefs = new ArrayList<Integer>();
+				int finalCoef=0;
+				
 				
 				for (Message msg : helpReqMsgs)
 				{
@@ -344,8 +400,42 @@ public class BasicResourceMAPAgent extends Agent {
 					setState(RMAPState.S_BLOCKED);
 			}
 			else
-			{
-				//TODO:
+			{		
+				logInf("Received "+bidMsgs.size()+" bids");
+						
+				Bid[] bids = new Bid[bidMsgs.size()];
+				int of=0;
+				
+				for (Message msg : bidMsgs)
+				{
+			
+					String[] amounts = msg.getValue("amounts").split(",");
+					bids[of] = new Bid(msg.sender(),msg.getIntValue("coef"));
+					bids[of].offers(amounts); 				
+					of++;
+				}
+				
+				Arrays.sort(bids);
+				
+				RowCol nextCell = path().getNextPoint(pos());			
+				int nextCost = getCellCost(nextCell);
+				int reqAmount = nextCost-resourcePoints();
+				
+				chosenOffers = new HashSet<Offer>();
+				int c=0;
+				for (Bid b: bids)
+				{
+					chosenOffers.add(b.offers[c]);  // choose the next offer with smallest coef and max amount
+					
+					int sum = 0;	// calc the sum of the chosen set of offers
+					for (Offer o: chosenOffers)
+						sum+=o.amount;
+					
+					if (sum >= reqAmount)
+						break;
+					
+				}
+				
 				
 				setState(RMAPState.S_RESPOND_BIDS);
 			}
@@ -361,7 +451,8 @@ public class BasicResourceMAPAgent extends Agent {
 			if (!msgStr.equals("") && 
 					(new Message(msgStr)).isOfType(RMAP_HELP_CONF) )				
 			{
-				logInf("Received confirmation");
+				resAmountToGive = (new Message(msgStr)).getIntValue("amount");
+				logInf("Received confirmation - wil give away "+resAmountToGive);
 				setState(RMAPState.S_DECIDE_HELP_ACT);
 			}
 			else
@@ -404,6 +495,8 @@ public class BasicResourceMAPAgent extends Agent {
 		
 		return returnCode;		
 	}
+	
+	
 	
 	/**
 	 * Calculates the team loss considering spending the given amount 
@@ -632,15 +725,135 @@ public class BasicResourceMAPAgent extends Agent {
 	 * @param NTB					The net team benefit
 	 * @return						The message encoded in String
 	 */
-	private String prepareBidMsg(int requester, ArrayList<Integer> resOffers, int coef) {
+	private String prepareBidMsg(int requester, ArrayList<Integer> resOffers, int  coef) {
 		String offers = Integer.toString(resOffers.get(0));
 		for (int o : resOffers)
 			offers += "," + o ;
+		
+		/*String coefs = Integer.toString(coefsList.get(0));
+		for (int o : coefsList)
+			offers += "," + o ;*/
 		
 		Message bidMsg = new Message(id(),requester,RMAP_BID_MSG);
 		bidMsg.putTuple("amounts", offers);
 		bidMsg.putTuple("coef", coef);
 		return bidMsg.toString();
+	}
+	
+	/**
+	 * Prepares a help confirmation message returns its String 
+	 * encoding.
+	 * 
+	 * @param helper				The helper agent
+	 * @return						The message encoded in String
+	 */
+	private String prepareConfirmMsg(int helper, int amount) {
+		Message confMsg = new Message(id(),helper,RMAP_HELP_CONF);
+		confMsg.putTuple("amount", amount);
+		return confMsg.toString();
+	}
+	
+	/**
+	 * Finalizes the round by moving the agent.
+	 * 
+	 * Also determines the current state of the agent which can be
+	 * reached the goal, blocked, or ready for next round.  
+	 * 
+	 * @return 						Returns the current state 
+	 */
+	@Override
+	protected AgGameStatCode finalizeRound() {			
+		logInf("Finalizing the round ...");				
+
+		boolean succeed = act();
+		
+		if (reachedGoal())
+		{
+			logInf("Reached the goal");
+			return AgGameStatCode.REACHED_GOAL;
+		}
+		else
+		{
+			if (succeed) 
+				return AgGameStatCode.READY;
+			else  /*TODO: The logic here should be changed!*/
+			{
+				logInf("Blocked!");
+				return AgGameStatCode.BLOCKED;			
+			}
+		}					
+	}
+	
+	/**
+	 * Enables the agent to perform its own action. 
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	@Override
+	protected boolean doOwnAction() {
+		RowCol nextCell = path().getNextPoint(pos());
+		int cost = getCellCost(nextCell);
+		logInf("Should do my own move!");
+		if (resourcePoints() >= cost )
+		{			
+			decResourcePoints(cost);
+			setPos(nextCell);
+			logInf("Moved to " + pos().toString());
+			return true;
+		}
+		else
+		{
+			logErr("Could not do my own move :(");
+			return false;
+		}
+	}
+	
+	/**
+	 * Enables the agent to perform an action on behalf of another 
+	 * agent (Help). 
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	@Override
+	protected boolean doHelpAnother() {
+		boolean result;		
+		int cost = resAmountToGive;	
+		logInf("Should help agent "+agentToHelp);
+		if (resourcePoints() >= cost )
+		{			
+			logInf("Helped agent " + agentToHelp);
+			decResourcePoints(cost);			
+			result = true;
+		}
+		else
+		{
+			logErr("Failed to help :(");
+			result = false;
+		}
+		resAmountToGive = 0;
+		agentToHelp = -1;
+		
+		return result;
+	}
+	
+	/**
+	 * Enables the agent do any bookkeeping while receiving help.
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true if successful/false o.w.
+	 */
+	@Override
+	protected boolean doGetHelpAction() {
+		RowCol nextCell = path().getNextPoint(pos());
+		logInf("Yaay! I have help for this move!");
+		setPos(nextCell);
+		
+		return true;
 	}
 	
 	/*************************************************************/
