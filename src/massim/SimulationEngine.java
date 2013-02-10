@@ -40,7 +40,7 @@ public class SimulationEngine implements SEControl{
 	private int[][] teamsScores;
 	private int numOfRuns;
 
-	private boolean debuggingInf = true;
+	private boolean debuggingInf = false;
 	private boolean debuggingErr = true;
 
 	

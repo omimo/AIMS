@@ -55,6 +55,8 @@ public class BasicResourceMAPAgent extends Agent {
 	
 	Set<Offer> chosenOffers;
 	
+	String offerDelim = "/";
+	
 	
 	class Offer implements Comparable<Offer>{
 		int amount;
@@ -140,9 +142,7 @@ public class BasicResourceMAPAgent extends Agent {
 		logInf("Initializing for a new match");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
-		
-		oldBoard = null;
-		
+				
 	}
 	
 	/** 
@@ -167,16 +167,13 @@ public class BasicResourceMAPAgent extends Agent {
 			logInf("Chose this path: "+ path().toString());
 		}
 		
-		
 		logInf("My current position: " + pos().toString());		
 		
 		state = RMAPState.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
-		
-		disturbanceLevel = calcDistrubanceLevel();
-		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
+
 		
 	}
 	
@@ -208,7 +205,7 @@ public class BasicResourceMAPAgent extends Agent {
 						if (canCalc())
 						{
 							int teamBenefit = calcTeamBenefit(nextCell);
-							int reqAmount = nextCost-resourcePoints();
+							int reqAmount = nextCost-resourcePoints()+Team.broadcastCost;
 							if (canBCast())
 							{
 								logInf("Broadcasting help");
@@ -326,9 +323,6 @@ public class BasicResourceMAPAgent extends Agent {
 				
 				for (Message msg : helpReqMsgs)
 				{
-					
-					//TODO: Deliberation
-					
 					ArrayList<Integer> resOffers = new ArrayList<Integer>();
 					//ArrayList<Integer> coefList = new ArrayList<Integer>();
 					
@@ -337,7 +331,7 @@ public class BasicResourceMAPAgent extends Agent {
 					int qi = teamBenefit/reqAmount;
 					int offer = reqAmount;
 					int maxCoef = -1;
-					while (offer > 1)
+					while (offer > 1 && canCalc())
 					{
 						int teamLoss = calcTeamLoss(offer);
 						int coef = teamLoss/offer;
@@ -352,14 +346,17 @@ public class BasicResourceMAPAgent extends Agent {
 						}
 					}
 					
-					int NTB = teamBenefit - resOffers.get(0);
-					if (NTB > maxNetTeamBenefit)
+					if (resOffers.size()>0)
 					{
-						maxNetTeamBenefit = NTB;
-						finalCoef = maxCoef;
-						finalResOffers = resOffers;
-					}
-										
+						int NTB = teamBenefit - resOffers.get(0);
+						if (NTB > maxNetTeamBenefit)
+						{
+							maxNetTeamBenefit = NTB;
+							finalCoef = maxCoef;
+							finalResOffers = resOffers;
+							agentToHelp = msg.sender();
+						}
+					}					
 				}
 			
 				if (agentToHelp != -1)
@@ -408,9 +405,8 @@ public class BasicResourceMAPAgent extends Agent {
 				
 				for (Message msg : bidMsgs)
 				{
-			
-					String[] amounts = msg.getValue("amounts").split(",");
 					bids[of] = new Bid(msg.sender(),msg.getIntValue("coef"));
+					String[] amounts = msg.getValue("amounts").split(offerDelim);
 					bids[of].offers(amounts); 				
 					of++;
 				}
@@ -422,19 +418,26 @@ public class BasicResourceMAPAgent extends Agent {
 				int reqAmount = nextCost-resourcePoints();
 				
 				chosenOffers = new HashSet<Offer>();
-				int c=0;
-				for (Bid b: bids)
+				int sum=0;
+				for (int b=0;b<bids.length;b++)
 				{
-					chosenOffers.add(b.offers[c]);  // choose the next offer with smallest coef and max amount
+					int c=0;
+					chosenOffers.add(bids[b].offers[c]);  // choose the next offer with smallest coef and max amount
 					
-					int sum = 0;	// calc the sum of the chosen set of offers
+					sum = 0;	// calc the sum of the chosen set of offers
 					for (Offer o: chosenOffers)
 						sum+=o.amount;
 					
 					if (sum >= reqAmount)
-						break;
-					
+						break;	
 				}
+				logInf("Chosen offers:"+chosenOffers.size());
+			
+				if (sum < reqAmount) 					
+					if (nextCost <= resourcePoints())
+						setState(RMAPState.S_DECIDE_OWN_ACT);
+					else
+						setState(RMAPState.S_BLOCKED);
 				
 				
 				setState(RMAPState.S_RESPOND_BIDS);
@@ -726,9 +729,10 @@ public class BasicResourceMAPAgent extends Agent {
 	 * @return						The message encoded in String
 	 */
 	private String prepareBidMsg(int requester, ArrayList<Integer> resOffers, int  coef) {
+		
 		String offers = Integer.toString(resOffers.get(0));
-		for (int o : resOffers)
-			offers += "," + o ;
+		for (int i=1;i<resOffers.size();i++)
+			offers += offerDelim + resOffers.get(i);
 		
 		/*String coefs = Integer.toString(coefsList.get(0));
 		for (int o : coefsList)
@@ -837,8 +841,23 @@ public class BasicResourceMAPAgent extends Agent {
 		resAmountToGive = 0;
 		agentToHelp = -1;
 		
-		return result;
-	}
+		// Do own act - but check for res
+		RowCol nextCell = path().getNextPoint(pos());
+		cost = getCellCost(nextCell);
+		logInf("Should do my own move!");
+		if (resourcePoints() >= cost )
+		{			
+			decResourcePoints(cost);
+			setPos(nextCell);
+			logInf("Moved to " + pos().toString());
+			return true;
+		}
+		else
+		{
+			logErr("Could not do my own move :(");
+			return false;
+		}
+}
 	
 	/**
 	 * Enables the agent do any bookkeeping while receiving help.

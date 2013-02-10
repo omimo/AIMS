@@ -109,7 +109,7 @@ public class Experiment1 {
 			// int i = 1;
 			System.out.printf(",%d", teamScores[i]);
 			System.out.println("");
-			 (new Scanner(System.in)).nextLine();
+			// (new Scanner(System.in)).nextLine();
 			//System.out.println(EmpathicAgent.nHelpActs + " from " + EmpathicAgent.nHelpRequests);
 
 		}
