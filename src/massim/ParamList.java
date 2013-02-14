@@ -130,7 +130,7 @@ public class ParamList {
 		StringTokenizer st = null;
 		
 		while ((paramEntry = br.readLine()) != null)   {
-			System.out.println(paramEntry);
+	//		System.out.println(paramEntry);
 			st = new StringTokenizer(paramEntry, ",");
             
             if (st.hasMoreTokens())

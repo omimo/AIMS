@@ -275,7 +275,7 @@ public class BasicActionMAPAgent extends Agent {
 					
 					int teamBenefit = msg.getIntValue("teamBenefit");
 					int requesterAgent = msg.sender();
-					int helpActCost = getCellCost(reqHelpCell) + SimulationEngine.pList.paramI("agent.helpoverhead");
+					int helpActCost = getCellCost(reqHelpCell) + paramI("agent.helpoverhead");
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
 					

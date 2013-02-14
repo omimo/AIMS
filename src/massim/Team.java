@@ -10,7 +10,7 @@ import massim.Agent.AgGameStatCode;
  * 
  * 
  * @author Omid Alemi
- * @version 2.0 2011/11/17
+ * @version 2.2 2013/02/13
  */
 public class Team {
 

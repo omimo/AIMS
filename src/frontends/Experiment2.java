@@ -90,8 +90,9 @@ public class Experiment2 {
 		//Team.teamSize = 8;
 		EmpathicTeam.useExp = true;
 		AdvActionMapTeam.useExp = false;
-		
+		BasicActionMAPTeam.useExp = false;
 		NoHelpTeam.useExp = false;
+		
 		Team[] teams = new Team[2];		
 		teams[0] = new BasicActionMAPTeam();
 		//teams[1] = new BasicResourceMAPTeam();
@@ -117,17 +118,17 @@ public class Experiment2 {
 			//Team.initResCoef = 200;
 			//Team.unicastCost = 7;
 			//Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			//Agent.calculationCost = 35;
 			sec.changeParam("Team.broadcastCost", sec.getParamI("Team.unicastCost")*(sec.getParamI("Team.teamSize")-1));
 			
-			//Agent.cellReward = 100;
-			//Agent.achievementReward = 2000;
+			Agent.calculationCost = 35;	
+			Agent.cellReward = 100;
+			Agent.achievementReward = 2000;
 
-			//AdvActionMAPAgent.requestThreshold = 299;
-			//AdvActionMAPAgent.WLL = 0.8;
-			//AdvActionMAPAgent.lowCostThreshold = 100;
+			AdvActionMAPAgent.requestThreshold = 299;
+			AdvActionMAPAgent.WLL = 0.8;
+			AdvActionMAPAgent.lowCostThreshold = 100;
 			
-			//BasicActionMAPAgent.requestThreshold = 299;
+			BasicActionMAPAgent.requestThreshold = 299;
 	
 			
 			EmpathicAgent.WTH_Threshhold = 3.5;
