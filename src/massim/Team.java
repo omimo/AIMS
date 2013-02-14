@@ -17,18 +17,18 @@ public class Team {
 	private static int nextID = 1; // for debugging purposes only
 	private int id;
 
-	public static int teamSize;
-	public static int initResCoef;
-	public static double mutualAwareness;
-	public static int unicastCost;
-	public static int broadcastCost;
+	//public static int teamSize;
+	//public static int initResCoef;
+	//public static double mutualAwareness;
+	//public static int unicastCost;
+	//public static int broadcastCost;
 	
 	private Agent[] agents;
 	private CommMedium commMedium;
 	private int[][] actionCostsMatrix;
 
-	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[Team.teamSize];
-	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
+	AgGameStatCode[] agentsGameStatus = new AgGameStatCode[paramI("Team.teamSize")];
+	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[paramI("Team.teamSize")];
 	private static Random rnd1 = new Random();
 
 	
@@ -53,10 +53,10 @@ public class Team {
 	public Team() {
 		
 		id = nextID++;
-		commMedium = new CommMedium(Team.teamSize);
+		commMedium = new CommMedium(paramI("Team.teamSize"));
 		
 		actionCostsMatrix = 
-			new int[Team.teamSize][SimulationEngine.numOfColors];
+			new int[paramI("Team.teamSize")][SimulationEngine.numOfColors];
 	}
 
 	/**
@@ -72,11 +72,11 @@ public class Team {
 		commMedium.clear();
 
 
-		for (int i = 0; i < teamSize; i++)
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 			for (int j = 0; j < SimulationEngine.numOfColors; j++)
 				this.actionCostsMatrix[i][j] = actionCostMatrix[i][j];
 		
-		for (int i = 0; i < teamSize; i++)
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 		{			
 			agents[i].initializeRun(actionCostsMatrix[i]);
 		}
@@ -92,13 +92,13 @@ public class Team {
 		
 		logInf("initilizing for a new match.");
 		
-		for(int i=0;i<Team.teamSize;i++)
+		for(int i=0;i<paramI("Team.teamSize");i++)
 		{
 			agentsGameStatus[i] = AgGameStatCode.READY;
 			int pathLength = calcDistance(initAgentsPos[i], goals[i]);
 			
 			agents[i].initializeMatch(initAgentsPos[i], goals[i], 
-					pathLength * Team.initResCoef);
+					pathLength * paramI("Team.initResCoef"));
 		}
 	}
 	
@@ -119,13 +119,13 @@ public class Team {
 		logInf("starting a new round");
 		
 		/* Initialize round for agents */
-		for (int i = 0; i < Team.teamSize; i++) {
+		for (int i = 0; i < paramI("Team.teamSize"); i++) {
 			int[][] probActionCostMatrix = 
-				new int[Team.teamSize][SimulationEngine.numOfColors];
+				new int[paramI("Team.teamSize")][SimulationEngine.numOfColors];
 			
-			for (int p = 0; p < Team.teamSize; p++)
+			for (int p = 0; p < paramI("Team.teamSize"); p++)
 				for (int q = 0; q < SimulationEngine.numOfColors; q++)
-					if (rnd1.nextDouble() < Team.mutualAwareness
+					if (rnd1.nextDouble() < paramD("Team.mutualAwareness")
 							|| p == i)
 						probActionCostMatrix[p][q] = 
 							actionCostsMatrix[p][q];
@@ -147,7 +147,7 @@ public class Team {
 		logInf("");
 		while(!allDoneComm) {
 			
-			for (int i = 0; i < Team.teamSize; i++)
+			for (int i = 0; i < paramI("Team.teamSize"); i++)
 			{
 				/* TODO: Double check the need of first condition */
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&  
@@ -156,7 +156,7 @@ public class Team {
 			}
 			allDoneComm = true;
 			
-			for (int i = 0; i < Team.teamSize; i++)
+			for (int i = 0; i < paramI("Team.teamSize"); i++)
 			{							
 				/* TODO: Double check the need of first condition */
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&   
@@ -174,7 +174,7 @@ public class Team {
 		/* Finalize the round for agents */
 		
 		boolean allDone = true;
-		for (int i = 0; i < Team.teamSize; i++)
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 		{
 			
 		/* If the agent were blocked before, don't call it as it doesn't have
@@ -264,4 +264,19 @@ public class Team {
 		if (debuggingInf)
 			System.out.println("[Team " + id + "]: " + msg);
 	}
+	
+	/*
+	 * Returns the integer parameter from the parameters list
+	 */
+	protected int paramI(String p) {
+		return SimulationEngine.pList.paramI(p);
+	}
+	
+	/*
+	 * Returns the double parameter from the parameters list
+	 */
+	protected double paramD(String p) {
+		return SimulationEngine.pList.paramD(p);
+	}
+
 }

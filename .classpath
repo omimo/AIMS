@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="/d/code/chartdemo/jfreechart-1.0.14/lib/junit.jar"/>
 	<classpathentry kind="lib" path="/d/code/chartdemo/jfreechart-1.0.14/lib/servlet.jar"/>
 	<classpathentry kind="lib" path="/d/code/chartdemo/jfreechart-1.0.14/lib/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

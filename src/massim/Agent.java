@@ -488,4 +488,18 @@ public abstract class Agent {
 	protected int pastExperience(int colorIndex){
 		return experience[colorIndex];
 	}
+	
+	/*
+	 * Returns the integer parameter from the parameters list
+	 */
+	protected int paramI(String p) {
+		return SimulationEngine.pList.paramI(p);
+	}
+	
+	/*
+	 * Returns the double parameter from the parameters list
+	 */
+	protected double paramD(String p) {
+		return SimulationEngine.pList.paramD(p);
+	}
 }

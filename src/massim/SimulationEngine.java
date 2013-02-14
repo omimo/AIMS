@@ -112,8 +112,8 @@ public class SimulationEngine implements SEControl{
 			
 		//Random rnd = new Random();
 		
-		actionCostsMatrix = new int[Team.teamSize][numOfColors];
-		for (int i = 0; i < Team.teamSize; i++)
+		actionCostsMatrix = new int[paramI("Team.teamSize")][numOfColors];
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 		{
 			for (int j = 0; j < numOfColors; j++)
 				if (rnd.nextInt(2) % 2 == 1)
@@ -139,12 +139,12 @@ public class SimulationEngine implements SEControl{
 		
 		roundCounter = 0;
 		
-		goals = new RowCol[Team.teamSize];
-		for (int i = 0; i < Team.teamSize; i++)
+		goals = new RowCol[paramI("Team.teamSize")];
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 			goals[i] = randomPos(boardh, boardw);
 
-		initAgentsPos = new RowCol[Team.teamSize];
-		for (int i = 0; i < Team.teamSize; i++)
+		initAgentsPos = new RowCol[paramI("Team.teamSize")];
+		for (int i = 0; i < paramI("Team.teamSize"); i++)
 			initAgentsPos[i] = randomPos(boardh, boardw);
 		
 		for (int t = 0; t < numOfTeams; t++)
@@ -419,6 +419,20 @@ public class SimulationEngine implements SEControl{
 			averageTeamScores[t] = average(teamsScores[t]);
 
 		return averageTeamScores;
+	}
+	
+	/*
+	 * Returns the integer parameter from the parameters list
+	 */
+	protected int paramI(String p) {
+		return SimulationEngine.pList.paramI(p);
+	}
+	
+	/*
+	 * Returns the double parameter from the parameters list
+	 */
+	protected double paramD(String p) {
+		return SimulationEngine.pList.paramD(p);
 	}
 }
 

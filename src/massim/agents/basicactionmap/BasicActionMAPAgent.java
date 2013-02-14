@@ -657,7 +657,7 @@ public class BasicActionMAPAgent extends Agent {
 	 * 							false if there aren't enough resources	
 	 */
 	private boolean canSend() {
-		return (resourcePoints() >= Team.unicastCost);	
+		return (resourcePoints() >= paramI("Team.unicastCost"));	
 	}
 	
 	/**
@@ -668,7 +668,7 @@ public class BasicActionMAPAgent extends Agent {
 	 * 							false if there aren't enough resources	
 	 */
 	private boolean canBCast() {
-		return (resourcePoints() >= Team.broadcastCost);	
+		return (resourcePoints() >= paramI("Team.broadcastCost"));	
 	}
 	
 	/**
@@ -688,7 +688,7 @@ public class BasicActionMAPAgent extends Agent {
 	 * @param msg				The String encoded message 
 	 */
 	private void broadcastMsg(String msg) {
-		decResourcePoints(Team.broadcastCost);
+		decResourcePoints(paramI("Team.broadcastCost"));
 		commMedium().broadcast(id(), msg);
 	}
 	
@@ -701,7 +701,7 @@ public class BasicActionMAPAgent extends Agent {
 	 * @param msg				The String encoded message
 	 */	 
 	private void sendMsg(int receiver, String msg) {
-		decResourcePoints(Team.unicastCost);
+		decResourcePoints(paramI("Team.unicastCost"));
 		commMedium().send(id(), receiver, msg);
 	}
 	

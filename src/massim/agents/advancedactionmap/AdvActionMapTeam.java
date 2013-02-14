@@ -9,9 +9,9 @@ public class AdvActionMapTeam extends Team {
 	public AdvActionMapTeam() {
 		super();		
 			
-		AdvActionMAPAgent[] agents = new AdvActionMAPAgent[Team.teamSize];
+		AdvActionMAPAgent[] agents = new AdvActionMAPAgent[paramI("Team.teamSize")];
 		
-		for(int i=0;i<Team.teamSize;i++)
+		for(int i=0;i<paramI("Team.teamSize");i++)
 			{
 				agents[i] = new AdvActionMAPAgent(i,commMedium());	
 				if (useExp)

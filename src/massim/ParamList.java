@@ -27,6 +27,7 @@ public class ParamList {
 	 * @param v			The parameter value
 	 */
 	public void add(String p, int v) {
+		p=p.toLowerCase();
 		if (!list.containsKey(p))
 			list.put(p, (Integer)v);
 		else
@@ -40,6 +41,7 @@ public class ParamList {
 	 * @param v			The parameter value
 	 */
 	public void add(String p, double v) {
+		p=p.toLowerCase();
 		if (!list.containsKey(p))
 			list.put(p, (Double)v);
 		else
@@ -53,6 +55,7 @@ public class ParamList {
 	 * @return			The parameter's value
 	 */
 	public int paramI(String p) {
+		p=p.toLowerCase();
 		if (list.containsKey(p))
 			return (Integer)list.get(p);
 		else
@@ -66,6 +69,7 @@ public class ParamList {
 	 * @return			The parameter's value
 	 */
 	public Double paramD(String p) {
+		p=p.toLowerCase();
 		if (list.containsKey(p))
 			return (Double)list.get(p);
 		else
@@ -79,6 +83,7 @@ public class ParamList {
 	 * @param nv		The parameter value
 	 */
 	public void change(String p, int nv) {
+		p=p.toLowerCase();
 		if (list.containsKey(p))
 			list.put(p,(Integer)nv);
 		else
@@ -92,6 +97,7 @@ public class ParamList {
 	 * @param nv		The parameter value
 	 */
 	public void change(String p, double nv) {
+		p=p.toLowerCase();
 		if (list.containsKey(p))
 			list.put(p,(Double)nv);
 		else

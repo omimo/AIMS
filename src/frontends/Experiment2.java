@@ -1,14 +1,13 @@
 package frontends;
 
-import java.awt.Component;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 
-import frontends.simplegui.SimpleSim;
+
+import org.apache.commons.cli.*;
+
 
 import massim.Agent;
 import massim.SEControl;
@@ -34,15 +33,36 @@ import massim.agents.nohelp.NoHelpTeam;
 
 public class Experiment2 {
 
-	public static void main(String[] args) {
+	@SuppressWarnings("static-access")
+	public static void main(String[] args) throws ParseException {
 		/* Create the SimulationEngine */
 		SimulationEngine se = new SimulationEngine();
 		SEControl sec = se;
 		
 	// Load parameters
 		CommandLineParser parser = new PosixParser();
+		Options options = new Options();
+//		options.addOption( OptionBuilder.withLongOpt( "exp-setup-file" ).w.withDescription( "experiment setup file" ).hasArg().withArgName("fname").create()); 
+		options.addOption("e", "exp-setup-file", true, "experiment setup file" );
+		options.addOption( "l", "log-file", false, "the output log file name" );
+		options.addOption( "q", "quiet", false, "do not show output" );
+		options.addOption( "v", "verbosity", true, "the verbosity level: 1, 2, 3" );
 		
-		String expSetFileName;
+		 // parse the command line arguments
+	    CommandLine line = parser.parse( options, args );
+	    
+	    String expSetFileName="";
+	    if( line.hasOption( "exp-setup-file" ) ) {
+	        // print the value of block-size
+	    	expSetFileName= line.getOptionValue( "exp-setup-file" );
+	    } else {
+	    	System.err.print("Error: No experiment setup specified.");
+	    	(new HelpFormatter()).printHelp("Experiment", options);
+	    	System.exit(-1);
+	    }
+		
+	    System.out.println(">>>>> "+expSetFileName);
+	    (new Scanner(System.in)).nextLine();
 		try {
 			sec.loadFromFile(expSetFileName);
 		
@@ -56,7 +76,7 @@ public class Experiment2 {
 		
 	/**************************************/
 	
-		int numberOfRuns = 1;
+		int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -67,23 +87,20 @@ public class Experiment2 {
 	SimulationEngine.numOfMatches = 5;
 	
 	/* Create the teams involved in the simulation */
-		Team.teamSize = 8;
+		//Team.teamSize = 8;
 		EmpathicTeam.useExp = true;
 		AdvActionMapTeam.useExp = false;
 		
 		NoHelpTeam.useExp = false;
-		Team[] teams = new Team[3];		
+		Team[] teams = new Team[2];		
 		teams[0] = new BasicActionMAPTeam();
-		teams[1] = new BasicResourceMAPTeam();
-		teams[2] = new NoHelpTeam();
+		//teams[1] = new BasicResourceMAPTeam();
+		teams[1] = new NoHelpTeam();
 		
-			
+		sec.loadTeams(teams);
 		
-		
-		
-		
-		sec.addParam("env.disturbance", (Double)0.0);
-		sec.addParam("agent.helpoverhead", 5);
+		//sec.addParam("env.disturbance", (Double)0.0);
+		//sec.addParam("agent.helpoverhead", 5);
 		
 		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
 		
@@ -97,19 +114,20 @@ public class Experiment2 {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
-			Team.initResCoef = 200;
-			Team.unicastCost = 7;
-			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 35;
+			//Team.initResCoef = 200;
+			//Team.unicastCost = 7;
+			//Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
+			//Agent.calculationCost = 35;
+			sec.changeParam("Team.broadcastCost", sec.getParamI("Team.unicastCost")*(sec.getParamI("Team.teamSize")-1));
 			
-			Agent.cellReward = 100;
-			Agent.achievementReward = 2000;
+			//Agent.cellReward = 100;
+			//Agent.achievementReward = 2000;
 
-			AdvActionMAPAgent.requestThreshold = 299;
-			AdvActionMAPAgent.WLL = 0.8;
-			AdvActionMAPAgent.lowCostThreshold = 100;
+			//AdvActionMAPAgent.requestThreshold = 299;
+			//AdvActionMAPAgent.WLL = 0.8;
+			//AdvActionMAPAgent.lowCostThreshold = 100;
 			
-			BasicActionMAPAgent.requestThreshold = 299;
+			//BasicActionMAPAgent.requestThreshold = 299;
 	
 			
 			EmpathicAgent.WTH_Threshhold = 3.5;

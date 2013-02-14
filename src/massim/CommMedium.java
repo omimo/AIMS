@@ -95,7 +95,7 @@ public class CommMedium {
 	public boolean allChannelsEmpty() {
 		
 		for (int i=0;i<numOfChannels;i++)
-			for (int j=0;j<Team.teamSize;j++)
+			for (int j=0;j<paramI("Team.teamSize");j++)
 				if (!channels[i][j].isEmpty())
 					return false;
 		return true;
@@ -135,5 +135,18 @@ public class CommMedium {
 		}				
 		return s;
 	}
+
+	/*
+	 * Returns the integer parameter from the parameters list
+	 */
+	protected int paramI(String p) {
+		return SimulationEngine.pList.paramI(p);
+	}
 	
+	/*
+	 * Returns the double parameter from the parameters list
+	 */
+	protected double paramD(String p) {
+		return SimulationEngine.pList.paramD(p);
+	}
 }

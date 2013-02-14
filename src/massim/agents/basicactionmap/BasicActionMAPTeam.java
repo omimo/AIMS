@@ -10,9 +10,9 @@ public class BasicActionMAPTeam extends Team {
 	public BasicActionMAPTeam() {
 		super();		
 			
-		BasicActionMAPAgent[] agents = new BasicActionMAPAgent[Team.teamSize];
+		BasicActionMAPAgent[] agents = new BasicActionMAPAgent[paramI("Team.teamSize")];
 		
-		for(int i=0;i<Team.teamSize;i++)
+		for(int i=0;i<paramI("Team.teamSize");i++)
 			{
 				agents[i] = new BasicActionMAPAgent(i,commMedium());	
 				if (useExp)
