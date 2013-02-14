@@ -65,15 +65,18 @@ public class SimulationEngine implements SEControl{
 	 * @param teams					The array of teams to be involved in 
 	 * 								the simulations.
 	 */
-	public SimulationEngine(Team[] teams) {
+	public SimulationEngine() {
 		
 		pList = new ParamList();
 		
+		
+	}
+
+	public void loadTeams(Team[] teams) {
 		logInf("SE created for " + teams.length + " teams.");
 		this.teams = teams;
 		SimulationEngine.numOfTeams = teams.length;
 	}
-
 	/**
 	 * Initializes the simulation engine for a new experiment. 
 	 * 

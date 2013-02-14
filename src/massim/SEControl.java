@@ -15,6 +15,7 @@ public interface SEControl {
 	public int stepExp();
 	public int[] getDebugResults();
 	
+	public void loadTeams(Team[] teams);
 	/* misc */
 	public Logger getLogger();
 	

@@ -1,7 +1,14 @@
 package frontends;
 
+import java.awt.Component;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Scanner;
+
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+
+import frontends.simplegui.SimpleSim;
 
 import massim.Agent;
 import massim.SEControl;
@@ -18,16 +25,38 @@ import massim.agents.nohelp.NoHelpTeam;
 
 
 /**
- * This is an experiment for testing replanning agents
+ * This is a text-based front end. It uses files to lead the param list.
  * 
  *   
  * @author Omid Alemi
  *
  */
-public class Experiment1 {
+
+public class Experiment2 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1;
+		/* Create the SimulationEngine */
+		SimulationEngine se = new SimulationEngine();
+		SEControl sec = se;
+		
+	// Load parameters
+		CommandLineParser parser = new PosixParser();
+		
+		String expSetFileName;
+		try {
+			sec.loadFromFile(expSetFileName);
+		
+		} catch (IOException e1) {
+			
+			System.err.println("Error loading the experiment setup file: "+expSetFileName);
+		}
+		
+		
+		
+		
+	/**************************************/
+	
+		int numberOfRuns = 1;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -50,10 +79,8 @@ public class Experiment1 {
 		
 			
 		
-		/* Create the SimulationEngine */
-		SimulationEngine se = new SimulationEngine();
-		SEControl sec = se;
-		sec.loadTeams(teams);
+		
+		
 		
 		sec.addParam("env.disturbance", (Double)0.0);
 		sec.addParam("agent.helpoverhead", 5);

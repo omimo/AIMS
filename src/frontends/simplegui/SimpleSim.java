@@ -75,7 +75,8 @@ public class SimpleSim extends JFrame {
 		
 
 		
-		ss.sec = new SimulationEngine(teams);
+		ss.sec = new SimulationEngine();
+		ss.sec.loadTeams(teams);
 		
 		Team.initResCoef = 200;
 		Team.unicastCost = 7;
