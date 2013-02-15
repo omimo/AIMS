@@ -58,7 +58,7 @@ public class Experiment1 {
 		sec.addParam("env.disturbance", (Double)0.0);
 		sec.addParam("agent.helpoverhead", 5);
 		
-		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
+		System.out.println("DISTURBANCE,ACTMAP,BASMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
