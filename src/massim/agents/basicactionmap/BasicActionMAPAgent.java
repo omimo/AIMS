@@ -148,6 +148,8 @@ public class BasicActionMAPAgent extends Agent {
 				boolean needHelp = 
 					(cost > BasicActionMAPAgent.requestThreshold) ||
 					(cost > resourcePoints());
+				
+				
 				if (needHelp)
 				{
 					logInf("Need help!");
@@ -593,7 +595,7 @@ public class BasicActionMAPAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = getCellCost(helpeeNextCell);			
+		int cost = getCellCost(helpeeNextCell)+SimulationEngine.pList.paramI("agent.helpoverhead");			
 		logInf("Should help agent "+agentToHelp);
 		if (resourcePoints() >= cost )
 		{			

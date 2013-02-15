@@ -27,7 +27,7 @@ import massim.agents.nohelp.NoHelpTeam;
 public class Experiment1 {
 
 	public static void main(String[] args) {
-	int numberOfRuns = 1;
+	int numberOfRuns = 500;
 		
 	SimulationEngine.colorRange = 
 		new int[] {0, 1, 2, 3, 4, 5};
@@ -35,7 +35,7 @@ public class Experiment1 {
 		SimulationEngine.colorRange.length;
 	SimulationEngine.actionCostsRange = 
 		new int[] {10, 40, 70, 100, 300, 400, 450,  500};	
-	SimulationEngine.numOfMatches = 5;
+	SimulationEngine.numOfMatches = 1;
 	
 	/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
@@ -57,43 +57,34 @@ public class Experiment1 {
 		
 		sec.addParam("env.disturbance", (Double)0.0);
 		sec.addParam("agent.helpoverhead", 5);
+		sec.addParam("agent.reshelpoverhead", 1);
 		
-		System.out.println("DISTURBANCE,ACTMAP,BASMAP,NO-HELP");
+		System.out.println("DISTURBANCE,ACTMAP,RESMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
 		{
-			// percentage
-			EmpathicAgent.nHelpActs = 0;
-			EmpathicAgent.nHelpRequests =0;
-			
+	
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
 			Team.initResCoef = 200;
-			Team.unicastCost = 7;
+			Team.unicastCost = 3;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
-			Agent.calculationCost = 35;
 			
+			Agent.calculationCost = 0;		
 			Agent.cellReward = 100;
 			Agent.achievementReward = 2000;
 
-			AdvActionMAPAgent.requestThreshold = 299;
-			AdvActionMAPAgent.WLL = 0.8;
-			AdvActionMAPAgent.lowCostThreshold = 100;
+
 			
 			BasicActionMAPAgent.requestThreshold = 299;
 	
 			
-			EmpathicAgent.WTH_Threshhold = 3.5;
-		  	EmpathicAgent.emotState_W = 0.3;
-		  	EmpathicAgent.salience_W = 1.5;
-		  	EmpathicAgent.pastExp_W = 2.0;
-		  	EmpathicAgent.requestThreshold = 299;
-		  	
+
 			/* vary the disturbance: */
 			//SimulationEngine.disturbanceLevel = 0.1 * exp;
-			sec.changeParam("env.disturbance", 0.0);//0.1 * exp);
+			sec.changeParam("env.disturbance", 0.1 * exp);
 			
 			/* Initialize and run the experiment */
 			sec.setupExeperiment(numberOfRuns);

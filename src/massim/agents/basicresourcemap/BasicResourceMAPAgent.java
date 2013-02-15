@@ -25,7 +25,7 @@ import massim.Team;
 public class BasicResourceMAPAgent extends Agent {
 
 	private boolean dbgInf = true;
-	private boolean dbgErr = true;
+	private boolean dbgErr = false;
 	
 	private final static int RMAP_HELP_REQ_MSG = 1;
 	private final static int RMAP_BID_MSG = 2;
@@ -333,7 +333,7 @@ public class BasicResourceMAPAgent extends Agent {
 					int maxCoef = -1;
 					while (offer > 1 && canCalc())
 					{
-						int teamLoss = calcTeamLoss(offer);
+						int teamLoss = calcTeamLoss(offer+SimulationEngine.pList.paramI("agent.reshelpoverhead"));
 						int coef = teamLoss/offer;
 						if (coef < qi)
 						{
@@ -512,28 +512,13 @@ public class BasicResourceMAPAgent extends Agent {
 	{
 		decResourcePoints(Agent.calculationCost);
 		
-		int withHelpRewards = 
+		int withHelpRewardPoints = 
 			projectRewardPoints(resourcePoints()-helpActCost, pos());
-						
-		int noHelpRewards =
-			projectRewardPoints(resourcePoints(),pos());
-						
-		int withHelpRemPathLength = 
-			path().getNumPoints() - 
-			findFinalPos(resourcePoints()-helpActCost, pos()) -
-			1;
-					
-		int noHelpRemPathLength = 
-			path().getNumPoints() - 
-			findFinalPos(resourcePoints(), pos()) -
-			1;
-				
-		return  
-			(noHelpRewards - withHelpRewards) *
-			(1 + 
-			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
-			(withHelpRemPathLength-noHelpRemPathLength)) +
-			SimulationEngine.pList.paramI("agent.helpoverhead");
+		
+		int noHelpRewardPoints = 
+			projectRewardPoints(resourcePoints(), pos());
+		
+		return noHelpRewardPoints - withHelpRewardPoints;
 							
 	}
 	
@@ -548,30 +533,13 @@ public class BasicResourceMAPAgent extends Agent {
 		
 		decResourcePoints(Agent.calculationCost);
 		
-		int withHelpRewards = 
-			projectRewardPoints(resourcePoints(), skipCell);  
-			//Agent.cellReward; 
-		/* double check cellReward
-		projectRewardPoints() will include that */
+		int withHelpRewardPoints = 
+			projectRewardPoints(resourcePoints(), skipCell);
 		
-		int noHelpRewards = 
+		int noHelpRewardPoints = 
 			projectRewardPoints(resourcePoints(), pos());
 		
-		int withHelpRemPathLength = 
-			path().getNumPoints() - 
-			findFinalPos(resourcePoints(),skipCell) -
-			1 ;
-		
-		int noHelpRemPathLength = 
-			path().getNumPoints() - 
-			findFinalPos(resourcePoints(),pos()) -
-			1;
-		
-		return 
-			(withHelpRewards-noHelpRewards) *
-			(1+
-			(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)) *
-			(noHelpRemPathLength-withHelpRemPathLength));
+		return withHelpRewardPoints - noHelpRewardPoints;
 	}
 	
 	/**
@@ -650,44 +618,7 @@ public class BasicResourceMAPAgent extends Agent {
 		return calcRewardPoints(remainingResourcePoints, iCell);
 	}
 	
-	/**
-	 * The importance function.
-	 * 
-	 * Maps the remaining distance to the goal into 
-	 * 
-	 * Currently: imp(x) = 100/x
-	 * 
-	 * @param remainingLength
-	 * @return
-	 */
-	private int importance(int remainingLength) {
-		remainingLength ++; /* TODO: double check */
-		if (remainingLength != 0)
-			return 100/remainingLength;
-		else
-			return 0;
-	}
 	
-	/**
-	 * Calculates the disturbance level of the board.
-	 * 
-	 * This compares the current state of the board with the stored state
-	 * from the previous round.
-	 * 
-	 * @return				The level of disturbance.
-	 */
-	private double calcDistrubanceLevel() {
-		if (oldBoard == null)
-			return 0.0;
-		
-		int changeCount = 0;		
-		for (int i=0;i<theBoard().rows();i++)
-			for (int j=0;j<theBoard().cols();j++)
-				if (theBoard().getBoard()[i][j] != oldBoard[i][j])
-					changeCount++;	
-		
-		return (double)changeCount / (theBoard().rows() * theBoard().cols());
-	}
 	
 	/**
 	 * Prepares a help request message and returns its String encoding.
@@ -825,7 +756,7 @@ public class BasicResourceMAPAgent extends Agent {
 	@Override
 	protected boolean doHelpAnother() {
 		boolean result;		
-		int cost = resAmountToGive;	
+		int cost = resAmountToGive+SimulationEngine.pList.paramI("agent.reshelpoverhead");	
 		logInf("Should help agent "+agentToHelp);
 		if (resourcePoints() >= cost )
 		{			
