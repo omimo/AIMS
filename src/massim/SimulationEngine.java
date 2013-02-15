@@ -68,8 +68,6 @@ public class SimulationEngine implements SEControl{
 	public SimulationEngine() {
 		
 		pList = new ParamList();
-		
-		
 	}
 
 	public void loadTeams(Team[] teams) {

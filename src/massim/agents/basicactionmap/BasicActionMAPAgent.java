@@ -111,6 +111,7 @@ public class BasicActionMAPAgent extends Agent {
 		
 		logInf("Starting a new round ...");
 		
+		
 		if (path() == null)
 		{		
 			findPath();			
@@ -148,6 +149,7 @@ public class BasicActionMAPAgent extends Agent {
 				boolean needHelp = 
 					(cost > BasicActionMAPAgent.requestThreshold) ||
 					(cost > resourcePoints());
+				
 				if (needHelp)
 				{
 					logInf("Need help!");

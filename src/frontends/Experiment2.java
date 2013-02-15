@@ -61,8 +61,8 @@ public class Experiment2 {
 	    	System.exit(-1);
 	    }
 		
-	    System.out.println(">>>>> "+expSetFileName);
-	    (new Scanner(System.in)).nextLine();
+	   // System.out.println(">>>>> "+expSetFileName);
+	   // (new Scanner(System.in)).nextLine();
 		try {
 			sec.loadFromFile(expSetFileName);
 		
@@ -103,15 +103,12 @@ public class Experiment2 {
 		//sec.addParam("env.disturbance", (Double)0.0);
 		//sec.addParam("agent.helpoverhead", 5);
 		
-		System.out.println("DISTURBANCE,EMP,AAMAP,NO-HELP");
+		System.out.println("DISTURBANCE,BASICMAP,NO-HELP");
 		
 		/* The experiments loop */
 		for (int exp=0;exp<11;exp++)
 		{
-			// percentage
-			EmpathicAgent.nHelpActs = 0;
-			EmpathicAgent.nHelpRequests =0;
-			
+		
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
 			
@@ -119,6 +116,7 @@ public class Experiment2 {
 			//Team.unicastCost = 7;
 			//Team.broadcastCost = Team.unicastCost * (Team.teamSize-1);
 			sec.changeParam("Team.broadcastCost", sec.getParamI("Team.unicastCost")*(sec.getParamI("Team.teamSize")-1));
+
 			
 			Agent.calculationCost = 35;	
 			Agent.cellReward = 100;
