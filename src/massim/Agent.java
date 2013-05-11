@@ -300,6 +300,17 @@ public abstract class Agent {
 		int color = theBoard.getBoard()[cell.row][cell.col];
 		return actionCosts()[color];
 	}
+	
+	/**
+	 * Returns the color index of a given cell for this agent
+	 * 
+	 * @param cell			            The position of the cell
+	 * @return 							The color index related to the color of the given 
+	 * 									cell
+	 */
+	protected int getCellColor(RowCol cell) {
+		return theBoard.getBoard()[cell.row][cell.col];
+	}
 
 	/**
 	 * Returns the cost of a given cell based on the given actions

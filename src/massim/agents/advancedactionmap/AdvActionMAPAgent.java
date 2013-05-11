@@ -39,6 +39,7 @@ public class AdvActionMAPAgent extends Agent {
 	public static double WLL;
 	public static double requestThreshold;
 	public static double lowCostThreshold;
+	public static int importanceVersion = 1;
 	
 	private final static int MAP_HELP_REQ_MSG = 1;
 	private final static int MAP_BID_MSG = 2;
@@ -141,7 +142,8 @@ public class AdvActionMAPAgent extends Agent {
 		
 		switch(state) {
 		case S_INIT:		
-			double wellbeing = wellbeing();
+			double wellbeing = 0;
+				wellbeing = wellbeing();
 			logInf("My wellbeing = " + wellbeing);
 			
 			if (reachedGoal())
@@ -551,7 +553,7 @@ public class AdvActionMAPAgent extends Agent {
 		else
 			return (double)resourcePoints()/eCost;
 	}
-	
+		
 	/**
 	 * Finds the remaining path from the given cell.
 	 * 
@@ -734,13 +736,16 @@ public class AdvActionMAPAgent extends Agent {
 			findFinalPos(resourcePoints(), pos()) -
 			1;
 				
+		
+		if(importanceVersion == 1)
+			return noHelpRewards - withHelpRewards;
+		
 		return  
 			(noHelpRewards - withHelpRewards) *
 			(1 + 
 			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
 			(withHelpRemPathLength-noHelpRemPathLength)) +
 			TeamTask.helpOverhead;
-							
 	}
 	
 	/**
@@ -772,6 +777,9 @@ public class AdvActionMAPAgent extends Agent {
 			path().getNumPoints() - 
 			findFinalPos(resourcePoints(),pos()) -
 			1;
+		
+		if(importanceVersion == 1)
+			return withHelpRewards - noHelpRewards;
 		
 		return 
 			(withHelpRewards-noHelpRewards) *

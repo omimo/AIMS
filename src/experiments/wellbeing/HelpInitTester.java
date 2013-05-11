@@ -42,7 +42,7 @@ public class HelpInitTester {
 		if(numberOfRuns < 1)
 			throw new Exception("numberOfRuns is invalid!");
 		
-		SimulationEngine.colorRange = 
+		SimulationEngine.colorRange =  
 			new int[] {0, 1, 2, 3, 4, 5};
 		SimulationEngine.numOfColors =  
 			SimulationEngine.colorRange.length;

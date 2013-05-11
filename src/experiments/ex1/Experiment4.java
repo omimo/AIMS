@@ -68,7 +68,11 @@ public class Experiment4 {
 			TeamTask.assignmentOverhead = 10;
 			
 			AdvActionMAPAgent.requestThreshold = 299;
-			AdvActionMAPAgent.WLL = 5.0;
+			/*AdvActionMAPAgent.WellBeingV2 = false;
+			if(AdvActionMAPAgent.WellBeingV2)
+				AdvActionMAPAgent.WLL = 0.2;
+			else*/ 
+				AdvActionMAPAgent.WLL = 5.0;
 			AdvActionMAPAgent.lowCostThreshold = 100;
 //			BasicActionMAPAgent.requestThreshold = 299;
 			
