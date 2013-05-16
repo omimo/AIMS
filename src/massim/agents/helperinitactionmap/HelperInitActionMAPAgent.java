@@ -703,8 +703,8 @@ public class HelperInitActionMAPAgent extends Agent {
 				teamLoss = (noHelpRewards - withHelpRewards) *
 							(1+
 							(importance(noHelpRemPathLength) - importance(withHelpRemPathLength)) *
-							(withHelpRemPathLength - noHelpRemPathLength)) +
-							TeamTask.helpOverhead;
+							(withHelpRemPathLength - noHelpRemPathLength));
+							//+ TeamTask.helpOverhead;
 			
 			//System.out.println(id() + " loss: " + teamLoss + " cost:" + costOfAction  + " WHR :" + withHelpRewards + " WHRL:" + withHelpRemPathLength + " NOHRL: " + noHelpRemPathLength + " NHR: " + noHelpRewards);
 			
