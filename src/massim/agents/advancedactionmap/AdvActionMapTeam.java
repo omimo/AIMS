@@ -1,16 +1,20 @@
 package massim.agents.advancedactionmap;
 
-import massim.RowCol;
 import massim.Team;
 
+/**
+ * RIAMAP Team
+ * 
+ * @author Omid Alemi
+ */
 public class AdvActionMapTeam extends Team {
 	
 	/**
-	 * The default constructor
+	 * New team - RIAMAP
 	 */
 	public AdvActionMapTeam() {
+		
 		super();		
-			
 		AdvActionMAPAgent[] aaMAPAgents = new AdvActionMAPAgent[Team.teamSize];
 		
 		for(int i=0;i<Team.teamSize;i++)
@@ -18,5 +22,4 @@ public class AdvActionMapTeam extends Team {
 		
 		setAgents(aaMAPAgents);
 	}	
-	
 }

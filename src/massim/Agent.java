@@ -49,7 +49,7 @@ public abstract class Agent {
 	public int numOfBids = 0;
 	public int numOfSucOffers = 0;
 	public int numOfUnSucHelpReq = 0;
-
+	public boolean remainingResInRewards = false;
 
 	
 	/**
@@ -209,7 +209,10 @@ public abstract class Agent {
 	 */
 	protected int calcRewardPoints(int resources, RowCol position) {
 		if (position.equals(path.getEndPoint()))
-			return TeamTask.achievementReward; // + resources;
+			if(remainingResInRewards)
+				return TeamTask.achievementReward + resources;
+			else
+				return TeamTask.achievementReward;
 		else
 			return (path.getIndexOf(position)) * TeamTask.cellReward;
 			/* uses the index of position, starting from 0;

@@ -28,7 +28,7 @@ public class HelpInitTester {
 
 	public static void main(String[] args) {
 			try {
-				runSimulation(10, 2);
+				runSimulation(100, 2);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -59,7 +59,7 @@ public class HelpInitTester {
 		SimulationEngine se = new SimulationEngine(teams);
 		System.out.println("DISTURBANCE\tAD-ACTION-MAP\tBASIC-ACTION");
 		/* The experiments loop */
-		for (int exp=0;exp<11;exp++)
+		for (int exp=0;exp<1;exp++)
 		{
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */			
@@ -81,7 +81,7 @@ public class HelpInitTester {
 			
 			HelperInitActionMAPAgent.requestThreshold = 299;
 			HelperInitActionMAPAgent.WHH = 0.3;
-			HelperInitActionMAPAgent.WHL = -0.5;
+			//HelperInitActionMAPAgent.WHL = -0.5;
 			HelperInitActionMAPAgent.EPSILON = 0.1;
 			HelperInitActionMAPAgent.importanceVersion = importanceVersion;
 			

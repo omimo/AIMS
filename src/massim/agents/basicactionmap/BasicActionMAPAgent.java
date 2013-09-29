@@ -33,8 +33,10 @@ public class BasicActionMAPAgent extends Agent {
 		R_DO_HELP_ACT
 	}
 	
+	//Parameters for BasicAMAP 
 	public static int requestThreshold;
 	
+	//Private variables
 	private final static int MAP_HELP_REQ_MSG = 1;
 	private final static int MAP_BID_MSG = 2;
 	private final static int MAP_HELP_CONF = 3;
@@ -58,7 +60,6 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	public BasicActionMAPAgent(int id, CommMedium comMed) {
 		super(id, comMed);
-
 	}
 	
 
@@ -85,8 +86,6 @@ public class BasicActionMAPAgent extends Agent {
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My initial position: "+ pos());
 		logInf("My goal position: " + goalPos().toString());	
-		
-		
 	}
 	
 	/** 
@@ -100,9 +99,9 @@ public class BasicActionMAPAgent extends Agent {
 	 * 									team)
 	 */
 	@Override
-	protected void initializeRound(Board board, int[][] actionCostsMatrix) {		
-		super.initializeRound(board, actionCostsMatrix);				
+	protected void initializeRound(Board board, int[][] actionCostsMatrix) {	
 		
+		super.initializeRound(board, actionCostsMatrix);				
 		logInf("Starting a new round ...");
 		
 		if (path() == null)
@@ -126,6 +125,7 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");	
 		
@@ -234,6 +234,7 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode receiveCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;		
 		logInf("Receive Cycle");		
 	
@@ -417,9 +418,9 @@ public class BasicActionMAPAgent extends Agent {
 	 * @return 						Returns the current state 
 	 */
 	@Override
-	protected AgGameStatCode finalizeRound() {			
+	protected AgGameStatCode finalizeRound() {	
+		
 		logInf("Finalizing the round ...");				
-
 		boolean succeed = act();
 		
 		if (reachedGoal())
@@ -465,8 +466,8 @@ public class BasicActionMAPAgent extends Agent {
 	 * @param helpActCost				The cost of help action
 	 * @return							The team loss
 	 */
-	private int calcTeamLoss(int helpActCost)
-	{
+	private int calcTeamLoss(int helpActCost) {
+		
 		decResourcePoints(Agent.calculationCost);
 		
 		int withHelpRewardPoints = 
@@ -567,6 +568,7 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected boolean doOwnAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 		logInf("Should do my own move!");
@@ -594,6 +596,7 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected boolean doHelpAnother() {
+		
 		boolean result;		
 		int cost = getCellCost(helpeeNextCell);			
 		logInf("Should help agent "+agentToHelp);
@@ -623,6 +626,7 @@ public class BasicActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected boolean doGetHelpAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		logInf("Yaay! Agent"+ helperAgent+" is helping me with this move!");
 		setPos(nextCell);

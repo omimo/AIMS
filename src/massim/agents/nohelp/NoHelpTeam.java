@@ -1,10 +1,8 @@
 package massim.agents.nohelp;
 
-import massim.RowCol;
 import massim.Team;
 
 /**
- * 
  * 
  * @author Omid Alemi
  * @version 2.0 2011/10/31
@@ -12,7 +10,7 @@ import massim.Team;
 public class NoHelpTeam extends Team {	
 	
 	/**
-	 * The default constructor
+	 * New team - No Help
 	 */
 	public NoHelpTeam() {
 		super();		

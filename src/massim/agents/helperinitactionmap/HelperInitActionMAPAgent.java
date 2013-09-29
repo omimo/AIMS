@@ -24,11 +24,14 @@ public class HelperInitActionMAPAgent extends Agent {
 	boolean dbgInf = false;
 	boolean dbgErr = true;
 	
+	//Parameters for HIAMAP 
 	public static double WHH;
-	public static double WHL;
+	//public static double WHL;
 	public static double EPSILON;
 	public static int importanceVersion = 1;
 	public static double requestThreshold;
+	public static int impFactor = 6;
+	public static boolean useTeamWellbeing = false;
 	
 	private enum HIAMAPState 
 			{ S_INIT,
@@ -38,9 +41,11 @@ public class HelperInitActionMAPAgent extends Agent {
 			  R_IGNORE_HELP_OFFERS, R_BLOCKED, R_GET_HELP_OFFERS,
 			  R_GET_BIDS, R_DO_OWN_ACT, R_BIDDING,
 			  R_DO_HELP_ACTION, R_GET_BID_CONF,
-			  R_WAIT_TO_BE_HELPED	
+			  R_WAIT_TO_BE_HELPED,
+			  S_PRE_INIT, R_PRE_INIT
 			}
 	
+	//Private variables
 	private HIAMAPState state;
 	
 	private final static int HIMAP_HELP_OFFER = 1;
@@ -119,14 +124,19 @@ public class HelperInitActionMAPAgent extends Agent {
 				
 		logInf("My current position: " + pos().toString());		
 		
-		state = HIAMAPState.S_INIT;
+		if(useTeamWellbeing)
+			state = HIAMAPState.S_PRE_INIT;
+		else
+			state = HIAMAPState.S_INIT;
+		
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
 		
 		disturbanceLevel = calcDistrubanceLevel();
 		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
-		
+		agentsWellbeing = new double[Team.teamSize];
+		lastSentWellbeing = Double.MIN_VALUE;
 	}
 	
 	
@@ -137,17 +147,26 @@ public class HelperInitActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");	
-		
+
+		double wellbeing = wellbeing(0);
+		logInf("My wellbeing = " + wellbeing);
+		if (useTeamWellbeing && Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) >= EPSILON) {
+			if (canBCast()) {
+				String msg = prepareWellBeingUpdateMsg(wellbeing);
+				broadcastMsg(msg);
+			}
+		}		
 		switch(state) {
+		case S_PRE_INIT:
+			setState(HIAMAPState.R_PRE_INIT);
+			break;
 		case S_INIT:			
-				double wellbeing = wellbeing(0);
-				//TODO: update WHH
-				
 				boolean offerHelp = wellbeing > WHH;				
-				if (offerHelp) {
-					if(canCalc() && canBCast()) {
+				if (offerHelp || reachedGoal()) {
+					if(canCalcAndBroadcast()) {//canCalc() && canBCast()
 						//System.out.println("Can offer help: " + id() + " " + wellbeing);
 						logInf("Can offer help");
 						HashMap<Integer, Integer> teamLosses = calcTeamLosses();
@@ -165,17 +184,8 @@ public class HelperInitActionMAPAgent extends Agent {
 					else
 						setState(HIAMAPState.R_BLOCKED);
 				}
-				else if (!reachedGoal()) {
-					//System.out.println("Can not offer help: " + id() + " " + wellbeing);
-					if (Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) < EPSILON)
-						if (canBCast()) {
-							String msg = prepareWellBeingUpdateMsg(wellbeing);
-							broadcastMsg(msg);						
-						}											
-					setState(HIAMAPState.R_GET_HELP_OFFERS);						
-				}
-				else
-					setState(HIAMAPState.R_DO_OWN_ACT);//TODO: check this
+				else 										
+					setState(HIAMAPState.R_GET_HELP_OFFERS);
 			break;
 		case S_RESPOND_TO_OFFERS:
 			if (bidding && canSend())
@@ -228,6 +238,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode receiveCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;		
 		logInf("Receive Cycle");		
 	
@@ -244,6 +255,7 @@ public class HelperInitActionMAPAgent extends Agent {
 					offerMsgs.add(msg);
 				 msgStr = commMedium().receive(id());
 			}
+			saveWellBeingsOfAgents(offerMsgs);
 			
 			bidding = false;
 			
@@ -419,10 +431,46 @@ public class HelperInitActionMAPAgent extends Agent {
 			logErr("Unimplemented receive state: " + state.toString());
 		}
 		
+		//Read well being from unread messages
+		saveWellBeingsOfAgents(null);
+		
 		if (isInFinalState())
 			returnCode = AgCommStatCode.DONE;
 		
 		return returnCode;
+	}
+	
+	/**
+	 * Save well being of other agents from received messages
+	 * 
+	 * @param wbMsgs					Received messages
+	 */
+	private void saveWellBeingsOfAgents(ArrayList<Message> wbMsgs) {
+		
+		if(useTeamWellbeing)
+		{
+			if(wbMsgs == null)
+			{
+				wbMsgs = new ArrayList<Message>();
+				String msgStrWb = commMedium().receive(id());
+				while (!msgStrWb.equals(""))
+				{
+					wbMsgs.add(new Message(msgStrWb));
+					msgStrWb = commMedium().receive(id());
+				}
+			}
+			for (Message msg : wbMsgs)
+			{
+				if(msg.getValue("wellbeing") != null)
+				{
+					double wbForAgent = msg.getDoubleValue("wellbeing");
+					if(msg.sender() < agentsWellbeing.length)
+					{
+						agentsWellbeing[msg.sender()] = wbForAgent;
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -434,11 +482,11 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @return 						Returns the current state 
 	 */
 	@Override
-	protected AgGameStatCode finalizeRound() {			
+	protected AgGameStatCode finalizeRound() {		
+		
 		logInf("Finalizing the round ...");				
 				
 		keepBoard();
-		
 		boolean succeed = act();
 		
 		if (reachedGoal())
@@ -465,7 +513,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * 								false otherwise	
 	 */
 	private boolean isInFinalState() {
-		switch (state) { //TODO: check this for helper-init map
+		switch (state) {
 			case R_WAIT_TO_BE_HELPED:
 			case R_DO_HELP_ACTION:
 			case R_DO_OWN_ACT:
@@ -494,6 +542,11 @@ public class HelperInitActionMAPAgent extends Agent {
 		logInf("Broadcasting help :" + strActions);
 		Message helpReq = new Message(id(), -1, HIMAP_HELP_OFFER);
 		helpReq.putTuple("actionsNlosses", strActions);
+		if(useTeamWellbeing)
+		{
+			lastSentWellbeing = wellbeing(0);
+			helpReq.putTuple("wellbeing", Double.toString(lastSentWellbeing));
+		}
 		return helpReq.toString();
 	}
 	
@@ -505,6 +558,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @return						The message encoded in String
 	 */
 	private String prepareBidMsg(int requester, RowCol nextCell, int NTB) {
+		
 		Message bidMsg = new Message(id(),requester,HIMAP_BID);
 		bidMsg.putTuple("NTB", NTB);
 		bidMsg.putTuple("nextActionRow", nextCell.row);
@@ -516,7 +570,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * Prepares a help confirmation message returns its String 
 	 * encoding.
 	 * 
-	 * @param helper				The helper agent
+	 * @param helpee				The helpee agent
 	 * @return						The message encoded in String
 	 */
 	private String prepareConfirmMsg(int helpee) {
@@ -533,6 +587,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @return				The level of disturbance.
 	 */
 	private double calcDistrubanceLevel() {
+		
 		if (oldBoard == null)
 			return 0.0;
 		
@@ -565,12 +620,12 @@ public class HelperInitActionMAPAgent extends Agent {
 	}
 	
 	/**
-	 * Calculates the agent's well being.
+	 * Calculates the agent's well being. Eq: (Res - Ecost) / ((RemLen + 1) * AvgCost)
 	 * 
-	 * @param helpActionCost		The cost of action to subtract. Useful to predict well being after help action.
 	 * @return						The agent's well being
 	 */
 	private double wellbeing(int helpActionCost) {
+		
 		Path pRemaining = remainingPath(pos());
 		double eCost = estimatedCost(pRemaining);
 		double avgCost = getAverage(actionCosts());
@@ -591,8 +646,8 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @return						The remaining path.
 	 */
 	private Path remainingPath(RowCol from) {
-		Path rp = new Path(path());
 		
+		Path rp = new Path(path());
 		while (!rp.getStartPoint().equals(from))
 			rp = rp.tail();
 		
@@ -605,7 +660,8 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @param p						The agent's path
 	 * @return						The estimated cost
 	 */
-	private double estimatedCost(Path p) {		
+	private double estimatedCost(Path p) {	
+		
 		int l = p.getNumPoints();
 		double sigma = 1 - disturbanceLevel;
 		double eCost = 0.0;		
@@ -629,8 +685,8 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * 
 	 * @return			Team well being
 	 */
-	private double teamWellbeing()
-	{
+	private double teamWellbeing() {
+		
 		double sum = 0;
 		for (double w : agentsWellbeing)
 			sum+=w;
@@ -646,7 +702,6 @@ public class HelperInitActionMAPAgent extends Agent {
 	private double teamWellbeingStdDev() { 
 	
 		double tw = teamWellbeing();
-		
 		double sum = 0;
 		for (double w : agentsWellbeing)
 		{
@@ -658,10 +713,12 @@ public class HelperInitActionMAPAgent extends Agent {
 	
 	/**
 	 * Calculates possible actions and team losses for those actions
+	 * Checks which version of importance function to use.
 	 * 
 	 * @return			Set of possible actions (indexes of colors) and team loss
 	 */
 	private HashMap<Integer, Integer> calcTeamLosses() {
+		
 		decResourcePoints(Agent.calculationCost);
 		int[] actionCosts = actionCosts();
 		HashMap<Integer, Integer> teamLosses = new HashMap<Integer, Integer>();
@@ -673,12 +730,12 @@ public class HelperInitActionMAPAgent extends Agent {
 				continue;
 			
 			costOfAction += TeamTask.helpOverhead + Team.broadcastCost + Team.unicastCost;//two messages: first for offer and second for confirmation
-			double wbAfterAction = wellbeing(costOfAction);
+			/*double wbAfterAction = wellbeing(costOfAction);
 			if(wbAfterAction < WHL) //in risk zone after help
 			{
 				//System.out.println("No WHL: " + id() + " " + wbAfterAction);
 				continue;
-			}
+			}*/
 			
 			int withHelpRewards = 
 					projectRewardPoints(resourcePoints() - costOfAction, pos());
@@ -702,11 +759,7 @@ public class HelperInitActionMAPAgent extends Agent {
 			else
 				teamLoss = (noHelpRewards - withHelpRewards) *
 							(1+
-							(importance(noHelpRemPathLength) - importance(withHelpRemPathLength)) *
-							(withHelpRemPathLength - noHelpRemPathLength));
-							//+ TeamTask.helpOverhead;
-			
-			//System.out.println(id() + " loss: " + teamLoss + " cost:" + costOfAction  + " WHR :" + withHelpRewards + " WHRL:" + withHelpRemPathLength + " NOHRL: " + noHelpRemPathLength + " NHR: " + noHelpRewards);
+							(importance(noHelpRemPathLength) - importance(withHelpRemPathLength)));
 			
 			teamLosses.put(i, teamLoss);
 		}
@@ -716,6 +769,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	/**
 	 * Calculates the team benefit considering having another agent to the
 	 * given action.
+	 * Checks which version of importance function to use.
 	 * 
 	 * @param skipCell				The cell to skip.
 	 * @return						The team benefit.
@@ -726,9 +780,6 @@ public class HelperInitActionMAPAgent extends Agent {
 		
 		int withHelpRewards = 
 			projectRewardPoints(resourcePoints() - Team.unicastCost, skipCell);  
-			//Agent.cellReward; 
-		/* double check cellReward
-		projectRewardPoints() will include that */
 		
 		int noHelpRewards = 
 			projectRewardPoints(resourcePoints(), pos());
@@ -749,21 +800,17 @@ public class HelperInitActionMAPAgent extends Agent {
 		else
 			teamBenefit = (withHelpRewards-noHelpRewards) *
 				(1+
-				(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)) *
-				(noHelpRemPathLength-withHelpRemPathLength));
-		
-		//System.out.println(id() + " benefit: " + teamBenefit + " WHR :" + withHelpRewards + " WHRL:" + withHelpRemPathLength + " NOHRL: " + noHelpRemPathLength + " NHR: " + noHelpRewards);
+				(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)));
 		return teamBenefit;
 	}
 
-	/* Enables the agent to perform its own action. 
-	 * 
-	 * To be overriden by the agent if necessary.
+	/** Enables the agent to perform its own action. 
 	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doOwnAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 		logInf("Should do my own move!");
@@ -785,12 +832,11 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * Enables the agent to perform an action on behalf of another 
 	 * agent (Help). 
 	 * 
-	 * To be overriden by the agent if necessary.
-	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doHelpAnother() {
+		
 		boolean result;		
 		int cost = getCellCost(helpeeNextCell);			
 		logInf("Should help agent "+agentToHelp);
@@ -816,12 +862,11 @@ public class HelperInitActionMAPAgent extends Agent {
 	/**
 	 * Enables the agent do any bookkeeping while receiving help.
 	 * 
-	 * To be overriden by the agent if necessary.
-	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doGetHelpAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		logInf("Yaay! Agent"+ helperAgent+" is helping me with this move!");
 		setPos(nextCell);
@@ -907,19 +952,18 @@ public class HelperInitActionMAPAgent extends Agent {
 	}
 	
 	/**
-	 * The importance function.
+	 * The importance function. Eq: A / (RemLen + 1)
 	 * 
 	 * Maps the remaining distance to the goal into 
-	 * 
-	 * Currently: imp(x) = 100/x
 	 * 
 	 * @param remainingLength
 	 * @return
 	 */
 	private int importance(int remainingLength) {
-		remainingLength ++; /* TODO: double check */
+		
+		remainingLength ++;
 		if (remainingLength != 0)
-			return 100/remainingLength;
+			return impFactor/remainingLength;
 		else
 			return 0;
 	}
@@ -935,7 +979,7 @@ public class HelperInitActionMAPAgent extends Agent {
 		
 		Message update = new Message(id(),-1,HIMAP_WELL_UPDATE);
 		update.putTuple("wellbeing", Double.toString(wellbeing));
-		
+		lastSentWellbeing = wellbeing;
 		return update.toString();
 	}
 /*******************************************************************/
@@ -971,6 +1015,18 @@ public class HelperInitActionMAPAgent extends Agent {
 	private boolean canCalc() {
 		return (resourcePoints() >= Agent.calculationCost);
 	}
+	
+	
+	/**
+	 * Indicates whether the agent has enough resources to do calculations and then broadcast
+	 * 
+	 * @return					true if there are enough resources /
+	 * 							false if there aren't enough resources
+	 */
+	private boolean canCalcAndBroadcast() {
+		return (resourcePoints() >= (Team.broadcastCost + Agent.calculationCost));
+	}
+	
 	
 	/**
 	 * Broadcast the given String encoded message.

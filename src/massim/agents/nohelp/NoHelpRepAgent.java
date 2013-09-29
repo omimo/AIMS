@@ -1,5 +1,7 @@
 package massim.agents.nohelp;
 
+import org.junit.Test;
+
 import massim.Board;
 import massim.CommMedium;
 import massim.Path;

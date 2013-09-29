@@ -34,7 +34,8 @@ public class NoHelpAgent2 extends Agent {
 		S_RACMD, R_RACMD, S_REPORT_ESTIMATE, R_GATHER, S_ASSIGN, R_ASSIGN,
 		S_CONT,R_CONT,
 		S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
-	
+
+	//Private variables
 	private RAAgentStates state;
 	
 	private int[][] oldBoard;
@@ -100,8 +101,8 @@ public class NoHelpAgent2 extends Agent {
 	 */
 	@Override
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
-		super.initializeRound(board, actionCostsMatrix);				
 		
+		super.initializeRound(board, actionCostsMatrix);				
 		logInf("Starting a new round ...");
 		
 		logInf("My current position: " + pos().toString());
@@ -127,8 +128,8 @@ public class NoHelpAgent2 extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
-		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		
+		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		reSendCycle();
 		
 		logInf("Send Cycle");		
@@ -173,8 +174,8 @@ public class NoHelpAgent2 extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode receiveCycle() {
-		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;	
 		
+		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;	
 		if (!reReceiveCycle())
 			return returnCode;
 		
@@ -224,7 +225,6 @@ public class NoHelpAgent2 extends Agent {
 	protected AgGameStatCode finalizeRound() {
 		
 		logInf("Finalizing the round ...");
-		
 		keepBoard();
 		
 		boolean succeed = act();
@@ -260,7 +260,6 @@ public class NoHelpAgent2 extends Agent {
 	private void reSendCycle() {
     	
 		logInf("Reassignment Send Cycle");		
-		
 		switch (state) {
 		case S_RACMD:
 			if (leaderAgent == id())
@@ -635,7 +634,8 @@ public class NoHelpAgent2 extends Agent {
 	 * @param p						The agent's path
 	 * @return						The estimated cost
 	 */
-	private double estimatedCost(Path p) {		
+	private double estimatedCost(Path p) {	
+		
 		int l = p.getNumPoints();
 		double sigma = 1 - disturbanceLevel;
 		double eCost = 0.0;		
@@ -659,7 +659,8 @@ public class NoHelpAgent2 extends Agent {
 	 * 
 	 * @return						The agent's wellbeing
 	 */
-	private double wellbeing () {		
+	private double wellbeing () {	
+		
 		double eCost = estimatedCost(remainingPath(pos()));
 		if (eCost == 0)
 			return resourcePoints();
@@ -794,7 +795,6 @@ public class NoHelpAgent2 extends Agent {
 	 * @param msg				The String encoded message 
 	 */
 	private void broadcastMsg(String msg) {
-	
 		decResourcePoints(Team.broadcastCost);
 		commMedium().broadcast(id(), msg);
 	}
@@ -883,5 +883,4 @@ public class NoHelpAgent2 extends Agent {
 	protected boolean doOwnAction() {
 		return move();		
 	}
-	
 }

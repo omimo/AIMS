@@ -2,10 +2,15 @@ package massim.agents.helperinitactionmap;
 
 import massim.Team;
 
+/**
+ * HIAMAP Team
+ * 
+ * @author Omid Alemi
+ */
 public class HelperInitActionMAPTeam extends Team {
 	
 	/**
-	 * The default constructor
+	 * New team - HIAMAP
 	 */
 	public HelperInitActionMAPTeam() {
 		super();		
@@ -17,5 +22,4 @@ public class HelperInitActionMAPTeam extends Team {
 		
 		setAgents(aaMAPAgents);
 	}	
-	
 }

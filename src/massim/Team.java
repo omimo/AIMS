@@ -1,5 +1,9 @@
 package massim;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -37,6 +41,35 @@ public class Team {
 	AgCommStatCode[] agentsCommStatus = new AgCommStatCode[Team.teamSize];
 	private static Random rnd1 = new Random();
 
+	public static boolean dbgScores = true;
+	/**
+	 * Prints the score into the output if the information debugging 
+	 * level is turned on (debuggingScores).
+	 * 
+	 * @param msg					The desired message to be printed
+	 */
+	public void logInfScore(int id, String msg) {
+		if (dbgScores)
+		{
+			try {
+			    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("log.tab", true)));
+			    if(id == 0)
+			    	out.print(agents[id].getClass().getSimpleName() + "\t");
+			    out.print(msg);
+			    if(msg.length() > 0)
+			    	out.print("\t");
+			    if(id == -1)
+			    {
+			    	out.println("");
+			    }
+			    out.close();
+			} catch (IOException e) {
+			    //oh noes!
+				System.err.println("Error writing file.." + msg);
+			}
+		}
+	}
+
 	
 	/**
 	 * OK: The round executed without any problem and there is
@@ -52,7 +85,9 @@ public class Team {
 
 	private boolean debuggingInf = false;
 	public int testRunCounter;
-
+	public boolean remainingResInRewards = false;
+	public static String paramValues = "";
+	
 	/**
 	 * Default constructor
 	 */
@@ -200,6 +235,8 @@ public class Team {
 			if (agentsGameStatus[i] != AgGameStatCode.REACHED_GOAL && 
 					agentsGameStatus[i] != AgGameStatCode.BLOCKED)
 				allDone = false;
+			
+			//logInfScore(i, agents[i].resourcePoints() + "\t" + agents[i].pos().toString() + ">" + agents[i].path().getEndPoint().toString());
 		}
 				
 	
@@ -221,13 +258,23 @@ public class Team {
 	 */
 	public int teamRewardPoints() {
 		int sum = 0;
+		int noOfSteps = 0;
 		for(int s=0;s<Team.teamSize;s++)
 		{
+			noOfSteps = calcDistance(myTT.startPos[s], currentPos[s]);
 			if (currentPos[s].equals(myTT.goalPos[s]))
+			{
 				sum += TeamTask.achievementReward;
+				if(remainingResInRewards)
+					sum += agents[s].resourcePoints();
+			}
 			else
-				sum += calcDistance(myTT.startPos[s], currentPos[s]); 
+			{
+				sum +=  noOfSteps * TeamTask.cellReward;
+			}
+			logInfScore(s, agents[s].resourcePoints() + "\t" + myTT.startPos[s].toString() + " > " + noOfSteps + " > "+ agents[s].pos().toString() + " > " + agents[s].path().getEndPoint().toString());
 		}
+		logInfScore(-1, sum + "\t" + Team.paramValues);
 		return sum;
 	}
 
@@ -249,6 +296,8 @@ public class Team {
 	 */
 	protected void setAgents(Agent[] agents) {
 		this.agents = agents;
+		for(Agent ag : agents)
+			ag.remainingResInRewards = this.remainingResInRewards;
 	}
 	
 	/**

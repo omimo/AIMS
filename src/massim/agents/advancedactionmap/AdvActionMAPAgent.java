@@ -13,7 +13,7 @@ import massim.TeamTask;
 
 
 /**
- * Advanced Action MAP Implementation.
+ * Advanced Action MAP Implementation. (Requester Initiated)
  * 
  * @author Omid Alemi
  * @version 1.1 2011/12/21
@@ -33,17 +33,24 @@ public class AdvActionMAPAgent extends Agent {
 		R_IGNORE_HELP_REQ, R_GET_HELP_REQ,
 		R_GET_BIDS, R_BIDDING, R_DO_OWN_ACT,
 		R_BLOCKED, R_ACCEPT_HELP_ACT,R_GET_BID_CONF,
-		R_DO_HELP_ACT
+		R_DO_HELP_ACT,
+		S_PRE_INIT, R_PRE_INIT
 	}
 	
+	//Parameters for RIAMAP 
 	public static double WLL;
+	public static double EPSILON;
 	public static double requestThreshold;
 	public static double lowCostThreshold;
 	public static int importanceVersion = 1;
+	public static int impFactor = 6;
+	public static boolean useTeamWellbeing = false;
 	
+	//Private variables
 	private final static int MAP_HELP_REQ_MSG = 1;
 	private final static int MAP_BID_MSG = 2;
 	private final static int MAP_HELP_CONF = 3;
+	private final static int MAP_WELL_UPDATE = 4;
 	
 	private AAMAPState state;
 	
@@ -56,6 +63,10 @@ public class AdvActionMAPAgent extends Agent {
 	private String bidMsg;
 	
 	private int helperAgent;
+	private double[] agentsWellbeing;
+	private double lastSentWellbeing;
+	
+	public int noOfBroadcasts;
 	
 	/**
 	 * The Constructor
@@ -107,8 +118,8 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
-		super.initializeRound(board, actionCostsMatrix);				
 		
+		super.initializeRound(board, actionCostsMatrix);				
 		logInf("Starting a new round ...");
 		
 		if (path() == null)
@@ -120,14 +131,19 @@ public class AdvActionMAPAgent extends Agent {
 		
 		logInf("My current position: " + pos().toString());		
 		
-		state = AAMAPState.S_INIT;
+		if(useTeamWellbeing)
+			state = AAMAPState.S_PRE_INIT;
+		else
+			state = AAMAPState.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
 		
 		disturbanceLevel = calcDistrubanceLevel();
 		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
-		
+		agentsWellbeing = new double[Team.teamSize];
+		noOfBroadcasts = 0;
+		lastSentWellbeing = Double.MIN_VALUE;
 	}
 	
 	/**
@@ -137,15 +153,23 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");	
-		
+
+		double wellbeing = wellbeing();
+		logInf("My wellbeing = " + wellbeing);
+		if (useTeamWellbeing && Math.abs((wellbeing - lastSentWellbeing)/lastSentWellbeing) >= EPSILON) {
+			if (canBCast()) {
+				String msg = prepareWellBeingUpdateMsg(wellbeing);
+				broadcastMsg(msg);
+			}
+		}
 		switch(state) {
+		case S_PRE_INIT:
+			setState(AAMAPState.R_PRE_INIT);
+			break;
 		case S_INIT:		
-			double wellbeing = 0;
-				wellbeing = wellbeing();
-			logInf("My wellbeing = " + wellbeing);
-			
 			if (reachedGoal())
 			{
 				setState(AAMAPState.R_GET_HELP_REQ);
@@ -155,13 +179,7 @@ public class AdvActionMAPAgent extends Agent {
 				RowCol nextCell = path().getNextPoint(pos());			
 				int cost = getCellCost(nextCell);
 				
-				boolean needHelp = (cost > resourcePoints()) ||
-								   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
-								   (cost > AdvActionMAPAgent.requestThreshold);
-				
-				if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
-				if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
-				
+				boolean needHelp = checkNeedHelp(cost, wellbeing);
 				if (needHelp)
 				{							
 					logInf("Need help!");
@@ -266,10 +284,14 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode receiveCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;		
 		logInf("Receive Cycle");		
 	
 		switch (state) {
+		case R_PRE_INIT:
+			setState(AAMAPState.S_INIT);
+			break;
 		case R_GET_HELP_REQ:			
 			ArrayList<Message> helpReqMsgs = new ArrayList<Message>();
 			
@@ -282,6 +304,7 @@ public class AdvActionMAPAgent extends Agent {
 						helpReqMsgs.add(msg);
 				 msgStr = commMedium().receive(id());
 			}
+			saveWellBeingsOfAgents(helpReqMsgs);
 			
 			bidding = false;
 			agentToHelp = -1;
@@ -304,7 +327,7 @@ public class AdvActionMAPAgent extends Agent {
 					int teamLoss = -1;
 					int netTeamBenefit = -1;
 					
-					if (canCalc()) //TODO: Revise this
+					if (canCalc())
 					{
 						teamLoss = calcTeamLoss(helpActCost);
 						netTeamBenefit = teamBenefit - teamLoss;
@@ -355,9 +378,6 @@ public class AdvActionMAPAgent extends Agent {
 			
 			if (bidMsgs.size() == 0)
 			{							
-				/* TODO: this may not be necessary as it will be checked
-				 * in the R_DO_OWN_ACT
-				 */
 				this.numOfUnSucHelpReq++;
 				int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
@@ -385,13 +405,10 @@ public class AdvActionMAPAgent extends Agent {
 			}		
 			break;
 		case R_BLOCKED:
-			//TODO: ? skip the action
-			// or forfeit
 			setRoundAction(actionType.FORFEIT);
 			break;
 		case R_GET_BID_CONF:
 			msgStr = commMedium().receive(id());
-			
 			if (!msgStr.equals("") && 
 					(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
 			{
@@ -411,7 +428,6 @@ public class AdvActionMAPAgent extends Agent {
 			}
 			break;
 		case R_DO_OWN_ACT:
-			//TODO: Check this
 			int cost = getCellCost(path().getNextPoint(pos()));			
 			if (!reachedGoal() && cost <= resourcePoints())
 			{
@@ -436,12 +452,47 @@ public class AdvActionMAPAgent extends Agent {
 			logErr("Unimplemented receive state: " + state.toString());
 		}
 		
+		//Read well being from unread messages
+		saveWellBeingsOfAgents(null);
+		
 		if (isInFinalState())
 			returnCode = AgCommStatCode.DONE;
 		
 		return returnCode;
 	}
 	
+	/**
+	 * Save well being of other agents from received messages
+	 * 
+	 * @param wbMsgs					Received messages
+	 */
+	private void saveWellBeingsOfAgents(ArrayList<Message> wbMsgs) {
+		
+		if(useTeamWellbeing)
+		{
+			if(wbMsgs == null)
+			{
+				wbMsgs = new ArrayList<Message>();
+				String msgStrWb = commMedium().receive(id());
+				while (!msgStrWb.equals(""))
+				{
+					wbMsgs.add(new Message(msgStrWb));
+					msgStrWb = commMedium().receive(id());
+				}
+			}
+			for (Message msg : wbMsgs)
+			{
+				if(msg.getValue("wellbeing") != null)
+				{
+					double wbForAgent = msg.getDoubleValue("wellbeing");
+					if(msg.sender() < agentsWellbeing.length)
+					{
+						agentsWellbeing[msg.sender()] = wbForAgent;
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * Finalizes the round by moving the agent.
@@ -452,11 +503,11 @@ public class AdvActionMAPAgent extends Agent {
 	 * @return 						Returns the current state 
 	 */
 	@Override
-	protected AgGameStatCode finalizeRound() {			
-		logInf("Finalizing the round ...");				
-				
-		keepBoard();
+	protected AgGameStatCode finalizeRound() {	
 		
+		logInf("Finalizing the round ...");
+		
+		keepBoard();
 		boolean succeed = act();
 		
 		if (reachedGoal())
@@ -485,6 +536,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * @return				The level of disturbance.
 	 */
 	private double calcDistrubanceLevel() {
+		
 		if (oldBoard == null)
 			return 0.0;
 		
@@ -522,7 +574,8 @@ public class AdvActionMAPAgent extends Agent {
 	 * @param p						The agent's path
 	 * @return						The estimated cost
 	 */
-	private double estimatedCost(Path p) {		
+	private double estimatedCost(Path p) {	
+		
 		int l = p.getNumPoints();
 		double sigma = 1 - disturbanceLevel;
 		double eCost = 0.0;		
@@ -542,16 +595,19 @@ public class AdvActionMAPAgent extends Agent {
 	}
 	
 	/**
-	 * Calculates the agent's wellbeing.
+	 * Calculates the agent's well being. Eq: (Res - Ecost) / ((RemLen + 1) * AvgCost)
 	 * 
-	 * @return						The agent's wellbeing
+	 * @return						The agent's well being
 	 */
 	protected double wellbeing() {		
-		double eCost = estimatedCost(remainingPath(pos()));
-		if (eCost == 0)
-			return resourcePoints();
-		else
-			return (double)resourcePoints()/eCost;
+		
+		Path pRemaining = remainingPath(pos());
+		double eCost = estimatedCost(pRemaining);
+		double avgCost = getAverage(actionCosts());
+		double resPoints = resourcePoints(); 
+		double resWB = (resPoints - eCost)/
+				((pRemaining.getNumPoints() + 1) * avgCost);
+		return resWB;
 	}
 		
 	/**
@@ -565,6 +621,7 @@ public class AdvActionMAPAgent extends Agent {
 	 * @return						The remaining path.
 	 */
 	private Path remainingPath(RowCol from) {
+		
 		Path rp = new Path(path());
 		
 		while (!rp.getStartPoint().equals(from))
@@ -651,25 +708,25 @@ public class AdvActionMAPAgent extends Agent {
 	}
 	
 	/**
-	 * The importance function.
+	 * The importance function. Eq: A / (RemLen + 1)
 	 * 
 	 * Maps the remaining distance to the goal into 
-	 * 
-	 * Currently: imp(x) = 100/x
 	 * 
 	 * @param remainingLength
 	 * @return
 	 */
 	private int importance(int remainingLength) {
-		remainingLength ++; /* TODO: double check */
+		
+		remainingLength ++;
 		if (remainingLength != 0)
-			return 100/remainingLength;
+			return impFactor/remainingLength;
 		else
 			return 0;
 	}
 	
 	/**
 	 * Prepares a help request message and returns its String encoding.
+	 * Appends well being if RIAMAP uses team well being feature.
 	 * 
 	 * @param teamBenefit			The team benefit to be included in
 	 * 								the message.
@@ -681,7 +738,29 @@ public class AdvActionMAPAgent extends Agent {
 		helpReq.putTuple("teamBenefit", Integer.toString(teamBenefit));
 		helpReq.putTuple("nextCellRow", helpCell.row);
 		helpReq.putTuple("nextCellCol", helpCell.col);
+		if(useTeamWellbeing)
+		{
+			lastSentWellbeing = wellbeing();
+			helpReq.putTuple("wellbeing", Double.toString(lastSentWellbeing));
+		}
 		return helpReq.toString();
+	}
+	
+	/**
+	 * Prepares a message to update other agent's belief of the agent's
+	 * current well being.
+	 * 
+	 * @param wellbeing				The agent's current well being 								
+	 * @return						The message encoded in String
+	 */
+	private String prepareWellBeingUpdateMsg(double wellbeing) {
+		
+		logInf("Broadcast wellbeing " + wellbeing);
+		Message update = new Message(id(),-1, MAP_WELL_UPDATE);
+		update.putTuple("wellbeing", Double.toString(wellbeing));
+		noOfBroadcasts++;
+		lastSentWellbeing = wellbeing;
+		return update.toString();
 	}
 	
 	/**
@@ -710,16 +789,64 @@ public class AdvActionMAPAgent extends Agent {
 	}
 	
 	/**
+	 * Checks whether agent needs help using well being and thresholds.
+	 * 
+	 * @param cost					Cost of next action
+	 * @param wellbeing				Well being of the agent
+	 * @return
+	 */
+	private boolean checkNeedHelp(int cost, double wellbeing) {
+		
+		if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
+		if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
+		//TODO: logic for team wellbeing
+		return (cost > resourcePoints()) ||
+		   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
+		   (cost > AdvActionMAPAgent.requestThreshold);
+	}
+	
+	/**
+	 * Calculates the team well being
+	 * 
+	 * @return			Team well being
+	 */
+	private double teamWellbeing() {
+		
+		double sum = 0;
+		for (double w : agentsWellbeing)
+			sum+=w;
+		
+		return sum/agentsWellbeing.length;
+	}
+	
+	/**
+	 * Calculates the standard deviation of the team's well being
+	 * 
+	 * @return 			Standard deviation of the team's well being
+	 */
+	private double teamWellbeingStdDev() { 
+	
+		double tw = teamWellbeing();
+		double sum = 0;
+		for (double w : agentsWellbeing)
+		{
+			sum+= (w-tw)*(w-tw);
+		}
+		
+		return Math.sqrt(sum/agentsWellbeing.length);
+	}
+	
+	/**
 	 * Calculates the team loss considering spending the given amount 
 	 * of resource points to help. 
+	 * Checks which version of importance function to use.
 	 * 
 	 * @param helpActCost				The cost of help action
 	 * @return							The team loss
 	 */
-	private int calcTeamLoss(int helpActCost)
-	{
-		decResourcePoints(Agent.calculationCost);
+	private int calcTeamLoss(int helpActCost) {
 		
+		decResourcePoints(Agent.calculationCost);
 		int withHelpRewards = 
 			projectRewardPoints(resourcePoints()-helpActCost, pos());
 						
@@ -736,21 +863,20 @@ public class AdvActionMAPAgent extends Agent {
 			findFinalPos(resourcePoints(), pos()) -
 			1;
 				
-		
 		if(importanceVersion == 1)
 			return noHelpRewards - withHelpRewards;
 		
 		return  
 			(noHelpRewards - withHelpRewards) *
 			(1 + 
-			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)) *
-			(withHelpRemPathLength-noHelpRemPathLength)) +
-			TeamTask.helpOverhead;
+			(importance(noHelpRemPathLength)-importance(withHelpRemPathLength)));
+		//	*(withHelpRemPathLength-noHelpRemPathLength));
 	}
 	
 	/**
 	 * Calculates the team benefit considering having another agent to the
 	 * given action.
+	 * Checks which version of importance function to use.
 	 * 
 	 * @param skipCell				The cell to skip.
 	 * @return						The team benefit.
@@ -758,12 +884,9 @@ public class AdvActionMAPAgent extends Agent {
 	private int calcTeamBenefit(RowCol skipCell) {
 		
 		decResourcePoints(Agent.calculationCost);
-		
 		int withHelpRewards = 
 			projectRewardPoints(resourcePoints(), skipCell);  
 			//Agent.cellReward; 
-		/* double check cellReward
-		projectRewardPoints() will include that */
 		
 		int noHelpRewards = 
 			projectRewardPoints(resourcePoints(), pos());
@@ -784,19 +907,18 @@ public class AdvActionMAPAgent extends Agent {
 		return 
 			(withHelpRewards-noHelpRewards) *
 			(1+
-			(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)) *
-			(noHelpRemPathLength-withHelpRemPathLength));
+			(importance(withHelpRemPathLength)-importance(noHelpRemPathLength)));
+	//	* (noHelpRemPathLength-withHelpRemPathLength)); 
 	}
 	
 	/**
 	 * Enables the agent to perform its own action. 
 	 * 
-	 * To be overriden by the agent if necessary.
-	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doOwnAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		int cost = getCellCost(nextCell);
 		logInf("Should do my own move!");
@@ -818,12 +940,11 @@ public class AdvActionMAPAgent extends Agent {
 	 * Enables the agent to perform an action on behalf of another 
 	 * agent (Help). 
 	 * 
-	 * To be overriden by the agent if necessary.
-	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doHelpAnother() {
+		
 		boolean result;		
 		int cost = getCellCost(helpeeNextCell);			
 		logInf("Should help agent "+agentToHelp);
@@ -843,23 +964,20 @@ public class AdvActionMAPAgent extends Agent {
 		}
 		helpeeNextCell = null;
 		agentToHelp = -1;
-		
 		return result;
 	}
 	
 	/**
 	 * Enables the agent do any bookkeeping while receiving help.
 	 * 
-	 * To be overriden by the agent if necessary.
-	 * 
 	 * @return						true if successful/false o.w.
 	 */
 	@Override
 	protected boolean doGetHelpAction() {
+		
 		RowCol nextCell = path().getNextPoint(pos());
 		logInf("Yaay! Agent"+ helperAgent+" is helping me with this move!");
 		setPos(nextCell);
-		
 		helperAgent = -1;
 		return true;
 	}

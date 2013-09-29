@@ -209,9 +209,10 @@ public class SimulationEngine {
 			for (int t = 0; t < numOfTeams; t++) {
 				teamsScores[t][r] = teams[t].teamRewardPoints();
 				logInf("Team " + teams[t].getClass().getSimpleName()
-						+ " scored " + teams[t].teamRewardPoints()
+						+ " scored " + teamsScores[t][r]
 						+ " for this run.");
 			}
+			(new Team()).logInfScore(-1, "");
 		}
 		logInf("---- The experiment ended ----");
 
