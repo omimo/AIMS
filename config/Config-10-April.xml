@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configurationValues>
+    <configValues>
+        <propertyName>Number of Runs</propertyName>
+        <value>5</value>
+    </configValues>
+    <configValues>
+        <propertyName>Number of Colors</propertyName>
+        <value>6</value>
+    </configValues>
+    <configValues>
+        <propertyName>Action Costs</propertyName>
+        <value>10,40,70,100,300,400,450,500</value>
+    </configValues>
+    <configValues>
+        <propertyName>Team Size</propertyName>
+        <value>8</value>
+    </configValues>
+    <configValues>
+        <propertyName>Board Size</propertyName>
+        <value>10</value>
+    </configValues>
+    <configValues>
+        <propertyName>Unicast Cost</propertyName>
+        <value>1,1,5</value>
+    </configValues>
+    <configValues>
+        <propertyName>Calc Cost</propertyName>
+        <value>1,,</value>
+    </configValues>
+    <configValues>
+        <propertyName>Disturbance</propertyName>
+        <value>0.1,0.1,0.5</value>
+    </configValues>
+    <configValues>
+        <propertyName>Help Overhead</propertyName>
+        <value>20</value>
+    </configValues>
+    <configValues>
+        <propertyName>Assignment Overhead</propertyName>
+        <value>10</value>
+    </configValues>
+    <configValues>
+        <propertyName>Cell Reward</propertyName>
+        <value>100</value>
+    </configValues>
+    <configValues>
+        <propertyName>Achievement Reward</propertyName>
+        <value>2000</value>
+    </configValues>
+    <configValues>
+        <propertyName>Initial Resource Coefficient</propertyName>
+        <value>150</value>
+    </configValues>
+    <configValues>
+        <propertyName>Use Remaining Resources</propertyName>
+        <value>Yes</value>
+    </configValues>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Advanced Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Advanced Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>WLL</propertyName>
+            <value>-0.5,0.1,0</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>299</value>
+        </configValues>
+        <configValues>
+            <propertyName>Lowcost Threshold</propertyName>
+            <value>50</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>10,5,100</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#f9f9f9</value>
+        </configValues>
+        <key>Advanced Action MAP</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Basic Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Basic Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>299</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9f9e9</value>
+        </configValues>
+        <key>Basic Action MAP</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>HIAMAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Helper Initiated Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>WHH</propertyName>
+            <value>0.1,0.3,0.5</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>299</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>10,5,100</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#f9e9e9</value>
+        </configValues>
+        <key>HIAMAP</key>
+    </configChildren>
+</configurationValues>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configurationValues>
+    <configValues>
+        <propertyName>Agent Type</propertyName>
+        <value>Advanced Action MAP</value>
+    </configValues>
+    <configValues>
+        <propertyName>Team Name</propertyName>
+        <value>Advanced Action MAP</value>
+    </configValues>
+    <configValues>
+        <propertyName>WLL</propertyName>
+        <value>-0.5,0.1,0</value>
+    </configValues>
+    <configValues>
+        <propertyName>Request Threshold</propertyName>
+        <value>350</value>
+    </configValues>
+    <configValues>
+        <propertyName>Lowcost Threshold</propertyName>
+        <value>50</value>
+    </configValues>
+    <configValues>
+        <propertyName>Importance Version</propertyName>
+        <value>2</value>
+    </configValues>
+    <configValues>
+        <propertyName>Proximity Bias</propertyName>
+        <value>10,5,20</value>
+    </configValues>
+    <configValues>
+        <propertyName>WindowColor</propertyName>
+        <value>#f9f9f9</value>
+    </configValues>
+</configurationValues>
