@@ -817,9 +817,11 @@ public class NoHelpAgent2 extends Agent {
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
-	private void logInf(String msg) {
+	protected void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[RAAgent " + id() + "]: " + msg);
+		//Denish, 2014/03/30
+		super.logInf(msg);
 	}
 	
 	/**

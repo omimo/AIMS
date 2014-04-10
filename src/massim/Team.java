@@ -10,7 +10,9 @@ import java.util.Scanner;
 
 import massim.Agent.AgGameStatCode;
 import massim.Agent.AgCommStatCode;
+import massim.ExperimentLogger.LogType;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
+import massim.Experiment.AgentStats;
 
 /**
  * Team.java
@@ -49,24 +51,38 @@ public class Team {
 	 * @param msg					The desired message to be printed
 	 */
 	public void logInfScore(int id, String msg) {
-		if (dbgScores)
-		{
-			try {
+		//Denish, 2014/03/27. Modified for logging.
+		try {
+			String strLogText = "";
+		    if(id == 0) {
+		    	//out.print(agents[id].getClass().getSimpleName() + "\t");
+		    	strLogText += agents[id].getClass().getSimpleName() + "\t";
+		    }
+		    //out.print(msg);
+		    strLogText += msg;
+		    if(id != -1)
+		    	logInf("Agent-" + id + "\t" + msg + (msg.length() > 0 ? "\t" : ""));
+		    else {
+		    	logInf("Team Score = " + msg);
+		    	logInf("");
+		    }
+		    if(msg.length() > 0) {
+		    	//out.print("\t");
+		    	strLogText += "\t";
+		    }
+		    if(id == -1)
+		    {
+		    	//out.println("");
+		    	strLogText += "\n";
+		    }
+		    if(dbgScores) {
 			    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("log.tab", true)));
-			    if(id == 0)
-			    	out.print(agents[id].getClass().getSimpleName() + "\t");
-			    out.print(msg);
-			    if(msg.length() > 0)
-			    	out.print("\t");
-			    if(id == -1)
-			    {
-			    	out.println("");
-			    }
+			    out.println(strLogText);
 			    out.close();
-			} catch (IOException e) {
-			    //oh noes!
-				System.err.println("Error writing file.." + msg);
-			}
+		    }
+		} catch (IOException e) {
+		    //oh noes!
+			System.err.println("Error writing file.." + msg);
 		}
 	}
 
@@ -98,6 +114,7 @@ public class Team {
 		
 		actionCostsMatrix = 
 			new int[Team.teamSize][SimulationEngine.numOfColors];
+		logInf("Team intialized with size = " + Team.teamSize);
 	}
 
 	/**
@@ -111,7 +128,8 @@ public class Team {
 	 * @param actionCostMatrix				Matrix of action costs
 	 */
 	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix) {
-		logInf("initilizing for a new run.");
+		logInf("******************");
+		logInf("Initilizing for a new run.");
 		commMedium.clear();
 
 		myTT = tt;
@@ -163,7 +181,7 @@ public class Team {
 	 */
 	public TeamRoundCode round(Board board) {
 		logInf("********");
-		logInf("starting a new round");
+		logInf("Starting a new round");
 		
 		/* Initialize round for agents */
 		for (int i = 0; i < Team.teamSize; i++) {
@@ -191,15 +209,18 @@ public class Team {
 		
 		/* Communication Cycles */
 		boolean allDoneComm = false;
-		logInf("");
+		logInf("Starting comunication between agents.");
+		int iSendTotal = 0; int iReceiveTotal = 0;
 		while(!allDoneComm) {
 			
 			for (int i = 0; i < Team.teamSize; i++)
 			{
 				/* TODO: Double check the need of first condition */
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&  
-						agentsCommStatus[i] != AgCommStatCode.DONE)
-					agents[i].sendCycle();				
+						agentsCommStatus[i] != AgCommStatCode.DONE) {
+					agents[i].sendCycle();
+					iSendTotal++;
+				}
 			}
 			allDoneComm = true;
 			
@@ -207,8 +228,10 @@ public class Team {
 			{							
 				/* TODO: Double check the need of first condition */
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&   
-						agentsCommStatus[i] != AgCommStatCode.DONE)
+						agentsCommStatus[i] != AgCommStatCode.DONE) {
 					agentsCommStatus[i] = agents[i].receiveCycle();
+					iReceiveTotal++;
+				}
 				
 				if (agentsGameStatus[i] != AgGameStatCode.BLOCKED &&
 					agentsCommStatus[i] != AgCommStatCode.DONE)
@@ -217,6 +240,9 @@ public class Team {
 			
 			commMedium.clear();
 		}
+		logInf("End of communication.");
+		logInf("Total sent cycles : " + iSendTotal);
+		logInf("Total receive cycles: " + iReceiveTotal);
 		
 		/* Finalize the round for agents */
 		
@@ -242,10 +268,18 @@ public class Team {
 	
 		//(new Scanner(System.in)).nextLine();
 		
-		if (allDone)
+		if (allDone) {
+			logInf("Round complete, all agents have reached goal or blocked.");
+			logInf("Total number of total help requests = " + getHelpReqCounts());
+			logInf("Total number of bids = " + getBidsCounts());
+			logInf("Total successful offers = " + getSucOffersCounts());
+			logInf("Total unsuccessful help requets = " + getUnSucHelpReqCounts());
 			return TeamRoundCode.DONE;
-		else 
+		}
+		else {
+			logInf("Round complete.");
 			return TeamRoundCode.OK;
+		}
 	
 	}
 
@@ -259,6 +293,7 @@ public class Team {
 	public int teamRewardPoints() {
 		int sum = 0;
 		int noOfSteps = 0;
+		logInf("Calculating reward points.");
 		for(int s=0;s<Team.teamSize;s++)
 		{
 			noOfSteps = calcDistance(myTT.startPos[s], currentPos[s]);
@@ -275,6 +310,7 @@ public class Team {
 			logInfScore(s, agents[s].resourcePoints() + "\t" + myTT.startPos[s].toString() + " > " + noOfSteps + " > "+ agents[s].pos().toString() + " > " + agents[s].path().getEndPoint().toString());
 		}
 		logInfScore(-1, sum + "\t" + Team.paramValues);
+		logInf("Finished reward points calculation.");
 		return sum;
 	}
 
@@ -315,9 +351,13 @@ public class Team {
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
-	private void logInf(String msg) {
-		if (debuggingInf)
+	protected void logInf(String msg) {
+		//Denish, 2014/03/27. Modified for logging.
+		if (debuggingInf) {
 			System.out.println("[Team " + id + "]: " + msg);
+		}
+		if(logger != null && bLoggerOn)
+			logger.logEvent(LogType.Team, teamIndex, "[Team#" + id + "]:"  + msg + "\n");
 	}
 	
 	/**
@@ -357,5 +397,45 @@ public class Team {
 		for (Agent a: agents)
 		   sum += a.numOfUnSucHelpReq;
 		return sum;
+	}
+	
+	//Denish, 2014/03/26
+	public ArrayList<AgentStats> getAgentStatistics(Experiment exp) {
+		ArrayList<AgentStats> stats = new ArrayList<AgentStats>();
+		for (int i = 0; i < Team.teamSize; i++) {
+			Agent agent = agents[i];
+			ArrayList<int[]> path = new ArrayList<int[]>();
+			if(agent.path() != null) {
+				java.util.Iterator<RowCol> iter = agent.path().getPoints().iterator();
+				while(iter.hasNext()) {
+					RowCol point = iter.next();
+					path.add(new int[] { point.row, point.col });
+				}
+			}
+			stats.add(exp.new AgentStats(i, myTT.startPos[i].row, myTT.startPos[i].col
+					, myTT.goalPos[i].row, myTT.goalPos[i].col
+					, agent.currentPositions[i].row, agent.currentPositions[i].col,
+					agent.initResourcePoints, agent.resourcePoints(), agent.getLastAction(), path));
+		}
+		return stats;
+	}
+	public Integer getTeamScore() {
+		bLoggerOn = false;
+		Integer score =  teamRewardPoints();
+		bLoggerOn = true;
+		return score;
+	}
+	ExperimentLogger logger; int teamIndex; boolean bLoggerOn = false;
+	public void setLogger(ExperimentLogger logger, int index) {
+		this.logger = logger;
+		this.teamIndex = index;
+		bLoggerOn = true;
+		if(agents != null) {
+			int agIndex = 0;
+			for(Agent agent : agents) {
+				agent.setLogger(logger, this.teamIndex, agIndex);
+				agIndex++;
+			}
+		}
 	}
 }

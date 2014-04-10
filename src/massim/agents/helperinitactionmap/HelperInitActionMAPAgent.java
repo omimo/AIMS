@@ -846,12 +846,16 @@ public class HelperInitActionMAPAgent extends Agent {
 			logInf("Helped agent " + agentToHelp);
 			decResourcePoints(cost);			
 			result = true;
+			//Denish, 2014/03/30
+			setLastAction("Helped:" + (agentToHelp + 1));
 		}
 		else
 		{
 			logErr(""+resourcePoints());
 			logErr(""+cost);
 			logErr("Failed to help :(");
+			//Denish, 2014/03/30
+			setLastAction("Failed Help:" + (agentToHelp + 1));
 			result = false;
 		}
 		helpeeNextCell = null;
@@ -870,7 +874,8 @@ public class HelperInitActionMAPAgent extends Agent {
 		RowCol nextCell = path().getNextPoint(pos());
 		logInf("Yaay! Agent"+ helperAgent+" is helping me with this move!");
 		setPos(nextCell);
-		
+		//Denish, 2014/03/30
+		setLastAction("Helped by:" + (helperAgent + 1));
 		helperAgent = -1;
 		return true;
 	}
@@ -1080,9 +1085,11 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
-	private void logInf(String msg) {
+	protected void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[Helper-Init ActionMAP Agent " + id() + "]: " + msg);
+		//Denish, 2014/03/30
+		super.logInf(msg);
 	}
 	
 	/**

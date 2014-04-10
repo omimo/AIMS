@@ -1,9 +1,11 @@
 package massim;
 
+import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
 
+import massim.ExperimentLogger.LogType;
 import massim.Team.TeamRoundCode;
 
 /**
@@ -20,8 +22,10 @@ public class SimulationEngine {
 									 
 	public static int numOfColors;
 	public static int numOfTeams;
-	private int boardh = 10;
-	private int boardw = 10;
+	
+	//Denish, 2014/03/26. Changed to public static from private
+	public static int boardh = 10;
+	public static int boardw = 10;
 
 	public static double disturbanceLevel;	
 	public static double pulseLevel;
@@ -41,7 +45,8 @@ public class SimulationEngine {
 
 	private boolean debuggingInf = false;
 	private boolean debuggingErr = true;
-
+	
+	
 	/**
 	 * SIMOK: The round executed without any problem and there is
 	 *        at least one active team.
@@ -185,8 +190,13 @@ public class SimulationEngine {
 	public SimRoundCode run() {
 		logInf("-- The run started --");
 		SimRoundCode src = SimRoundCode.SIMOK;
-		while (src == SimRoundCode.SIMOK)
+		while (src == SimRoundCode.SIMOK) {
 			src = round();
+			
+			//Denish, 2014/03/26
+			if(roundCompListener != null)
+				roundCompListener.actionPerformed(null);
+		}
 		logInf("-- The run ended --");
 		//(new Scanner(System.in)).nextLine();
 		return src;
@@ -205,7 +215,13 @@ public class SimulationEngine {
 		logInf("---- The experiment started ----");
 		for (int r = 0; r < numOfRuns; r++) {
 			initializeRun();
+			
+			//Denish, 2014/03/26
+			if(runInitListener != null)
+				runInitListener.actionPerformed(null);
+			
 			run();
+
 			for (int t = 0; t < numOfTeams; t++) {
 				teamsScores[t][r] = teams[t].teamRewardPoints();
 				logInf("Team " + teams[t].getClass().getSimpleName()
@@ -213,6 +229,10 @@ public class SimulationEngine {
 						+ " for this run.");
 			}
 			(new Team()).logInfScore(-1, "");
+			
+			//Denish, 2014/03/26
+			if(runCompleteListener != null)
+				runCompleteListener.actionPerformed(null);
 		}
 		logInf("---- The experiment ended ----");
 
@@ -248,6 +268,8 @@ public class SimulationEngine {
 	private void logInf(String msg) {
 		if (debuggingInf)
 			System.out.println("[SimulationEngine]: " + msg);
+		if(logger != null)
+			logger.logEvent(LogType.Engine, 0, "[SimulationEngine]: " + msg + "\n");
 	}
 
 	/**
@@ -304,5 +326,28 @@ public class SimulationEngine {
 			r[t] = teams[t].getUnSucHelpReqCounts()/numOfRuns;
 		}
 		return r;
+	}
+
+	//Denish, 2014/03/26
+	private ActionListener roundCompListener;
+	public void setRoundCompleteListener(ActionListener roundCompListener) {
+		this.roundCompListener = roundCompListener;
+	}
+	private ActionListener runInitListener;
+	public void setRunInitializedListener(ActionListener runInitListener) {
+		this.runInitListener = runInitListener;
+	}
+	private ActionListener runCompleteListener;
+	public void setRunCompleteListener(ActionListener runCompleteListener) {
+		this.runCompleteListener = runCompleteListener;
+	}
+	
+	public int[][] getBoard()
+	{
+		return mainBoard.getBoard();
+	}
+	ExperimentLogger logger;
+	public void setLogger(ExperimentLogger logger) {
+		this.logger = logger;
 	}
 }

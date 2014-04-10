@@ -3,5 +3,13 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/docking-frames-common.jar"/>
+	<classpathentry kind="lib" path="lib/docking-frames-core.jar"/>
+	<classpathentry kind="lib" path="lib/docking-frames-demo-tutorial.jar"/>
+	<classpathentry kind="lib" path="lib/docking-frames-ext-glass.jar"/>
+	<classpathentry kind="lib" path="lib/glasslib.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-core.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

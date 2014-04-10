@@ -185,9 +185,11 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	 * 
 	 * @param msg					The desired message to be printed
 	 */
-	private void logInf(String msg) {
+	protected void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[NoHelpRepAgent " + id() + "]: " + msg);
+		//Denish, 2014/03/30
+		super.logInf(msg);
 	}
 	
 	/**

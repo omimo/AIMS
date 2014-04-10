@@ -1,5 +1,7 @@
 package massim;
 
+import massim.ExperimentLogger.LogType;
+
 /**
  * Agent.java An abstract class for all the agents to be used in the simulator
  * 
@@ -10,6 +12,7 @@ public abstract class Agent {
 
 
 	public static int calculationCost;
+	public static double planCostCoeff;
 	
 	protected static enum AgGameStatCode {
 		READY, REACHED_GOAL, RESOURCE_BLOCKED, BLOCKED
@@ -110,6 +113,10 @@ public abstract class Agent {
 		
 		resourcePoints = 0;
 		incResourcePoints(initResourcePoints);
+		
+		//Denish, 2014/03/26
+		this.initResourcePoints = initResourcePoints;
+		
 		/*
 		numOfHelpReq = 0;
 		numOfBids = 0;
@@ -355,6 +362,9 @@ public abstract class Agent {
 					boardToCosts(theBoard.getBoard(), actionCosts), 
 					currentPositions[mySubtask], goalPos()));
 			path = new Path(shortestPath);
+			
+			//Author: Mojtaba
+			decResourcePoints(planCost());
 		}
 		else 
 			path = null;
@@ -482,9 +492,10 @@ public abstract class Agent {
 	protected boolean act() {
 	
 		boolean result = false;
-		
+		//Denish, 2014/03/30, added strLastAction
 		switch (thisRoundAction) {
 		case OWN:
+			setLastAction("Self");
 			result = doOwnAction();
 			break;
 		case HAS_HELP:
@@ -494,9 +505,11 @@ public abstract class Agent {
 			result = doHelpAnother();
 			break;
 		case SKIP:
+			setLastAction("Skipped");
 			result = true;
 			break;
 		case FORFEIT:		
+			setLastAction("Forfeit");
 			result = false;
 			break;
 		}
@@ -520,5 +533,36 @@ public abstract class Agent {
 			findPath();
 	}
 	
-
+	//Denish, 2014/03/26
+	protected int initResourcePoints;
+	private String strLastAction;
+	protected String getLastAction() {
+		return strLastAction;
+	}
+	public void setLastAction(String strLastAction) {
+		this.strLastAction = strLastAction;
+	}
+	ExperimentLogger logger; String agentIndex;
+	public void setLogger(ExperimentLogger logger, int teamindex, int index) {
+		this.logger = logger;
+		this.agentIndex = teamindex + "-" + index;
+	}
+	protected void logInf(String msg) {
+		if(logger != null)
+			logger.logEvent(LogType.Agent, agentIndex, "[Agent " + id() + "]: " + msg);
+	}
+	/**
+	 * Calculates the cost of replanning (finding new path) based on the complexity of the PolajnarPath algorithm.
+	 * n,m are length and width of the remaining board.
+	 * 
+	 * @author Mojtaba
+	 * 
+	 */
+	protected int planCost() {
+	int n = Math.abs(goalPos().row - currentPositions[mySubtask].row);
+	int m = Math.abs(goalPos().col - currentPositions[mySubtask].col);
+	int cost = (int)Math.round(planCostCoeff * ((n+m) ^ 2));
+	
+	return cost;	
+	}
 }

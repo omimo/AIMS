@@ -1,8 +1,8 @@
 package massim.agents.advancedactionmap;
 
-import massim.RowCol;
+import massim.Board;
 import massim.Team;
-import massim.TeamTask;
+
 
 public class AdvActionMAPRepTeam extends Team {
 	
@@ -19,5 +19,21 @@ public class AdvActionMAPRepTeam extends Team {
 		
 		setAgents(aaMAPAgents);
 	}	
+	
+	public TeamRoundCode round(Board board) {
+		TeamRoundCode code = super.round(board);
+		if(code == TeamRoundCode.DONE) {
+			logInf("Total replans : " + getReplanCounts());
+		}
+		return code;
+	}
+	
+	public int getReplanCounts() {
+		int sum = 0;
+		for(int i=0;i<Team.teamSize;i++)
+			sum += ((AdvActionMAPRepAgent)agent(i)).replanCount;
+		return sum;
+	}
+	
 	
 }
