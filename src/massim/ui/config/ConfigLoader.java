@@ -333,7 +333,7 @@ public class ConfigLoader {
 		{
 			String[] parts = (currentValue + "").split(",");
 			
-			JComboBox comboFrom = new JComboBox();
+			JComboBox<String> comboFrom = new JComboBox<String>();
 			comboFrom.setEditable(bEditable);
 			comboFrom.setPreferredSize(new Dimension(50, 20));
 			if(values != null)
@@ -353,7 +353,7 @@ public class ConfigLoader {
 			components.add(comboFrom);
 			comboFrom.setToolTipText("From Value:\n " + description);
 			
-			JComboBox comboIncr = new JComboBox();
+			JComboBox<String> comboIncr = new JComboBox<String>();
 			comboIncr.setEditable(bEditable);
 			comboIncr.setPreferredSize(new Dimension(50, 20));
 			if(strIncr != null)
@@ -373,7 +373,7 @@ public class ConfigLoader {
 			components.add(comboIncr);
 			comboIncr.setToolTipText("Increment Value (Leave blank if value does not change for the simulation)");
 			
-			JComboBox comboTo = new JComboBox();
+			JComboBox<String> comboTo = new JComboBox<String>();
 			comboTo.setEditable(bEditable);
 			comboTo.setPreferredSize(new Dimension(50, 20));
 			if(strTo != null)
@@ -395,7 +395,7 @@ public class ConfigLoader {
 		}
 		else
 		{
-			JComboBox combo = new JComboBox();
+			JComboBox<String> combo = new JComboBox<String>();
 			combo.setEditable(bEditable);
 			combo.setName(name);
 			combo.setPreferredSize(new Dimension(150, 20));

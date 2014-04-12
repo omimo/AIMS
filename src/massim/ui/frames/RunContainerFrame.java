@@ -123,7 +123,7 @@ public class RunContainerFrame extends JFrame {
 		pane.setViewportView(desktop);
 		setContentPane(pane);
 		
-		setTitle("MASSIM - Run Experiment");
+		setTitle("MASSIM - Run Simulation");
 		desktop.setLayout(new BorderLayout(0, 0));
 		
 		JPanel panel = new JPanel();
@@ -132,7 +132,7 @@ public class RunContainerFrame extends JFrame {
 	    panel.setBackground(new Color(245, 245, 245));
 	    desktop.add(panel, BorderLayout.NORTH);
 	    
-	    JLabel label = new JLabel("Running Experiment");
+	    JLabel label = new JLabel("Running Simulation");
 	    panel.add(label);
 	    StyleSet.setTitleFont(label);
 	    
@@ -221,15 +221,15 @@ public class RunContainerFrame extends JFrame {
 		    }
 		};
 		menuBar.setOpaque(false);
-		menuBar.setPreferredSize(new Dimension(70, 25));
+		menuBar.setPreferredSize(new Dimension(90, 25));
 		StyleSet.setBorder(menuBar, 1);
 		panelTool.add(menuBar, BorderLayout.EAST);
 		
-		JMenu dispMenu = new JMenu("Step");
-		dispMenu.setPreferredSize(new Dimension(70, 25));
+		JMenu dispMenu = new JMenu("Fast Forward");
+		dispMenu.setPreferredSize(new Dimension(90, 25));
 		menuBar.add(dispMenu);
 		
-		JMenuItem cbItem = new JMenuItem("Step Round");
+		JMenuItem cbItem = new JMenuItem("Round");
 		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
 		cbItem.setAccelerator(KeyStroke.getKeyStroke('D', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		dispMenu.add(cbItem);
@@ -252,7 +252,7 @@ public class RunContainerFrame extends JFrame {
 		});
 		menuItems.add(cbItem);
 		
-		cbItem = new JMenuItem("Step Run");
+		cbItem = new JMenuItem("Run");
 		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
 		cbItem.setAccelerator(KeyStroke.getKeyStroke('R', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		dispMenu.add(cbItem);
@@ -277,9 +277,34 @@ public class RunContainerFrame extends JFrame {
 		});
 		menuItems.add(cbItem);
 		
-		cbItem = new JMenuItem("Step Match");
+		cbItem = new JMenuItem("Match");
 		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
 		cbItem.setAccelerator(KeyStroke.getKeyStroke('M', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+		dispMenu.add(cbItem);
+		cbItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				long newStamp = Calendar.getInstance().getTimeInMillis();
+				if(newStamp < (lastNextRun + 500)) {
+					return;
+				}
+				lastNextRun = newStamp;
+				
+				if(connector != null) {
+					if(!connector.isActive()) { 
+						connector.runSimulation();
+						btnStopCancel.setText("Stop");
+					}
+					connector.nextMatch();
+					cancelIfPaused();
+				}
+			}
+		});
+		menuItems.add(cbItem);
+		
+		cbItem = new JMenuItem("Experiment");
+		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+		cbItem.setAccelerator(KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		dispMenu.add(cbItem);
 		cbItem.addActionListener(new ActionListener() {
 			@Override
@@ -293,7 +318,7 @@ public class RunContainerFrame extends JFrame {
 						connector.runSimulation();
 						btnStopCancel.setText("Stop");
 					}
-					connector.nextMatch();
+					connector.nextExperiment();
 					cancelIfPaused();
 				}
 			}
@@ -345,6 +370,7 @@ public class RunContainerFrame extends JFrame {
 		
 		
 		JButton btnConfigure = new JButton("Configure");
+		btnConfigure.setVisible(false);
 		panelTool.add(btnConfigure);
 		
 		JPanel panelToolR = new JPanel();
@@ -379,7 +405,7 @@ public class RunContainerFrame extends JFrame {
             }
 		});
 		
-		JToggleButton tgbtnExperimentConfig = new JToggleButton("Experiment Configuration");
+		JToggleButton tgbtnExperimentConfig = new JToggleButton("Simulation Configuration");
 		panelToolR.add(tgbtnExperimentConfig);
 		tgbtnExperimentConfig.setSelected(true);
 		tgbtnExperimentConfig.addActionListener(new ActionListener() {
@@ -723,7 +749,7 @@ public class RunContainerFrame extends JFrame {
 			}
 		}
 		else if(strPropertyName.equalsIgnoreCase("ExpComplete")) {
-			JOptionPane.showMessageDialog(this, "The experiment finished successfully.");
+			JOptionPane.showMessageDialog(this, "The simulation finished successfully.");
 			lblDelayTimer.setVisible(false);
 		}
 	}
@@ -744,7 +770,7 @@ public class RunContainerFrame extends JFrame {
 			JPanel pnlExpParams = new JPanel();
 			pnlExpParams.setLayout(new BorderLayout());
 			expConfigFrame.getContentPane().add(pnlExpParams);
-			JLabel lblTitle = new JLabel("Experiment Params:");
+			JLabel lblTitle = new JLabel("Simulation Params:");
 			StyleSet.setTitleFont2(lblTitle);
 			lblTitle.setHorizontalAlignment(Label.LEFT);
 			pnlExpParams.add(lblTitle, BorderLayout.NORTH);
@@ -759,7 +785,7 @@ public class RunContainerFrame extends JFrame {
 	        JPanel pnlChngParams = new JPanel();
 	        pnlChngParams.setLayout(new BorderLayout());
 			expConfigFrame.getContentPane().add(pnlChngParams);
-	        lblTitle = new JLabel("Parameters of current run:");
+	        lblTitle = new JLabel("Parameters of current Exp.:");
 	        lblTitle.setHorizontalAlignment(Label.LEFT);
 	        StyleSet.setTitleFont2(lblTitle);
 	        pnlChngParams.add(lblTitle, BorderLayout.NORTH);

@@ -94,6 +94,16 @@ public class TeamPanel extends JPanel {
 			}
 		});
 		
+		JButton btnSave = new JButton("Save");
+		panelTopLeft.add(btnSave);
+		btnSave.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				saveConfiguration(true);
+				bindConfigFiles();
+			}
+		});
+		
 		JPanel pnlTopRight = new JPanel();
 		panelTop.add(pnlTopRight, BorderLayout.EAST);
 		
@@ -197,16 +207,6 @@ public class TeamPanel extends JPanel {
 			paraComponents = ConfigLoader.loadPropertiesInPanel(teamConfig, panelteam, 300, new TeamParamListener());
 		}
 		
-		JButton btnSave = new JButton("Save Configuraton");
-		panelteam.add(btnSave);
-		btnSave.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				saveConfiguration(true);
-				bindConfigFiles();
-			}
-		});
-		
 		if(scpParams.isVisible()) {
 			panelteam.revalidate();
 		}
@@ -233,7 +233,7 @@ public class TeamPanel extends JPanel {
 		});
 		
 		comboBox.removeAllItems();
-		comboBox.addItem("-----  Configuration  -----");
+		comboBox.addItem("-----  Team Configuration  -----");
 		for(int i = 0; i < files.length; i++) {
 			comboBox.addItem(files[i].getName());
 		}

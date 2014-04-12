@@ -115,7 +115,7 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 				this.firePropertyChange("Step", null, "End");
 				sleepForPauseOrDelay();
 			}
-			else if(getStepType() == StepType.Match && runStatus == RunStatus.RunSetComplete) {
+			else if(getStepType() == StepType.Experiment && runStatus == RunStatus.RunSetComplete) {
 				
 				pauseSimulation = true;
 				this.firePropertyChange("Step", null, "AgentStats");
@@ -205,7 +205,12 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 	
 	public void nextMatch()
 	{
-		nextStep(StepType.Match);
+		nextStep(StepType.Run);
+	}
+	
+	public void nextExperiment()
+	{
+		nextStep(StepType.Experiment);
 	}
 	
 	private void nextStep(StepType stepType)
@@ -317,6 +322,7 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 		None,
 		Round,
 		Run,
-		Match
+		Match,
+		Experiment
 	}
 }

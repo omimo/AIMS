@@ -32,9 +32,11 @@ import javax.swing.JToolBar;
 import java.awt.BorderLayout;
 
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JCheckBox;
@@ -196,12 +198,24 @@ public class ConfigureFrame extends JFrame {
 			}
 		});
 		
-		JButton btnStart = new JButton("Run Experiment");
+		JRadioButton radioDebug = new JRadioButton("Debug");
+	    radioDebug.setActionCommand("Debug");
+	    radioDebug.setSelected(true);
+	    panel.add(radioDebug);
+	    JRadioButton radioBatch = new JRadioButton("Batch");
+	    radioBatch.setActionCommand("Batch");
+	    panel.add(radioBatch);
+	    ButtonGroup group = new ButtonGroup();
+	    group.add(radioDebug);
+	    group.add(radioBatch);
+		
+		JButton btnStart = new JButton("Run Simulation");
 		btnStart.setName("btnStart");
 		btnStart.addActionListener(btnClick);
 		panel.add(btnStart);
 		
 		JButton btnContinue = new JButton("Resume Running");
+		btnContinue.setVisible(false);
 		panel.add(btnContinue);
 		
 		JPanel panelToolR = new JPanel();
@@ -245,7 +259,7 @@ public class ConfigureFrame extends JFrame {
         splitDockStation.drop(dockTeams, SplitDockProperty.EAST);
         
         DefaultDockable dockExpParams = new DefaultDockable();
-        dockExpParams.setTitleText("Experiment Parameters");
+        dockExpParams.setTitleText("Simulation Parameters");
         
         expParams = new ExpParamsPane(expConfig);
         panel.setOpaque(false);

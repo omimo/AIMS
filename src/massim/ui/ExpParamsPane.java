@@ -61,7 +61,7 @@ public class ExpParamsPane extends JPanel {
 		pnlBoxLabel.setMaximumSize(new Dimension(WIDTH, 25));
 		add(pnlBoxLabel);
 		
-		JLabel lblTitle = new JLabel("Experiment Parameters");
+		JLabel lblTitle = new JLabel("Simulation Parameters");
 		lblTitle.setHorizontalAlignment(JLabel.LEFT);
 		StyleSet.setEmptyBorder(lblTitle, 5);
 		StyleSet.setTitleFont(lblTitle);
