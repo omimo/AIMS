@@ -74,7 +74,7 @@ public class ConfigureFrame extends JFrame {
 	private ExpParamsPane expParams;
 	private TeamsPanel teams;
 	private JLabel lblSlider;
-	private JSlider slider;
+	private JSlider slider; JRadioButton radioBatch;
 	
 	private ActionListener btnClick = new ActionListener(){
 
@@ -202,7 +202,7 @@ public class ConfigureFrame extends JFrame {
 	    radioDebug.setActionCommand("Debug");
 	    radioDebug.setSelected(true);
 	    panel.add(radioDebug);
-	    JRadioButton radioBatch = new JRadioButton("Batch");
+	    radioBatch = new JRadioButton("Batch");
 	    radioBatch.setActionCommand("Batch");
 	    panel.add(radioBatch);
 	    ButtonGroup group = new ButtonGroup();
@@ -337,7 +337,7 @@ public class ConfigureFrame extends JFrame {
 			FrameManager.addFrame(new RunContainerFrame());
 		}
 		RunContainerFrame frame = (RunContainerFrame)FrameManager.getFrame(RunContainerFrame.class);
-		frame.setConfiguration(expConfig);
+		frame.setConfiguration(expConfig, radioBatch.isSelected());
 		frame.setDelay(slider.getValue());
 		FrameManager.openNewFrame(this, RunContainerFrame.class);
 	}

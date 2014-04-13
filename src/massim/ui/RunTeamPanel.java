@@ -128,6 +128,9 @@ public class RunTeamPanel extends JScrollPane {
 	 */
 	public RunTeamPanel(int iTeamSize, int iBoardSize, TeamConfiguration teamConfig, WindowState winState) {		
 		
+		if(teamConfig == null)
+			return;
+		
 		this.teamSize = iTeamSize;
 		this.boardSize = iBoardSize;
 		this.winState = winState;
@@ -260,7 +263,6 @@ public class RunTeamPanel extends JScrollPane {
 		JPanel pnlTop = new JPanel();
 		pnlMain.add(pnlTop);
 		pnlTop.setBackground(color);
-		//pnlTop.setLayout(new BoxLayout(pnlTop, BoxLayout.X_AXIS));
 		pnlTop.setLayout(new GridBagLayout());
 		
 		pnlTopLeft = new JPanel();
@@ -282,7 +284,6 @@ public class RunTeamPanel extends JScrollPane {
 	            	};
 	            };
 	            squares[i][j].setBounds(i, j, 30, 30);
-	            //squares[i][j].setLayout(new FlowLayout(FlowLayout.LEFT,0, 0));
 	            squares[i][j].setPreferredSize(new Dimension(30, 30));
 	            squares[i][j].setOpaque(true);
 	            squares[i][j].setBackground(Color.WHITE);
@@ -292,7 +293,6 @@ public class RunTeamPanel extends JScrollPane {
 		}
 		JPanel pnlRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		pnlRow.setOpaque(false);
-		
 		pnlTopLeft.add(pnlRow);
 		
 		JLabel lbl = new JLabel("Current Pos");
@@ -310,13 +310,6 @@ public class RunTeamPanel extends JScrollPane {
 		lbl = new JLabel("Cell Disturbed");
 		lbl.setIcon(iconCorner);
 		pnlRow.add(lbl);
-		
-		/*ImageIcon iconLHorz = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-horiz.png"));
-		ImageIcon iconLVert = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-vert.png"));
-		ImageIcon iconLTL = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-tl.png"));
-		ImageIcon iconLTR = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-tr.png"));
-		ImageIcon iconLBL = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-bl.png"));
-		ImageIcon iconLBR = new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/line-br.png"));*/
 		
 		pnlTopRight = new JPanel();
 		pnlTopRight.setLayout(new BoxLayout(pnlTopRight, BoxLayout.Y_AXIS));
@@ -338,13 +331,6 @@ public class RunTeamPanel extends JScrollPane {
 		textAreaScore.setEditable(false);
         StyleSet.setEmptyBorder(textAreaScore, 5);
 		pnlTopRight.add(textAreaScore);
-		
-		/*JLabel lblTeamSize = new JLabel("Team Score : 14000");
-		StyleFactory.setRegular(lblTeamSize);
-		pnlTopRight.add(lblTeamSize);
-		pnlTopRight.setAlignmentX(SwingConstants.LEFT);
-		textArea.setMinimumSize(new Dimension(200, 160));
-		StyleFactory.setBorder(lblTeamSize, 1);*/
 		
 		pnlBottom = new JPanel();
 		StyleSet.setEmptyBorder(pnlBottom, 5);
@@ -393,6 +379,8 @@ public class RunTeamPanel extends JScrollPane {
 		bNewRun = true;
 		for (int i = 0; i < boardSize; i++) {
 		    for (int j = 0; j < boardSize; j++) {
+		    	if(squares[i][j] == null) continue;
+		    	
 		    	squares[i][j].setBackground(Color.WHITE);
 		    	squares[i][j].removeAll();
 		    	squares[i][j].revalidate();
@@ -412,6 +400,8 @@ public class RunTeamPanel extends JScrollPane {
 		List<int[]> lstCurrPos = new ArrayList<int[]>();
 		List<List<int[]>> lstPath = new ArrayList<List<int[]>>();
 		for(AgentStats stat : lstAgentStats) {
+			if(stat == null) continue;
+			
 			lstInitPos.add(new int[] { stat.getInitX(), stat.getInitY() });
 			lstGoalPos.add(new int[] { stat.getGoalX(), stat.getGoalY() });
 			lstCurrPos.add(new int[] { stat.getCurrX(), stat.getCurrY() });
@@ -428,18 +418,25 @@ public class RunTeamPanel extends JScrollPane {
 	}
 	
 	public void updateBoard(int[][] boardColors) {
-		Color[] colors = new Color[] {Color.red, Color.green, Color.blue, Color.yellow, Color.orange, Color.magenta,
-				Color.CYAN, Color.lightGray, Color.PINK, Color.black};
+		List<Color> colors = new ArrayList<Color>();
+		colors.add(Color.red); colors.add(Color.green); colors.add(Color.blue);colors.add(Color.yellow);colors.add(Color.orange);colors.add(Color.magenta);
+		colors.add(Color.CYAN);colors.add(Color.lightGray);colors.add(Color.PINK);colors.add(Color.black);
 		
 		for (int i = 0; i < boardSize; i++) {
 	        for (int j = 0; j < boardSize; j++) {
+	        	if(squares[i][j] == null) continue;
+	        	
 	        	for(int iLoop = 0; iLoop < squares[i][j].getComponentCount(); iLoop++) {
 		    		if(squares[i][j].getLayer(squares[i][j].getComponent(iLoop)) == -1) {
 		    			squares[i][j].remove(iLoop);
 		    			iLoop--;
 		    		}
 		    	}
-	        	Color newColor = colors[boardColors[i][j]];
+	        	
+        		while(colors.size() <= boardColors[i][j]) {
+        			colors.add(Color.getHSBColor((float)Math.random(), (float)Math.random(), (float)Math.random()));
+        		}
+	        	Color newColor = colors.get(boardColors[i][j]);
 	        	if(squares[i][j].getBackground().equals(Color.WHITE)) {
 	        		squares[i][j].setBackground(newColor);
 	        	}
@@ -460,50 +457,14 @@ public class RunTeamPanel extends JScrollPane {
 	}
 	
 	public void updateTeamScore(int teamScore) {
-		textAreaScore.setText("Team Score : " + teamScore);
+		if(textAreaScore != null) {
+			textAreaScore.setText("Team Score : " + teamScore);
+		}
 	}
 	
 	public void updateLog(String strDetailLog) {
-		textDetailLog.setText(textDetailLog.getText() + "\n" + strDetailLog);
-	}
-	
-	private void drawPath(int fromX, int fromY, int toX, int toY)
-	{
-		List<int[]> path = new ArrayList<int[]>();
-		int iX = fromX; int iY = fromY;
-		while(iY < toY) {
-			path.add(new int[] { iX, iY});
-			iY++;	
-		}
-		while(iX < toX) {
-			path.add(new int[] { iX, iY});
-			iX++;
-		}
-		path.add(new int[] { toX, toY});
-		
-		for(int index = 0; index < path.size(); index++)
-		{
-			String strTypes = "";
-			if(isLeft(path, index, index + 1))
-    			strTypes += "0,";
-    		else if(isTop(path, index, index + 1))
-    			strTypes += "1,";
-    		else if(isRight(path, index, index + 1))
-    			strTypes += "2,";
-    		else if(isBottom(path, index, index + 1))
-    			strTypes += "3,";
-    		
-    		if(index > 0 && isLeft(path, index, index - 1))
-    			strTypes += "0,";
-    		else if(index > 0 && isTop(path, index, index - 1))
-    			strTypes += "1,";
-    		else if(index > 0 && isRight(path, index, index - 1))
-    			strTypes += "2,";
-    		else if(index > 0 && isBottom(path, index, index - 1))
-    			strTypes += "3,";
-	    		
-	    	strTypes = Utilities.trim(strTypes, ',');
-	    	squares[path.get(index)[0] - 1][path.get(index)[1] - 1].setName(strTypes);
+		if(textDetailLog != null) {
+			textDetailLog.setText(textDetailLog.getText() + "\n" + strDetailLog);
 		}
 	}
 	
@@ -715,7 +676,6 @@ public class RunTeamPanel extends JScrollPane {
 		
 		public void clearData()
 		{
-			Object[][] data = new Object[teamSize][7];
 			((DefaultTableModel)getModel()).setDataVector(null, columnNames);
 			this.revalidate();
 		}
@@ -753,6 +713,8 @@ public class RunTeamPanel extends JScrollPane {
 			try {
 				for (int i = 0; i < boardSize; i++) {
 				    for (int j = 0; j < boardSize; j++) {
+				    	if(squares[i][j] == null) continue;
+				    	
 				    	for(int iLoop = 0; iLoop < squares[i][j].getComponentCount(); iLoop++) {
 				    		if(squares[i][j].getLayer(squares[i][j].getComponent(iLoop)) > -1) {
 				    			squares[i][j].remove(iLoop);
@@ -855,6 +817,8 @@ public class RunTeamPanel extends JScrollPane {
 				
 				for (int i = 0; i < boardSize; i++) {
 				    for (int j = 0; j < boardSize; j++) {
+				    	if(squares[i][j] == null) continue;
+				    	
 				    	if(squares[i][j].getComponentCount() > 1) {
 				    		for(int cIndex = 0; cIndex < squares[i][j].getComponentCount(); cIndex++)
 				    		{

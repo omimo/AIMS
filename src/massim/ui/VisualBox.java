@@ -9,6 +9,7 @@ import java.awt.Shape;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -39,6 +40,7 @@ public class VisualBox extends JPanel {
 	private XYSeries[] lstSeries;
 	private JPanel chartContentPanel = new JPanel(new BorderLayout());
 	ChartPanel chartPanel;
+	ArrayList<SeriesValues> lstValues;
 	
 	public VisualBox(String strParams, String strXAxis, String strYAxis, String[] seriesNames) {
 		this.setLayout(new BorderLayout(0, 0));
@@ -61,6 +63,7 @@ public class VisualBox extends JPanel {
 	    StyleSet.setRegular(txtParams);
         StyleSet.setEmptyBorder(txtParams, 5);
 	    this.add(txtParams, BorderLayout.EAST);
+	    lstValues = new ArrayList<SeriesValues>();
 	}
 	
 	public void addData(double xValue, double[] data)
@@ -68,10 +71,44 @@ public class VisualBox extends JPanel {
 		if(lstSeries.length != data.length) return;
 		
 		int index = 0;
+		double minX = Double.MAX_VALUE; double maxX = Double.MIN_VALUE;
+		double minY = Double.MAX_VALUE; double maxY = Double.MIN_VALUE;
 		for(XYSeries series: lstSeries) {
-			series.add(xValue, data[index]);
+			SeriesValues prevValues = null;
+			for(SeriesValues values : lstValues)
+			{
+				if(values != null && values.getX() == xValue && values.getIndex() == index) {
+					prevValues = values;
+					break;
+				}
+			}
+			if(prevValues == null) {
+				prevValues = new SeriesValues(index, xValue);
+			}
+			prevValues.addY(data[index]);
+			
+			for(int iLoop = 0; iLoop < series.getItemCount(); iLoop++) {
+				if(series.getDataItem(iLoop).getX().doubleValue() == xValue) {
+					series.remove(iLoop);
+					iLoop--;
+				}
+			}
+			series.add(xValue, prevValues.getAverageY());
 			index++;
+			minX = Math.min(minX, series.getMinX());
+			minY = Math.min(minY, series.getMinY());
+			
+			maxX = Math.max(maxX, series.getMaxX());
+			maxY = Math.max(maxY, series.getMaxY());
 		}
+		minX *= (minX > 0 ? 0.9 : 1.1);
+		minY *= (minY > 0 ? 0.9 : 1.1);
+		maxX *= 1.1;
+		maxY *= 1.1;
+		if(minY != maxY)
+			chartPanel.getChart().getXYPlot().getRangeAxis().setRange(minY, maxY);
+		if(minX != maxX)
+			chartPanel.getChart().getXYPlot().getDomainAxis().setRange(minX, maxX);
 		chartPanel.validate();
 	}
 	
@@ -103,5 +140,49 @@ public class VisualBox extends JPanel {
 	        }
 	        chart.setBackgroundPaint(this.getBackground());
 	        return chart;
+	}
+	 
+	private class SeriesValues
+	{
+		private int index;
+		private double x;
+		private ArrayList<Double> y;
+		
+		public SeriesValues(int index, double x)
+		{
+			this.index = index;
+			this.x = x;
+			y = new ArrayList<Double>();
+		}
+		public int getIndex() {
+			return index;
+		}
+		public void setIndex(int index) {
+			this.index = index;
+		}
+		public double getX() {
+			return x;
+		}
+		public void setX(double x) {
+			this.x = x;
+		}
+		public void addY(double y)
+		{
+			this.y.add(y);
+		}
+		public ArrayList<Double> getY()
+		{
+			return y;
+		}
+		public double getAverageY()
+		{
+			double dblAvg = 0;
+			for(double yValue : this.y)
+			{
+				dblAvg += yValue;
+			}
+			dblAvg = dblAvg / this.y.size();
+			return dblAvg;
+		}
 	}
 }

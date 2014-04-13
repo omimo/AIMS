@@ -24,41 +24,49 @@ public class StyleSet {
 	
 	public static void setWelcomeFont(JComponent component)
 	{
+		if(component == null) return;
 		component.setFont(new Font("Segoe UI", Font.BOLD , 20));
 	}
 	
 	public static void setTitleFont(JComponent component)
 	{
+		if(component == null) return;
 		component.setFont(new Font("Segoe UI", Font.BOLD , 14));
 	}
 	
 	public static void setTitleFont2(JComponent component)
 	{
+		if(component == null) return;
 		component.setFont(new Font("Segoe UI", Font.BOLD , 13));
 	}
 	
 	public static void setRegular(JComponent component)
 	{
+		if(component == null) return;
 		component.setFont(new Font("Segoe UI", 0, 12));
 	}
 	
 	public static void setEmptyBorder(JComponent component, int thickness)
 	{
+		if(component == null) return;
 		component.setBorder(BorderFactory.createEmptyBorder(thickness,thickness,thickness,thickness));
 	}
 	
 	public static void setEmptyBorder(JComponent component, int top, int right, int bottom, int left)
 	{
+		if(component == null) return;
 		component.setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
 	}
 
 	public static void setBorder(JComponent component, int thickness)
 	{
+		if(component == null) return;
 		component.setBorder(BorderFactory.createMatteBorder(thickness, thickness, thickness, thickness, Color.gray));
 	}
 	
 	public static void setBorder(JComponent component, int top, int right, int bottom, int left)
 	{
+		if(component == null) return;
 		component.setBorder(BorderFactory.createMatteBorder(top, left, bottom, right, Color.gray));
 	}
 }

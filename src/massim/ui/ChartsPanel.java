@@ -1,4 +1,4 @@
-package massim.ui.frames;
+package massim.ui;
 
 
 import java.awt.BorderLayout;
@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -36,30 +37,19 @@ import massim.Experiment.SimulationRange;
 import massim.SimulationEngine;
 import massim.Team;
 import massim.agents.nohelp.NoHelpTeam;
-import massim.ui.StyleSet;
-import massim.ui.VisualBox;
 
-public class ChartFrame extends JFrame {
+public class ChartsPanel extends JScrollPane {
 	private HashMap<String, VisualBox> map = new HashMap<String, VisualBox>();
 	int boxRow, boxCol; JLabel lblNoCharts; JPanel pnlMain;
-	public ChartFrame() {
-		   setTitle("MASSIM - Charts");
+	private JInternalFrame parentIntFrame; 
+	private JFrame parentFrame; 
+	public ChartsPanel() {
+		   
 		   Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	       setSize(screenSize.width - 100, screenSize.height - 100);
-	       setLocationRelativeTo(null);
-	       setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-			addWindowListener( new WindowAdapter() {
-	            @Override
-	            public void windowClosing(WindowEvent we) {
-	            	((JFrame)we.getSource()).setVisible(false);
-	            }
-			});
-			
-	       JScrollPane pane = new JScrollPane();
-	       setContentPane(pane);
 	       
 	       pnlMain = new JPanel();
-	       pane.setViewportView(pnlMain);
+	       setViewportView(pnlMain);
 	       pnlMain.setLayout(new GridBagLayout());
 	       boxRow = 0; boxCol = 0;
 	       
@@ -121,5 +111,21 @@ public class ChartFrame extends JFrame {
 	    } catch(Exception e) {
 	      System.out.println("Error setting native LAF: " + e);
 	    }
+	}
+
+	public JInternalFrame getParentIntFrame() {
+		return parentIntFrame;
+	}
+
+	public void setParentIntFrame(JInternalFrame parentIntFrame) {
+		this.parentIntFrame = parentIntFrame;
+	}
+
+	public JFrame getParentFrame() {
+		return parentFrame;
+	}
+
+	public void setParentFrame(JFrame parentFrame) {
+		this.parentFrame = parentFrame;
 	}
 }

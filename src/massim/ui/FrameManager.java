@@ -16,11 +16,14 @@ public class FrameManager {
 	private static List<JFrame> frames = new ArrayList<JFrame>();
 	public static void addFrame(JFrame frame)
 	{
+		if(frame == null) return;	
 		frames.add(frame);
 	}
 	
 	public static JFrame getFrame(Class className)
 	{
+		if(className == null) return null;
+		
 		for(JFrame frame : frames)
 		{
 			if(frame.getClass().equals(className))
@@ -33,6 +36,8 @@ public class FrameManager {
 	
 	public static boolean checkFrame(Class className)
 	{
+		if(className == null) return false;
+		
 		for(JFrame frame : frames)
 		{
 			if(frame.getClass().equals(className))
@@ -45,6 +50,8 @@ public class FrameManager {
 	
 	public static void removeFrame(Class className)
 	{
+		if(className == null) return;
+		
 		int indexToRemove = -1;
 		int index = 0;
 		for(JFrame frame : frames)
@@ -60,6 +67,7 @@ public class FrameManager {
 	
 	public static void removeFrame(JFrame frame)
 	{
+		if(frame == null) return;
 		frames.remove(frame);
 	}
 	
@@ -85,6 +93,8 @@ public class FrameManager {
 	
 	public static void openNewFrame(JFrame currFrame, Class<?> className)
 	{
+		if(className == null) return;
+		
 		if(currFrame != null) {
 			if(!FrameManager.checkFrame(currFrame.getClass()))
 				FrameManager.addFrame(currFrame);
@@ -115,18 +125,21 @@ public class FrameManager {
 	
 	public static void openNewFrame(JFrame currFrame, JFrame newFrame)
 	{
-		if(!FrameManager.checkFrame(currFrame.getClass()))
-			FrameManager.addFrame(currFrame);
+		if(newFrame == null) return;
 		
+		if(currFrame != null) {
+			if(!FrameManager.checkFrame(currFrame.getClass()))
+				FrameManager.addFrame(currFrame);
+			currFrame.setVisible(false);
+		}
 		newFrame.setVisible(true);		
-		currFrame.setVisible(false);
-		
-		if(!FrameManager.checkFrame(currFrame.getClass()))
+		if(!FrameManager.checkFrame(newFrame.getClass()))
 			FrameManager.addFrame(newFrame);
 	}
 	
 	public static void setMaximize(JFrame frame)
 	{
+		if(frame == null) return;
 		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(frame.getGraphicsConfiguration());         
         Rectangle screenSize = frame.getGraphicsConfiguration().getBounds();
         Rectangle maxBounds = new Rectangle(screenInsets.left + screenSize.x, 
@@ -139,11 +152,13 @@ public class FrameManager {
 	
 	public static void setMinimize(JFrame frame)
 	{
+		if(frame == null) return;
 		frame.setExtendedState(JFrame.ICONIFIED);
 	}
 	
 	public static void setNormal(JFrame frame)
 	{
+		if(frame == null) return;
 		frame.setExtendedState(frame.NORMAL);
 	}
 }

@@ -25,8 +25,9 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 	private volatile boolean pauseSimulation, keepInDelaySleep;
 	private boolean isActive = false;
 	private StepType stepType = StepType.None;
-	Integer iNumOfRuns;
+	Integer iNumOfRuns, totalRuns; 
 	List<SimulationRange> simParameters;
+	private boolean isBatchMode = false;
 	//private long threadId;
 	
 	public String getErrorMessage() {
@@ -73,31 +74,38 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 	public void updateAgentStats(RunStatus runStatus)
 	{
 		if(runStatus == RunStatus.RunInit) {
-			String strRun = "Current Run# : " + currentRun;
-			this.firePropertyChange("RunInit", null, experiment.getSimulationParametersText() + strRun);
+			currentRun++;
+			String strRun = "";
+			if(isBatchMode())
+				strRun = "Finished Runs: " + totalRuns + "\n";
+			strRun += experiment.getSimulationParametersText() + "\nCurrent Run# : " + currentRun;
+			this.firePropertyChange("RunInit", null, strRun);
 		}
 		
 		if(runStatus == RunStatus.RunComplete) {
-			currentRun++;
 			List<Integer> lstTeamScore = experiment.getTeamScores();
 			this.firePropertyChange("TeamScore", null, lstTeamScore);
 		}
 		
+		if(isBatchMode()) return;
+		
 		if(isInStepMode())
 		{
 			if(getStepType() == StepType.Run && 
-					((currentRun <= iNumOfRuns && runStatus == RunStatus.RunComplete)
-					|| (currentRun > iNumOfRuns && runStatus == RunStatus.RunSetComplete))) {
+					((currentRun < iNumOfRuns && runStatus == RunStatus.RunComplete)
+					|| (currentRun == iNumOfRuns && runStatus == RunStatus.RunSetComplete))) {
 				
 				pauseSimulation = true;
 				this.firePropertyChange("Step", null, "AgentStats");
 				this.firePropertyChange("AgentStats", null, experiment.getAgentStatistics());
 				this.firePropertyChange("Step", null, "Board");
 				this.firePropertyChange("Board", null, simEng.getBoard());
-				this.firePropertyChange("Step", null, "Log");
-				this.firePropertyChange("Log", null, experiment.getEngineLog());
-				this.firePropertyChange("Step", null, "TeamLog");
-				this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				if(getLogger().isLogOn()) {
+					this.firePropertyChange("Step", null, "Log");
+					this.firePropertyChange("Log", null, experiment.getEngineLog());
+					this.firePropertyChange("Step", null, "TeamLog");
+					this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				}
 				this.firePropertyChange("Step", null, "End");
 				sleepForPauseOrDelay();
 			}
@@ -108,24 +116,24 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 				this.firePropertyChange("AgentStats", null, experiment.getAgentStatistics());
 				this.firePropertyChange("Step", null, "Board");
 				this.firePropertyChange("Board", null, simEng.getBoard());
-				this.firePropertyChange("Step", null, "Log");
-				this.firePropertyChange("Log", null, experiment.getEngineLog());
-				this.firePropertyChange("Step", null, "TeamLog");
-				this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				if(getLogger().isLogOn()) {
+					this.firePropertyChange("Step", null, "Log");
+					this.firePropertyChange("Log", null, experiment.getEngineLog());
+					this.firePropertyChange("Step", null, "TeamLog");
+					this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				}
 				this.firePropertyChange("Step", null, "End");
 				sleepForPauseOrDelay();
 			}
 			else if(getStepType() == StepType.Experiment && runStatus == RunStatus.RunSetComplete) {
 				
 				pauseSimulation = true;
-				this.firePropertyChange("Step", null, "AgentStats");
-				this.firePropertyChange("AgentStats", null, experiment.getAgentStatistics());
-				this.firePropertyChange("Step", null, "Board");
-				this.firePropertyChange("Board", null, simEng.getBoard());
-				this.firePropertyChange("Step", null, "Log");
-				this.firePropertyChange("Log", null, experiment.getEngineLog());
-				this.firePropertyChange("Step", null, "TeamLog");
-				this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				if(getLogger().isLogOn()) {
+					this.firePropertyChange("Step", null, "Log");
+					this.firePropertyChange("Log", null, experiment.getEngineLog());
+					this.firePropertyChange("Step", null, "TeamLog");
+					this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				}
 				this.firePropertyChange("Step", null, "End");
 				sleepForPauseOrDelay();
 			}
@@ -135,8 +143,10 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 			if(threadDelay > 0) {
 				this.firePropertyChange("AgentStats", null, experiment.getAgentStatistics());
 				this.firePropertyChange("Board", null, simEng.getBoard());
-				this.firePropertyChange("Log", null, experiment.getEngineLog());
-				this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				if(getLogger().isLogOn()) {
+					this.firePropertyChange("Log", null, experiment.getEngineLog());
+					this.firePropertyChange("TeamLog", null, experiment.getTeamLogs());
+				}
 			}
 			sleepForPauseOrDelay();
 		}
@@ -149,6 +159,8 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 	
 	private void sleepForPauseOrDelay()
 	{
+		if(isBatchMode()) return;
+		
 		this.firePropertyChange("Waiting", null, null);
 		do{
 			try {
@@ -233,6 +245,11 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 		try {
 			strErrorMessage = "";
 			iNumOfRuns = Integer.parseInt(expConfig.getPropertyValue("Number of Runs"));
+			totalRuns = 0;
+			if(isBatchMode()) {
+				iNumOfRuns = Math.min(iNumOfRuns, 100);
+				setLogOn(false);
+			}
 			boolean bContinue = experiment.setNewParamsForSimulation(true);
 			pauseSimulation = false;
 			keepInDelaySleep = false;
@@ -240,34 +257,45 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 				simEng = new SimulationEngine(experiment.getTeams());
 				simEng.setLogger(logger);
 				simEng.initializeExperiment(iNumOfRuns);
-				simEng.setRoundCompleteListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						updateAgentStats(RunStatus.RoundComplete);
-					}
-				});
+				
 				simEng.setRunInitializedListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						updateAgentStats(RunStatus.RunInit);
 					}
 				});
-				simEng.setRunCompleteListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						updateAgentStats(RunStatus.RunComplete);
-					}
-				});
-				currentRun = 1;
+				if(!isBatchMode()) {
+					simEng.setRoundCompleteListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							updateAgentStats(RunStatus.RoundComplete);
+						}
+					});
+					simEng.setRunCompleteListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							updateAgentStats(RunStatus.RunComplete);
+						}
+					});
+				}
+				currentRun = 0;
 				int[] finalScores = simEng.runExperiment();
 				simParameters = experiment.getSimulationParameters();
 				firePropertyChange("ExpScores", null, finalScores);
 				updateAgentStats(RunStatus.RunSetComplete);
 				
 				bContinue = experiment.setNewParamsForSimulation(false);
+				if(!bContinue && isBatchMode()) {
+					totalRuns += iNumOfRuns;
+					if(totalRuns < Integer.parseInt(expConfig.getPropertyValue("Number of Runs"))) {
+						iNumOfRuns = Math.min(iNumOfRuns, Integer.parseInt(expConfig.getPropertyValue("Number of Runs")) - totalRuns);
+						bContinue = experiment.setNewParamsForSimulation(true);
+					}
+				}
 			}
+			isActive = false;
 			if(!isStopped())
-				firePropertyChange("ExpComplete", null, null);
+				firePropertyChange("SimComplete", null, null);
 		}
 		catch (Exception ex)
 		{
@@ -307,6 +335,14 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 	
 	public List<SimulationRange> getCurrentSimulationParameters() {
 		return simParameters;
+	}
+
+	public boolean isBatchMode() {
+		return isBatchMode;
+	}
+
+	public void setBatchMode(boolean isBatchMode) {
+		this.isBatchMode = isBatchMode;
 	}
 
 	private enum RunStatus

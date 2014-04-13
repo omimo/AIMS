@@ -46,6 +46,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -81,6 +82,7 @@ import javax.swing.ImageIcon;
 
 import massim.Experiment.AgentStats;
 import massim.ui.BoundedDesktopManager;
+import massim.ui.ChartsPanel;
 import massim.ui.FrameManager;
 import massim.ui.RunTeamPanel;
 import massim.ui.RunTeamPanel.WindowState;
@@ -98,20 +100,21 @@ public class RunContainerFrame extends JFrame {
 	JInternalFrame expConfigFrame, logFrame;
 	JTextArea textExpConfig, textDetailLog;
 	JTextArea textExpParams = new JTextArea();
-	ExperimentConfiguration expConfig; ChartFrame chartFrame;
+	ExperimentConfiguration expConfig; ChartsPanel chartPanel;
 	ConfigConnector connector;
 	List<RunTeamPanel> lstTeamPanels;
 	JLabel lblSlider; JLabel lblDelayTimer, lblPauseStatus;
 	JSlider slider; JButton btnStopCancel, btnPause;
 	boolean bValidConfiguration = false;
 	List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
-	long lastNextRun;
+	long lastNextRun; JTextField textNumOfRuns;
 	
 	public RunContainerFrame()
 	{
-		screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		DESK_PAN_WIDTH = screenSize.width;
-		DESK_PAN_HEIGHT = screenSize.height - 105;
+		if(Toolkit.getDefaultToolkit() != null)
+			screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		DESK_PAN_WIDTH = Math.max(screenSize.width, 1024);
+		DESK_PAN_HEIGHT = Math.max(screenSize.height, 700) - 105;
 		
 		desktop = new JDesktopPane();
 		desktop.setBounds(0, 30, DESK_PAN_WIDTH, DESK_PAN_HEIGHT);
@@ -139,284 +142,7 @@ public class RunContainerFrame extends JFrame {
 		DesktopManager manager = new BoundedDesktopManager(DESK_PAN_WIDTH, DESK_PAN_HEIGHT, panel.getHeight());
 	    desktop.setDesktopManager(manager);
 	    
-	    JToolBar toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		desktop.add(toolBar, BorderLayout.SOUTH);
-		StyleSet.setBorder(toolBar, 1, 0 , 0 , 0);
-		
-		JPanel panelTool = new JPanel();
-		toolBar.add(panelTool);
-		panelTool.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
-		JPanel pnlSlider = new JPanel();
-		pnlSlider.setLayout(new BoxLayout(pnlSlider, BoxLayout.Y_AXIS));
-		pnlSlider.setOpaque(false);
-		pnlSlider.setMaximumSize(new Dimension(150, 25));
-		panelTool.add(pnlSlider);
-		
-		slider = new JSlider();
-		pnlSlider.add(slider);
-		//slider.setMaximumSize(new Dimension(80, 15));
-		slider.setSnapToTicks(true);
-		slider.setPaintLabels(false);
-		slider.setMinimum(0);
-		slider.setMaximum(60);
-		slider.setMajorTickSpacing(10);
-		slider.setMinorTickSpacing(1);
-		slider.setValue(20);
-		slider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if(e.getSource() instanceof JSlider)
-					lblSlider.setText("Delay: " + ((JSlider)e.getSource()).getValue() + " seconds");
-				if(connector != null)
-					connector.setThreadDelay(slider.getValue());
-			}
-		});
-		
-		lblSlider = new JLabel("Delay: " + slider.getValue() + " seconds");
-		pnlSlider.add(lblSlider);
-		
-		JCheckBox chckbxNewCheckBox = new JCheckBox("Enable Logging");
-		chckbxNewCheckBox.setSelected(true);
-		chckbxNewCheckBox.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent event) {
-				if(connector != null) {
-					connector.setLogOn(((JCheckBox)event.getSource()).isSelected());
-				}
-			}
-		});
-		panelTool.add(chckbxNewCheckBox);
-		chckbxNewCheckBox.setVerticalAlignment(SwingConstants.TOP);
-		
-		JButton btnStart = new JButton("Start");
-		btnStart.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(connector != null) {
-					if(!connector.isActive())
-						connector.runSimulation();
-					else
-						connector.clearStepMode();
-					btnStopCancel.setText("Stop");
-					cancelIfPaused();
-				}
-			}
-		});
-		panelTool.add(btnStart);
-	
-		JMenuBar menuBar = new JMenuBar() {
-			@Override
-		    public void paintComponent(Graphics g) {
-		    	super.paintComponent(g);
-		    	float[] FRACTIONS = { 0.0f, 0.30f, 1.0f };
-		    	Graphics2D g2D = (Graphics2D) g;
-		    	final Color[] BRIGHT_COLORS = { Color.decode("#CCCCF6"),
-		    	        Color.WHITE, Color.decode("#CCCCF6") };
-		    	 MultipleGradientPaint DARK_GRADIENT = new LinearGradientPaint(new Point2D.Double(0, 0),
-		    		        new Point2D.Double(0, getHeight()), FRACTIONS, BRIGHT_COLORS);
-		        g2D.setPaint(DARK_GRADIENT);
-		        g.fillRect(0, 0, getWidth(), getHeight());
-		    }
-		};
-		menuBar.setOpaque(false);
-		menuBar.setPreferredSize(new Dimension(90, 25));
-		StyleSet.setBorder(menuBar, 1);
-		panelTool.add(menuBar, BorderLayout.EAST);
-		
-		JMenu dispMenu = new JMenu("Fast Forward");
-		dispMenu.setPreferredSize(new Dimension(90, 25));
-		menuBar.add(dispMenu);
-		
-		JMenuItem cbItem = new JMenuItem("Round");
-		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
-		cbItem.setAccelerator(KeyStroke.getKeyStroke('D', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		dispMenu.add(cbItem);
-		cbItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				long newStamp = Calendar.getInstance().getTimeInMillis();
-				if(newStamp < (lastNextRun + 500)) return;
-				lastNextRun = newStamp;
-				
-				if(connector != null) {
-					if(!connector.isActive()) { 
-						connector.runSimulation();
-						btnStopCancel.setText("Stop");
-					}
-					connector.nextRound();
-					cancelIfPaused();
-				}
-			}
-		});
-		menuItems.add(cbItem);
-		
-		cbItem = new JMenuItem("Run");
-		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
-		cbItem.setAccelerator(KeyStroke.getKeyStroke('R', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		dispMenu.add(cbItem);
-		cbItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				long newStamp = Calendar.getInstance().getTimeInMillis();
-				if(newStamp < (lastNextRun + 500)) {
-					return;
-				}
-				lastNextRun = newStamp;
-				
-				if(connector != null) {
-					if(!connector.isActive()) { 
-						connector.runSimulation();
-						btnStopCancel.setText("Stop");
-					}
-					connector.nextRun();
-					cancelIfPaused();
-				}
-			}
-		});
-		menuItems.add(cbItem);
-		
-		cbItem = new JMenuItem("Match");
-		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
-		cbItem.setAccelerator(KeyStroke.getKeyStroke('M', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		dispMenu.add(cbItem);
-		cbItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				long newStamp = Calendar.getInstance().getTimeInMillis();
-				if(newStamp < (lastNextRun + 500)) {
-					return;
-				}
-				lastNextRun = newStamp;
-				
-				if(connector != null) {
-					if(!connector.isActive()) { 
-						connector.runSimulation();
-						btnStopCancel.setText("Stop");
-					}
-					connector.nextMatch();
-					cancelIfPaused();
-				}
-			}
-		});
-		menuItems.add(cbItem);
-		
-		cbItem = new JMenuItem("Experiment");
-		cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
-		cbItem.setAccelerator(KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-		dispMenu.add(cbItem);
-		cbItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				long newStamp = Calendar.getInstance().getTimeInMillis();
-				if(newStamp < (lastNextRun + 500)) return;
-				lastNextRun = newStamp;
-				
-				if(connector != null) {
-					if(!connector.isActive()) { 
-						connector.runSimulation();
-						btnStopCancel.setText("Stop");
-					}
-					connector.nextExperiment();
-					cancelIfPaused();
-				}
-			}
-		});
-		menuItems.add(cbItem);
-		
-		btnPause = new JButton("Pause");
-		panelTool.add(btnPause);
-		btnPause.setEnabled(false);
-		btnPause.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				if(connector != null) {
-					JButton btnClicked = ((JButton)event.getSource());
-					lblPauseStatus.setVisible(true);
-					if(btnClicked.getText().equalsIgnoreCase("Pause")) {
-						connector.pauseSimulation();
-						btnClicked.setText("Resume");
-						lblPauseStatus.setText("Paused");
-						lblDelayTimer.setVisible(false);
-						btnClicked.setBackground(Color.LIGHT_GRAY);
-					} else {
-						connector.resumeSimulation();
-						btnClicked.setText("Pause");
-						lblDelayTimer.setVisible(true);
-						lblPauseStatus.setText("");
-						btnClicked.setBackground(null);
-					}
-				}
-			}
-		});
-		
-		btnStopCancel = new JButton("Cancel");
-		btnStopCancel.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(connector != null && connector.isActive()) {
-					stopSimulation();
-				} else {
-					openConfiguration(null);
-				}
-			}
-		});
-		panelTool.add(btnStopCancel);
-		
-		JSeparator separator_1 = new JSeparator();
-		panelTool.add(separator_1);
-		separator_1.setOrientation(SwingConstants.VERTICAL);
-		
-		
-		JButton btnConfigure = new JButton("Configure");
-		btnConfigure.setVisible(false);
-		panelTool.add(btnConfigure);
-		
-		JPanel panelToolR = new JPanel();
-		toolBar.add(panelToolR);
-		panelToolR.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-		
-		lblPauseStatus = new JLabel();
-		panelToolR.add(lblPauseStatus);
-		
-		lblDelayTimer = new JLabel();
-		panelToolR.add(lblDelayTimer);
-		
-		JToggleButton tgbtnChart = new JToggleButton("Simulation Charts");
-		panelToolR.add(tgbtnChart);
-		tgbtnChart.setSelected(false);
-		tgbtnChart.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent event)
-            {
-				chartFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
-            }
-		});
-		
-		JToggleButton tgbtnLog = new JToggleButton("Execution Log");
-		panelToolR.add(tgbtnLog);
-		tgbtnLog.setSelected(false);
-		tgbtnLog.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent event)
-            {
-				logFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
-            }
-		});
-		
-		JToggleButton tgbtnExperimentConfig = new JToggleButton("Simulation Configuration");
-		panelToolR.add(tgbtnExperimentConfig);
-		tgbtnExperimentConfig.setSelected(true);
-		tgbtnExperimentConfig.addActionListener(new ActionListener() {
-			@Override
-            public void actionPerformed(ActionEvent event)
-            {
-				expConfigFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
-            }
-		});
-		
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+	    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		addWindowListener( new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
@@ -435,7 +161,7 @@ public class RunContainerFrame extends JFrame {
 		         if ((oldState & Frame.ICONIFIED) == 0 && (newState & Frame.ICONIFIED) != 0) {
 					if(lstTeamPanels != null) {
 						for(RunTeamPanel panel : lstTeamPanels) {
-							if(panel.getParentFrame() != null && panel.getParentFrame().isVisible())
+							if(panel != null && panel.getParentFrame() != null && panel.getParentFrame().isVisible())
 							{
 								panel.setParentExtendState(panel.getParentFrame().getExtendedState());
 								FrameManager.setMinimize(panel.getParentFrame());
@@ -445,7 +171,7 @@ public class RunContainerFrame extends JFrame {
 				} else if ((oldState & Frame.ICONIFIED) != 0 && (newState & Frame.ICONIFIED) == 0) {
 					if(lstTeamPanels != null) {
 						for(RunTeamPanel panel : lstTeamPanels) {
-							if(panel.getParentFrame() != null && panel.getParentFrame().isVisible())
+							if(panel != null && panel.getParentFrame() != null && panel.getParentFrame().isVisible())
 							{
 								panel.getParentFrame().setExtendedState(panel.getParentExtendState());
 							}
@@ -456,19 +182,365 @@ public class RunContainerFrame extends JFrame {
 		});
 	}
 	
-	public boolean setConfiguration(ExperimentConfiguration mExpConfig)
+	private void setToolBar(boolean isBatchMode)
 	{
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		desktop.add(toolBar, BorderLayout.SOUTH);
+		StyleSet.setBorder(toolBar, 1, 0 , 0 , 0);
+		
+		JPanel panelTool = new JPanel();
+		toolBar.add(panelTool, BorderLayout.CENTER);
+		panelTool.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JPanel panelToolR = new JPanel();
+		toolBar.add(panelToolR, BorderLayout.EAST);
+		panelToolR.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+		
+		if(isBatchMode) {
+			
+			JButton btnStart = new JButton("Start");
+			btnStart.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(connector != null) {
+						if(!connector.isActive())
+							connector.runSimulation();
+						if(btnStopCancel != null)
+							btnStopCancel.setEnabled(true);
+					}
+					if(e.getSource() instanceof JButton)
+						((JButton)e.getSource()).setEnabled(false);
+				}
+			});
+			panelTool.add(btnStart);
+			
+			btnStopCancel = new JButton("Stop");
+			btnStopCancel.setEnabled(false);
+			btnStopCancel.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(connector != null && connector.isActive()) {
+						stopSimulation();
+					} else {
+						openConfiguration(null);
+					}
+				}
+			});
+			panelTool.add(btnStopCancel);
+			
+			JLabel lblCaption = new JLabel("Number of Runs = ");
+			panelTool.add(lblCaption);
+			
+			textNumOfRuns = new JTextField();
+			textNumOfRuns.setColumns(10);
+			panelTool.add(textNumOfRuns);
+			JButton btnUpdate = new JButton("Update");
+			btnUpdate.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					updateNumOfRuns();
+				}
+			});
+			panelTool.add(btnUpdate);
+			
+			JToggleButton tgbtnExperimentConfig = new JToggleButton("Simulation Configuration");
+			panelToolR.add(tgbtnExperimentConfig);
+			tgbtnExperimentConfig.setSelected(true);
+			tgbtnExperimentConfig.addActionListener(new ActionListener() {
+				@Override
+	            public void actionPerformed(ActionEvent event)
+	            {
+					if(expConfigFrame != null)
+						expConfigFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
+	            }
+			});
+			
+		} else {
+			
+			JPanel pnlSlider = new JPanel();
+			pnlSlider.setLayout(new BoxLayout(pnlSlider, BoxLayout.Y_AXIS));
+			pnlSlider.setOpaque(false);
+			pnlSlider.setMaximumSize(new Dimension(150, 25));
+			panelTool.add(pnlSlider);
+			
+			slider = new JSlider();
+			pnlSlider.add(slider);
+			//slider.setMaximumSize(new Dimension(80, 15));
+			slider.setSnapToTicks(true);
+			slider.setPaintLabels(false);
+			slider.setMinimum(0);
+			slider.setMaximum(60);
+			slider.setMajorTickSpacing(10);
+			slider.setMinorTickSpacing(1);
+			slider.setValue(20);
+			slider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					if(e.getSource() instanceof JSlider)
+						lblSlider.setText("Delay: " + ((JSlider)e.getSource()).getValue() + " seconds");
+					if(connector != null)
+						connector.setThreadDelay(slider.getValue());
+				}
+			});
+			
+			lblSlider = new JLabel("Delay: " + slider.getValue() + " seconds");
+			pnlSlider.add(lblSlider);
+			
+			JCheckBox chckbxNewCheckBox = new JCheckBox("Enable Logging");
+			chckbxNewCheckBox.setSelected(true);
+			chckbxNewCheckBox.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent event) {
+					if(connector != null && event.getSource() instanceof JCheckBox) {
+						connector.setLogOn(((JCheckBox)event.getSource()).isSelected());
+					}
+				}
+			});
+			panelTool.add(chckbxNewCheckBox);
+			chckbxNewCheckBox.setVerticalAlignment(SwingConstants.TOP);
+			
+			JButton btnStart = new JButton("Start");
+			btnStart.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(connector != null) {
+						if(!connector.isActive())
+							connector.runSimulation();
+						else
+							connector.clearStepMode();
+						btnStopCancel.setText("Stop");
+						cancelIfPaused();
+					}
+				}
+			});
+			panelTool.add(btnStart);
+		
+			JMenuBar menuBar = new JMenuBar() {
+				@Override
+			    public void paintComponent(Graphics g) {
+			    	super.paintComponent(g);
+			    	float[] FRACTIONS = { 0.0f, 0.30f, 1.0f };
+			    	if(g != null && g instanceof Graphics2D) {
+				    	Graphics2D g2D = (Graphics2D) g;
+				    	Color[] BRIGHT_COLORS = { Color.decode("#CCCCF6"),
+				    	        Color.WHITE, Color.decode("#CCCCF6") };
+				    	MultipleGradientPaint DARK_GRADIENT = new LinearGradientPaint(new Point2D.Double(0, 0),
+				    		        new Point2D.Double(0, getHeight()), FRACTIONS, BRIGHT_COLORS);
+				        g2D.setPaint(DARK_GRADIENT);
+			    	}
+			    	g.fillRect(0, 0, getWidth(), getHeight());
+			    }
+			};
+			menuBar.setOpaque(false);
+			menuBar.setPreferredSize(new Dimension(90, 25));
+			StyleSet.setBorder(menuBar, 1);
+			panelTool.add(menuBar, BorderLayout.EAST);
+			
+			JMenu dispMenu = new JMenu("Fast Forward");
+			dispMenu.setPreferredSize(new Dimension(90, 25));
+			menuBar.add(dispMenu);
+			
+			JMenuItem cbItem = new JMenuItem("Round");
+			cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+			cbItem.setAccelerator(KeyStroke.getKeyStroke('D', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+			dispMenu.add(cbItem);
+			cbItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					nextStep(0);
+				}
+			});
+			menuItems.add(cbItem);
+			
+			cbItem = new JMenuItem("Match");
+			cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+			cbItem.setAccelerator(KeyStroke.getKeyStroke('M', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+			dispMenu.add(cbItem);
+			cbItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					nextStep(1);
+				}
+			});
+			menuItems.add(cbItem);
+			
+			cbItem = new JMenuItem("Run");
+			cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+			cbItem.setAccelerator(KeyStroke.getKeyStroke('R', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+			dispMenu.add(cbItem);
+			cbItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					nextStep(2);
+				}
+			});
+			menuItems.add(cbItem);
+			
+			cbItem = new JMenuItem("Experiment");
+			cbItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+			cbItem.setAccelerator(KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+			dispMenu.add(cbItem);
+			cbItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					nextStep(3);
+				}
+			});
+			menuItems.add(cbItem);
+			
+			btnPause = new JButton("Pause");
+			panelTool.add(btnPause);
+			btnPause.setEnabled(false);
+			btnPause.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					if(connector != null && event.getSource() instanceof JButton) {
+						JButton btnClicked = ((JButton)event.getSource());
+						lblPauseStatus.setVisible(true);
+						if(btnClicked.getText() != null 
+								&& btnClicked.getText().equalsIgnoreCase("Pause")) {
+							connector.pauseSimulation();
+							btnClicked.setText("Resume");
+							lblPauseStatus.setText("Paused");
+							btnClicked.setBackground(Color.LIGHT_GRAY);
+						} else {
+							connector.resumeSimulation();
+							btnClicked.setText("Pause");
+							lblPauseStatus.setText("");
+							btnClicked.setBackground(null);
+						}
+					}
+				}
+			});
+			
+			btnStopCancel = new JButton("Cancel");
+			btnStopCancel.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(connector != null && connector.isActive()) {
+						stopSimulation();
+					} else {
+						openConfiguration(null);
+					}
+				}
+			});
+			panelTool.add(btnStopCancel);
+			
+			JSeparator separator_1 = new JSeparator();
+			panelTool.add(separator_1);
+			separator_1.setOrientation(SwingConstants.VERTICAL);
+			
+			JButton btnConfigure = new JButton("Configure");
+			btnConfigure.setVisible(false);
+			panelTool.add(btnConfigure);
+			
+			lblPauseStatus = new JLabel();
+			panelToolR.add(lblPauseStatus);
+			
+			lblDelayTimer = new JLabel();
+			panelToolR.add(lblDelayTimer);
+			
+			JToggleButton tgbtnChart = new JToggleButton("Simulation Charts");
+			panelToolR.add(tgbtnChart);
+			tgbtnChart.setSelected(false);
+			tgbtnChart.addActionListener(new ActionListener() {
+				@Override
+	            public void actionPerformed(ActionEvent event)
+	            {
+					if(chartPanel != null && chartPanel.getParentFrame() != null)
+						chartPanel.getParentFrame().setVisible(((JToggleButton) event.getSource()).isSelected());
+	            }
+			});
+			
+			JToggleButton tgbtnLog = new JToggleButton("Execution Log");
+			panelToolR.add(tgbtnLog);
+			tgbtnLog.setSelected(false);
+			tgbtnLog.addActionListener(new ActionListener() {
+				@Override
+	            public void actionPerformed(ActionEvent event)
+	            {
+					if(logFrame != null)
+						logFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
+	            }
+			});
+			
+			JToggleButton tgbtnExperimentConfig = new JToggleButton("Simulation Configuration");
+			panelToolR.add(tgbtnExperimentConfig);
+			tgbtnExperimentConfig.setSelected(true);
+			tgbtnExperimentConfig.addActionListener(new ActionListener() {
+				@Override
+	            public void actionPerformed(ActionEvent event)
+	            {
+					if(expConfigFrame != null)
+						expConfigFrame.setVisible(((JToggleButton) event.getSource()).isSelected());
+	            }
+			});
+			
+		}
+	}
+	
+	protected void updateNumOfRuns() {
+		if(textNumOfRuns != null) {
+			int numOfRuns = 0;
+			try {
+				numOfRuns = Integer.parseInt(textNumOfRuns.getText());
+			} catch(NumberFormatException ex) { }
+			if(numOfRuns > 0) {
+				expConfig.updateConfigParam("Number of Runs", numOfRuns + "");
+				JOptionPane.showMessageDialog(this, "The Number of Runs updated successfully.");
+			}
+			textNumOfRuns.setText(expConfig.getPropertyValue("Number of Runs"));
+			if(textExpConfig != null)
+				textExpConfig.setText(expConfig.toStringParams());
+		}
+	}
+
+	protected void nextStep(int type) {
+		long newStamp = Calendar.getInstance().getTimeInMillis();
+		if(newStamp < (lastNextRun + 500)) return;
+		lastNextRun = newStamp;
+		
+		if(connector != null) {
+			if(!connector.isActive()) { 
+				connector.runSimulation();
+				btnStopCancel.setText("Stop");
+			}
+			if(type == 0)
+				connector.nextRound();
+			else if(type == 1)
+				connector.nextMatch();
+			else if(type == 2)
+				connector.nextRun();
+			else if(type == 3)
+				connector.nextExperiment();
+			cancelIfPaused();
+		}
+	}
+
+	public boolean setConfiguration(ExperimentConfiguration mExpConfig, boolean isBatchMode)
+	{
+		if(mExpConfig == null) return false;
+		
 		this.expConfig = mExpConfig;
+		setToolBar(isBatchMode);
+		if(textNumOfRuns != null)
+			textNumOfRuns.setText(expConfig.getPropertyValue("Number of Runs"));
+		
 		connector = new ConfigConnector();
+		connector.setBatchMode(isBatchMode);
 		long experimentId = connector.initExperiment(expConfig);
 		if(connector.initSimulation()) {
+			bValidConfiguration = true;
 			lstTeamPanels = new ArrayList<RunTeamPanel>();
-			connector.setThreadDelay(slider.getValue());
+			if(slider != null)
+				connector.setThreadDelay(slider.getValue());
 			connector.addPropertyChangeListener(new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					updateFrames(event.getPropertyName(), event.getNewValue());
-					if(event.getPropertyName().equalsIgnoreCase("Waiting") 
+					if(event.getPropertyName() != null 
+							&& event.getPropertyName().equalsIgnoreCase("Waiting") 
 							&& connector != null && !connector.isInStepMode()  && !connector.isPaused()) {
 						lblDelayTimer.setVisible(true);
 						Timer timer = new Timer();
@@ -477,7 +549,7 @@ public class RunContainerFrame extends JFrame {
 				            public void run() {
 				            	seconds--;
 				            	lblDelayTimer.setText(seconds + " Seconds before next step.");
-				                if (seconds < 1 || connector.isInStepMode()) {
+				                if (seconds < 1 || connector.isInStepMode() || connector.isPaused()) {
 				                	lblDelayTimer.setText("");
 				                	cancel();
 				                }
@@ -486,10 +558,12 @@ public class RunContainerFrame extends JFrame {
 					}
 				}
 			});
-			createLogFrame();
-			createChartFrame();
-			addFrames();
-			bValidConfiguration = true;
+			addExperimentConfiguration();
+			createChartFrame(isBatchMode);
+			if(!isBatchMode) {
+				createLogFrame();
+				addFrames();
+			}
 		} else {
 			bValidConfiguration = false;
 			openConfiguration(this);
@@ -502,7 +576,8 @@ public class RunContainerFrame extends JFrame {
 	}
 	
 	public void setDelay(int threadDelay) {
-		slider.setValue(threadDelay);
+		if(slider != null)
+			slider.setValue(threadDelay);
 	}
 	
 	private void cancelIfPaused()
@@ -528,13 +603,12 @@ public class RunContainerFrame extends JFrame {
 	
 	private void addFrames()
 	{
-		addExperimentConfiguration();
-		
 		int teamSize = Integer.parseInt(expConfig.getPropertyValue("Team Size"));
 		int boardSize = Integer.parseInt(expConfig.getPropertyValue("Board Size"));
 		
 		int iIndex = 0;
 		for(TeamConfiguration teamConfig : expConfig.getTeams()) {
+			if(teamConfig == null) continue;
 			createFrame(iIndex, teamSize, boardSize, teamConfig);
 			iIndex++;
 		}
@@ -553,7 +627,8 @@ public class RunContainerFrame extends JFrame {
 		controller.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
-				if(event.getPropertyName().equalsIgnoreCase("WindowState")) {
+				if(event.getPropertyName() != null 
+						&& event.getPropertyName().equalsIgnoreCase("WindowState")) {
 					if(event.getSource() instanceof RunTeamPanel) {
 						RunTeamPanel controller = (RunTeamPanel)event.getSource();
 						if((WindowState)event.getNewValue() == WindowState.Independent) {
@@ -563,17 +638,17 @@ public class RunContainerFrame extends JFrame {
 								controller.getParentFrame().addWindowListener(new WindowAdapter() {
 						            @Override
 						            public void windowClosing(WindowEvent we) {
-						                //controller.moveToWindow();
-						            	if(((JFrame)we.getSource()).getContentPane().getComponentCount() > 0 &&
-						            			((JFrame)we.getSource()).getContentPane().getComponent(0) instanceof RunTeamPanel)
-						            	{
-						            		((RunTeamPanel)((JFrame)we.getSource()).getContentPane().getComponent(0)).moveToWindow();
+						            	if(we.getSource() instanceof JFrame && ((JFrame)we.getSource()).getContentPane() != null) {
+							            	if(((JFrame)we.getSource()).getContentPane().getComponentCount() > 0 &&
+							            			((JFrame)we.getSource()).getContentPane().getComponent(0) instanceof RunTeamPanel)
+							            	{
+							            		((RunTeamPanel)((JFrame)we.getSource()).getContentPane().getComponent(0)).moveToWindow();
+							            	}
+							            	((JFrame)we.getSource()).setVisible(false);
 						            	}
-						            	((JFrame)we.getSource()).setVisible(false);
 						            }
 						        });
 							}
-							//controller.getParentFrame().removeAll();
 							controller.getParentFrame().add(controller);
 							controller.getParentFrame().pack();
 							controller.getParentFrame().setVisible(true);
@@ -585,7 +660,6 @@ public class RunContainerFrame extends JFrame {
 								JInternalFrame frame = createInternalFrameInstance(controller.getTeamName(), 0);
 								controller.setParentIntFrame(frame);
 							}
-							//controller.getParentIntFrame().removeAll();
 							controller.getParentIntFrame().add(controller);
 							controller.getParentIntFrame().setVisible(true);
 							if(controller.getParentFrame() != null) {
@@ -597,8 +671,7 @@ public class RunContainerFrame extends JFrame {
 			}
 		});
 		controller.setParentIntFrame(frame);
-		RunKeyDispatcher dispatcher = new RunKeyDispatcher();
-		controller.registerKeyDispatcher(dispatcher);
+		controller.registerKeyDispatcher(new RunKeyDispatcher());
 		frame.add(controller);
 		lstTeamPanels.add(controller);
 		Dimension maxSize = controller.getMaximumSize();
@@ -610,7 +683,9 @@ public class RunContainerFrame extends JFrame {
 	private JInternalFrame createInternalFrameInstance(String teamName, int iIndex)
 	{
 		JInternalFrame frame = new JInternalFrame(teamName, true, false, false, true);
-		((javax.swing.plaf.basic.BasicInternalFrameUI) frame.getUI()).getNorthPane().remove(0);
+		if(frame.getUI() != null 
+				&& ((javax.swing.plaf.basic.BasicInternalFrameUI) frame.getUI()).getNorthPane() != null)
+			((javax.swing.plaf.basic.BasicInternalFrameUI) frame.getUI()).getNorthPane().remove(0);
 		frame.setBorder(new LineBorder(new Color(70, 70, 70), 2));
 		frame.setFrameIcon(new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/Recording-ico.png")));
 		
@@ -639,7 +714,9 @@ public class RunContainerFrame extends JFrame {
 	private void createLogFrame()
 	{
 		logFrame = new JInternalFrame("Execution Log", true, false, false, true);
-		((javax.swing.plaf.basic.BasicInternalFrameUI) logFrame.getUI()).getNorthPane().remove(0);
+		if(logFrame.getUI() != null 
+				&& ((javax.swing.plaf.basic.BasicInternalFrameUI) logFrame.getUI()).getNorthPane() != null)
+			((javax.swing.plaf.basic.BasicInternalFrameUI) logFrame.getUI()).getNorthPane().remove(0);
 		logFrame.setBorder(new LineBorder(new Color(70, 70, 70), 2));
 		logFrame.setFrameIcon(new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/Recording-ico.png")));		
 		int width = screenSize.width;
@@ -663,12 +740,32 @@ public class RunContainerFrame extends JFrame {
 		desktop.add(logFrame);
 	}
 	
-	private void createChartFrame()
+	private void createChartFrame(boolean isBatchMode)
 	{
-		chartFrame = new ChartFrame();
-		chartFrame.setVisible(false);
-		RunKeyDispatcher dispatcher = new RunKeyDispatcher();
-		chartFrame.registerKeyDispatcher(dispatcher);
+		chartPanel = new ChartsPanel();
+		if(isBatchMode) {
+			JInternalFrame chartFrame = createInternalFrameInstance("Charts", 0);
+			chartFrame.add(chartPanel);
+			chartPanel.setParentIntFrame(chartFrame);
+			int width = desktop.getBounds().width;
+			int height = desktop.getBounds().height - 70;
+			desktop.setPreferredSize(new Dimension(width- 5, height));
+		} else {
+			JFrame chartFrame = new JFrame();
+			chartFrame.setTitle("MASSIM - Charts");
+			chartFrame.setLocationRelativeTo(null);
+			chartFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			chartFrame.addWindowListener( new WindowAdapter() {
+		            @Override
+		            public void windowClosing(WindowEvent we) {
+		            	((JFrame)we.getSource()).setVisible(false);
+		            }
+			});
+			FrameManager.setMaximize(chartFrame);
+			chartFrame.add(chartPanel);
+			chartPanel.registerKeyDispatcher(new RunKeyDispatcher());
+			chartPanel.setParentFrame(chartFrame);
+		}
 	}
 	
 	private void updateFrames(String strPropertyName, Object propValue) 
@@ -700,8 +797,10 @@ public class RunContainerFrame extends JFrame {
 			if(lstTeamPanels.size() == 0) addFrames();
 			int index = 0;
 			for(RunTeamPanel team : lstTeamPanels) {
-				team.updateAgentStats(lstAgentStats.get(index), (connector != null && !connector.isInStepMode()) ? slider.getValue() : 0);
-				team.revalidate();
+				if(team != null && lstAgentStats.size() > index) {
+					team.updateAgentStats(lstAgentStats.get(index), (connector != null && !connector.isInStepMode() && slider != null) ? slider.getValue() : 0);
+					team.revalidate();
+				}
 				index++;
 			}
 		}
@@ -709,16 +808,20 @@ public class RunContainerFrame extends JFrame {
 			int[][] theBoard = (int[][])propValue;
 			if(lstTeamPanels.size() == 0) addFrames();
 			for(RunTeamPanel team : lstTeamPanels) {
-				team.updateBoard(theBoard);
-				team.revalidate();
+				if(team != null) {
+					team.updateBoard(theBoard);
+					team.revalidate();
+				}
 			}
 		}
 		else if(strPropertyName.equalsIgnoreCase("TeamScore")) {
 			List<Integer> lstTeamScores = (List<Integer>)propValue;
 			int index = 0;
 			for(RunTeamPanel team : lstTeamPanels) {
-				team.updateTeamScore(lstTeamScores.get(index));
-				team.revalidate();
+				if(team != null && lstTeamScores.size() > index) {
+					team.updateTeamScore(lstTeamScores.get(index));
+					team.revalidate();
+				}
 				index++;
 			}
 		}
@@ -730,7 +833,7 @@ public class RunContainerFrame extends JFrame {
 				teamScores[index] = lstTeamScores[index];
 				teamNames[index] = expConfig.getTeams().get(index).getPropertyValue("Team Name");
 			}
-			chartFrame.addData(connector.getCurrentSimulationParameters(), teamScores, teamNames);
+			chartPanel.addData(connector.getCurrentSimulationParameters(), teamScores, teamNames);
 		}
 		else if(strPropertyName.equalsIgnoreCase("Log")) {
 			String detailLog = propValue + "";
@@ -738,19 +841,22 @@ public class RunContainerFrame extends JFrame {
 		}
 		else if(strPropertyName.equalsIgnoreCase("TeamLog")) {
 			List<String> lstDetailLogs = (List<String>)propValue;
-			/*for(String detailLog : lstDetailLogs) {
-				textDetailLog.setText(textDetailLog.getText() + "\n" + detailLog);
-			}*/
 			int index = 0;
 			for(RunTeamPanel team : lstTeamPanels) {
-				team.updateLog(lstDetailLogs.get(index));
-				team.revalidate();
+				if(team != null) {
+					team.updateLog(lstDetailLogs.get(index));
+					team.revalidate();
+				}
 				index++;
 			}
 		}
-		else if(strPropertyName.equalsIgnoreCase("ExpComplete")) {
+		else if(strPropertyName.equalsIgnoreCase("SimComplete")) {
 			JOptionPane.showMessageDialog(this, "The simulation finished successfully.");
-			lblDelayTimer.setVisible(false);
+			if(lblDelayTimer != null)
+				lblDelayTimer.setVisible(false);
+			if(btnStopCancel != null) {
+				btnStopCancel.setText("Finish");
+			}
 		}
 	}
 	
@@ -758,7 +864,9 @@ public class RunContainerFrame extends JFrame {
 	{
 		if(expConfigFrame == null) {
 			expConfigFrame = new JInternalFrame("");
-			((javax.swing.plaf.basic.BasicInternalFrameUI) expConfigFrame.getUI()).setNorthPane(null);
+			if(expConfigFrame.getUI() != null 
+					&& ((javax.swing.plaf.basic.BasicInternalFrameUI) expConfigFrame.getUI()).getNorthPane() != null)
+				((javax.swing.plaf.basic.BasicInternalFrameUI) expConfigFrame.getUI()).setNorthPane(null);
 			StyleSet.setBorder(expConfigFrame, 1);
 			expConfigFrame.setSize(new Dimension(202, 404));
 			expConfigFrame.setLayout(new BoxLayout(expConfigFrame.getContentPane(), BoxLayout.Y_AXIS));
@@ -803,12 +911,12 @@ public class RunContainerFrame extends JFrame {
 	
 	private void stopSimulation()
 	{
-		int confirmDel = JOptionPane.showConfirmDialog(
+		int confirmStop = JOptionPane.showConfirmDialog(
 			    this,
 			    "Are you sure you want to stop this experiment?",
 			    "Stop",
 			    JOptionPane.YES_NO_OPTION);
-		if(confirmDel == 0) {
+		if(confirmStop == 0) {
 			if(connector != null) {
 				connector.stopExperiment();
 			}
@@ -822,16 +930,16 @@ public class RunContainerFrame extends JFrame {
 		if(lstTeamPanels != null)
 		{
 			for(RunTeamPanel panel : lstTeamPanels) {
-				if(panel.getParentFrame() != null)
+				if(panel != null && panel.getParentFrame() != null)
 				{
 					panel.getParentFrame().setVisible(false);
 					panel.getParentFrame().dispose();
 				}
 			}
 		}
-		if(chartFrame != null) {
-			chartFrame.setVisible(false);
-			chartFrame.dispose();
+		if(chartPanel != null && chartPanel.getParentFrame() != null) {
+			chartPanel.getParentFrame().setVisible(false);
+			chartPanel.getParentFrame().dispose();
 		}
 		if(currentInstance == null) {
 			FrameManager.removeFrame(this);
@@ -856,7 +964,7 @@ public class RunContainerFrame extends JFrame {
 		
 		if(menuItems != null) {
 			for(JMenuItem menuItem : menuItems) {
-				if(menuItem.getAccelerator() != null) {
+				if(menuItem != null && menuItem.getAccelerator() != null) {
 					if(menuItem.getAccelerator().getKeyCode() == event.getKeyCode()) {
 						menuItem.doClick();
 						return;
