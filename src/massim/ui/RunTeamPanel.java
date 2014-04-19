@@ -653,10 +653,10 @@ public class RunTeamPanel extends JScrollPane {
 			
 			for(int iIndex = 0; iIndex < teamSize; iIndex++)
 			{
-				data[iIndex][0] = iIndex + 1;
-				data[iIndex][1] = "(" + (initPos.get(iIndex)[0] + 1) + "," + (initPos.get(iIndex)[1] + 1) + ")" + " > " 
-									+ "(" + (currentPos.get(iIndex)[0] + 1) + "," + (currentPos.get(iIndex)[1] + 1) + ")" 
-									+ " > (" + (goalPos.get(iIndex)[0] + 1) + "," + (goalPos.get(iIndex)[1] + 1) + ")";
+				data[iIndex][0] = iIndex;
+				data[iIndex][1] = "(" + (initPos.get(iIndex)[0]) + "," + (initPos.get(iIndex)[1]) + ")" + " > " 
+									+ "(" + (currentPos.get(iIndex)[0]) + "," + (currentPos.get(iIndex)[1]) + ")" 
+									+ " > (" + (goalPos.get(iIndex)[0]) + "," + (goalPos.get(iIndex)[1]) + ")";
 				data[iIndex][2] = Math.abs(currentPos.get(iIndex)[0] - initPos.get(iIndex)[0]) + Math.abs(currentPos.get(iIndex)[1] - initPos.get(iIndex)[1]);
 				data[iIndex][3] = Math.abs(goalPos.get(iIndex)[0] - currentPos.get(iIndex)[0]) + Math.abs(goalPos.get(iIndex)[1] - currentPos.get(iIndex)[1]);
 				data[iIndex][4] = initResPoints.get(iIndex);

@@ -357,7 +357,7 @@ public class Team {
 			System.out.println("[Team " + id + "]: " + msg);
 		}
 		if(logger != null && bLoggerOn)
-			logger.logEvent(LogType.Team, teamIndex, "[Team#" + id + "]:"  + msg + "\n");
+			logger.logEvent(LogType.Team, teamIndex, "[Team#" + teamIndex + "]:"  + msg + "\n");
 	}
 	
 	/**

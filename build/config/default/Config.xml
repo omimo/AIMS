@@ -1,0 +1,678 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<experimentConfiguration>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Numer of times to run the simulation.</description>
+        <inputType>FreeText</inputType>
+        <name>Number of Runs</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataItems>8</dataItems>
+        <dataItems>7</dataItems>
+        <dataItems>6</dataItems>
+        <dataItems>5</dataItems>
+        <dataItems>4</dataItems>
+        <dataType>Integer</dataType>
+        <description>Number of distinct colors on board.</description>
+        <inputType>FixedChoices</inputType>
+        <name>Number of Colors</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Possible action costs to choose from for each color for each agent.</description>
+        <inputType>FreeText</inputType>
+        <name>Action Costs</name>
+        <range>false</range>
+        <valueType>Multiple</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Numer of agents in the team</description>
+        <inputType>FreeText</inputType>
+        <name>Team Size</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Size of the square board. NxN</description>
+        <inputType>FreeText</inputType>
+        <name>Board Size</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataItems>1</dataItems>
+        <dataItems>2</dataItems>
+        <dataItems>3</dataItems>
+        <dataType>Integer</dataType>
+        <description>Cost to send a message to one agent.</description>
+        <incrDataItems>1</incrDataItems>
+        <incrDataItems>2</incrDataItems>
+        <incrDataItems>3</incrDataItems>
+        <inputType>OptionalDropDown</inputType>
+        <name>Unicast Cost</name>
+        <range>true</range>
+        <toDataItems>1</toDataItems>
+        <toDataItems>2</toDataItems>
+        <toDataItems>3</toDataItems>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataItems>1</dataItems>
+        <dataItems>2</dataItems>
+        <dataItems>3</dataItems>
+        <dataType>Integer</dataType>
+        <description>Cost to do calculation to offer/ask for help. </description>
+        <incrDataItems>1</incrDataItems>
+        <incrDataItems>2</incrDataItems>
+        <incrDataItems>3</incrDataItems>
+        <inputType>OptionalDropDown</inputType>
+        <name>Calc Cost</name>
+        <range>true</range>
+        <toDataItems>1</toDataItems>
+        <toDataItems>2</toDataItems>
+        <toDataItems>3</toDataItems>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataItems>1</dataItems>
+        <dataItems>2</dataItems>
+        <dataItems>3</dataItems>
+        <dataType>Decimal</dataType>
+        <description>Probability of change of colors on the board. Put any value between 0 to 1.0</description>
+        <incrDataItems>1</incrDataItems>
+        <incrDataItems>2</incrDataItems>
+        <incrDataItems>3</incrDataItems>
+        <inputType>OptionalDropDown</inputType>
+        <name>Disturbance</name>
+        <range>true</range>
+        <toDataItems>1</toDataItems>
+        <toDataItems>2</toDataItems>
+        <toDataItems>3</toDataItems>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Overhead in case agent offers help</description>
+        <inputType>FreeText</inputType>
+        <name>Help Overhead</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Overhead in case agent performs action for other.</description>
+        <inputType>FreeText</inputType>
+        <name>Assignment Overhead</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Reward points for one step moved.</description>
+        <inputType>FreeText</inputType>
+        <name>Cell Reward</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Reward points for reaching the goal.</description>
+        <inputType>FreeText</inputType>
+        <name>Achievement Reward</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Coefficient to calculate initial resource assigned by multiplication with number of steps to reach goal.</description>
+        <inputType>FreeText</inputType>
+        <name>Initial Resource Coefficient</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataItems>Yes</dataItems>
+        <dataItems>No</dataItems>
+        <dataType>Text</dataType>
+        <description>Whether to add remaining resources in the final reward points.</description>
+        <inputType>FixedChoices</inputType>
+        <name>Use Remaining Resources</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configValues>
+        <entry>
+            <key>Action Costs</key>
+            <value>10,40,70,100,300,400,450,500</value>
+        </entry>
+        <entry>
+            <key>Board Size</key>
+            <value>10</value>
+        </entry>
+        <entry>
+            <key>Unicast Cost</key>
+            <value>1,1,5</value>
+        </entry>
+        <entry>
+            <key>Number of Runs</key>
+            <value>20</value>
+        </entry>
+        <entry>
+            <key>Assignment Overhead</key>
+            <value>10</value>
+        </entry>
+        <entry>
+            <key>Number of Colors</key>
+            <value>6</value>
+        </entry>
+        <entry>
+            <key>Team Size</key>
+            <value>8</value>
+        </entry>
+        <entry>
+            <key>Help Overhead</key>
+            <value>30</value>
+        </entry>
+        <entry>
+            <key>Cell Reward</key>
+            <value>100</value>
+        </entry>
+        <entry>
+            <key>Initial Resource Coefficient</key>
+            <value>150</value>
+        </entry>
+        <entry>
+            <key>Use Remaining Resources</key>
+            <value>Yes</value>
+        </entry>
+        <entry>
+            <key>Calc Cost</key>
+            <value>1</value>
+        </entry>
+        <entry>
+            <key>Disturbance</key>
+            <value>0.1,0.1,0.5</value>
+        </entry>
+        <entry>
+            <key>Achievement Reward</key>
+            <value>2000</value>
+        </entry>
+    </configValues>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Decimal</dataType>
+            <description>Low watermark value to compare wellbeing for requesting help.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>WLL</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Request help in case cost is greater than Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Request help in case cost is lower than Lowcost threshold</description>
+            <inputType>FreeText</inputType>
+            <name>Lowcost Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataType>Integer</dataType>
+            <description>Which version of importance function to use.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Importance Version</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Integer</dataType>
+            <description>Factor to calculate importance of hel action.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>Proximity Bias</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>Proximity Bias</key>
+                <value>10</value>
+            </entry>
+            <entry>
+                <key>Importance Version</key>
+                <value>2</value>
+            </entry>
+            <entry>
+                <key>WLL</key>
+                <value>-0.5</value>
+            </entry>
+            <entry>
+                <key>WindowColor</key>
+                <value>#F9F9F9</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>Advanced Action MAP</value>
+            </entry>
+            <entry>
+                <key>Lowcost Threshold</key>
+                <value>50</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>Advanced Action MAP</value>
+            </entry>
+            <entry>
+                <key>Request Threshold</key>
+                <value>299</value>
+            </entry>
+        </configValues>
+        <teamType>AdvActionMAP</teamType>
+    </teams>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Decimal</dataType>
+            <description>Low watermark value to compare wellbeing for requesting help.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>WLL</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Decimal</dataType>
+            <description>Low watermark value to compare wellbeing for replaning.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>WREP</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Request help in case cost is greater than Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Request help in case cost is lower than Lowcost threshold</description>
+            <inputType>FreeText</inputType>
+            <name>Lowcost Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataType>Integer</dataType>
+            <description>Which version of importance function to use.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Importance Version</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Integer</dataType>
+            <description>Factor to calculate importance of hel action.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>Proximity Bias</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>Proximity Bias</key>
+                <value>10</value>
+            </entry>
+            <entry>
+                <key>Importance Version</key>
+                <value>2</value>
+            </entry>
+            <entry>
+                <key>WLL</key>
+                <value>-0.5</value>
+            </entry>
+            <entry>
+                <key>WindowColor</key>
+                <value>#F9D9D9</value>
+            </entry>
+            <entry>
+                <key>WREP</key>
+                <value>1.0</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>Advanced Action MAP Replaning</value>
+            </entry>
+            <entry>
+                <key>Lowcost Threshold</key>
+                <value>50</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>Advanced Action MAP Replaning</value>
+            </entry>
+            <entry>
+                <key>Request Threshold</key>
+                <value>299</value>
+            </entry>
+        </configValues>
+        <teamType>AdvActionMAPRep</teamType>
+    </teams>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Integer</dataType>
+            <description>Request help in case cost is greater than Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>WindowColor</key>
+                <value>#E9F9E9</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>Basic Action MAP</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>Basic Action MAP</value>
+            </entry>
+            <entry>
+                <key>Request Threshold</key>
+                <value>299</value>
+            </entry>
+        </configValues>
+        <teamType>BasicActionMAP</teamType>
+    </teams>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Decimal</dataType>
+            <description>Offer help if wellbeing is higher than Higher value watermark.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>WHH</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Do not offer help for action for which the cost is greater than Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataType>Integer</dataType>
+            <description>Which version of importance function to use.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Importance Version</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Integer</dataType>
+            <description>Factor to calculate importance of hel action.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>Proximity Bias</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>Proximity Bias</key>
+                <value>10</value>
+            </entry>
+            <entry>
+                <key>Importance Version</key>
+                <value>2</value>
+            </entry>
+            <entry>
+                <key>WHH</key>
+                <value>0.3</value>
+            </entry>
+            <entry>
+                <key>WindowColor</key>
+                <value>#F9E9E9</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>HIAMAP</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>Helper Initiated Action MAP</value>
+            </entry>
+            <entry>
+                <key>Request Threshold</key>
+                <value>299</value>
+            </entry>
+        </configValues>
+        <teamType>HIAMAP</teamType>
+    </teams>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>WindowColor</key>
+                <value>#E9E9F9</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>No Help</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>No Help</value>
+            </entry>
+        </configValues>
+        <teamType>NoHelp</teamType>
+    </teams>
+</experimentConfiguration>

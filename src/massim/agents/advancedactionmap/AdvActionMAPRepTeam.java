@@ -23,7 +23,7 @@ public class AdvActionMAPRepTeam extends Team {
 	public TeamRoundCode round(Board board) {
 		TeamRoundCode code = super.round(board);
 		if(code == TeamRoundCode.DONE) {
-			logInf("Total replans : " + getReplanCounts());
+			logInf("Replanning Count = " + getReplanCounts());
 		}
 		return code;
 	}

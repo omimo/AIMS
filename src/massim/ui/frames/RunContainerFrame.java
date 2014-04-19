@@ -206,8 +206,9 @@ public class RunContainerFrame extends JFrame {
 					if(connector != null) {
 						if(!connector.isActive())
 							connector.runSimulation();
-						if(btnStopCancel != null)
-							btnStopCancel.setEnabled(true);
+						if(btnStopCancel != null) {
+							btnStopCancel.setText("Stop");
+						}
 					}
 					if(e.getSource() instanceof JButton)
 						((JButton)e.getSource()).setEnabled(false);
@@ -215,8 +216,7 @@ public class RunContainerFrame extends JFrame {
 			});
 			panelTool.add(btnStart);
 			
-			btnStopCancel = new JButton("Stop");
-			btnStopCancel.setEnabled(false);
+			btnStopCancel = new JButton("Cancel");
 			btnStopCancel.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {

@@ -106,7 +106,7 @@ public class AdvActionMAPRepAgent extends Agent {
 		logInf("My goal position: " + goalPos().toString());	
 		
 		oldBoard = null;
-		replanCount = 0;
+		//replanCount = 0;
 	}
 	
 	/** 

@@ -117,6 +117,8 @@ public abstract class Agent {
 		//Denish, 2014/03/26
 		this.initResourcePoints = initResourcePoints;
 		
+		//Denish, 2014/04/13
+		roundNumber = 0;
 		/*
 		numOfHelpReq = 0;
 		numOfBids = 0;
@@ -137,7 +139,8 @@ public abstract class Agent {
 	 */
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
 		this.theBoard = board;
-
+		//Denish, 2014/04/13
+		roundNumber++;
 	}
 
 	/**
@@ -536,6 +539,7 @@ public abstract class Agent {
 	//Denish, 2014/03/26
 	protected int initResourcePoints;
 	private String strLastAction;
+	private int roundNumber = 0;
 	protected String getLastAction() {
 		return strLastAction;
 	}
@@ -549,7 +553,7 @@ public abstract class Agent {
 	}
 	protected void logInf(String msg) {
 		if(logger != null)
-			logger.logEvent(LogType.Agent, agentIndex, "[Agent " + id() + "]: " + msg);
+			logger.logEvent(LogType.Agent, agentIndex, "[Ag# " + id() + ", Round# " + roundNumber + "]: " + msg);
 	}
 	/**
 	 * Calculates the cost of replanning (finding new path) based on the complexity of the PolajnarPath algorithm.
