@@ -1,13 +1,11 @@
 package massim.agents.nohelp;
 
-import massim.RowCol;
 import massim.Team;
 
 /**
  * 
+ * @author Omid Alemi - Mojtaba
  * 
- * @author Omid Alemi
- * @version 2.0 2011/10/31
  */
 public class NoHelpRepTeam extends Team {	
 	
@@ -24,6 +22,13 @@ public class NoHelpRepTeam extends Team {
 		
 		setAgents(selfishAgents);
 	}	
-		
+
+	public int getReplanCounts() {
+		int sum = 0;
+		for(int i=0;i<Team.teamSize;i++)
+			sum += ((NoHelpRepAgent)agent(i)).replanCount;
+		return sum;
+	}
+	
 }
 

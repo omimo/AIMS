@@ -86,6 +86,7 @@ public class TeamsPanel extends JPanel {
 		this.expConfig = mExpConfig;
 		panelTeams.removeAll();
 		lstTeams.clear();
+		teamCount = 0;
 		for(TeamConfiguration teamConfig : expConfig.getTeams())
 		{
 			TeamPanel pnlTeam = new TeamPanel(teamCount, teamConfig, false);

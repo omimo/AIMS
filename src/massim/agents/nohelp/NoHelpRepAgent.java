@@ -1,8 +1,5 @@
 package massim.agents.nohelp;
 
-import org.junit.Test;
-
-import massim.Board;
 import massim.CommMedium;
 import massim.Path;
 import massim.RowCol;
@@ -13,22 +10,12 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	boolean dbgErr = true;
 	
 	public static double WREP; 
-	
-	private int[][] oldBoard;
-	private double disturbanceLevel;
+	int replanCount;
 	
 	public NoHelpRepAgent(int id, CommMedium comMed) {
-		super(id, comMed);
-		// TODO Auto-generated constructor stub
-	}
-	
-	
-	@Override
-	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
-		super.initializeRound(board, actionCostsMatrix);				
 		
-		disturbanceLevel = calcDistrubanceLevel();
-		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
+		super(id, comMed);
+		replanCount=0;
 	}
 	
 	/**
@@ -37,43 +24,30 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
-		logInf("REP Send Cycle");	
 		
-		if (wellbeing() < NoHelpRepAgent.WREP)
-		{
-			findPath();			
-			logInf("Replanning: Chose this path: "+ path().toString());
+		logInf("Replan Send Cycle");	
+		double wellbeing = wellbeing();
+		logInf("My wellbeing = " + wellbeing);
+		
+		if (wellbeing < NoHelpRepAgent.WREP && canReplan()) {
+			findPath();
+			logInf("Replanning: Chose this path: " + path().toString());
+			replanCount++;
+			wellbeing = wellbeing();
+			logInf("My wellbeing = " + wellbeing);
 		}
 		
 		return super.sendCycle();
 	}
-	
 
 	/**
-	 * Finalizes the round by moving the agent.
-	 * 
-	 * Also determines the current state of the agent which can be
-	 * reached the goal, blocked, or ready for next round.  
-	 * 
-	 * @return 						Returns the current state 
-	 */
-	@Override
-	protected AgGameStatCode finalizeRound() {			
-		logInf("REP Finalizing the round ...");				
-				
-		keepBoard();
-	
-		return super.finalizeRound();
-	}
-	
-	
-	/**
-	 * Calculated the estimated cost for the agent to move through path p.
+	 * Calculates the estimated cost of a path p.
 	 * 
 	 * @param p						The agent's path
 	 * @return						The estimated cost
 	 */
-	private double estimatedCost(Path p) {		
+	private double estimatedCost(Path p) {
+		
 		int l = p.getNumPoints();
 		double sigma = 1 - disturbanceLevel;
 		double eCost = 0.0;		
@@ -93,16 +67,19 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	}
 	
 	/**
-	 * Calculates the agent's wellbeing.
+	 * Calculates the agent's well being. Eq: (Res - Ecost) / ((RemLen + 1) * AvgCost)
 	 * 
-	 * @return						The agent's wellbeing
+	 * @return						The agent's well being
 	 */
 	protected double wellbeing() {		
-		double eCost = estimatedCost(remainingPath(pos()));
-		if (eCost == 0)
-			return resourcePoints();
-		else
-			return (double)resourcePoints()/eCost;
+		
+		Path pRemaining = remainingPath(pos());
+		double eCost = estimatedCost(pRemaining);
+		double avgCost = getAverage(actionCosts());
+		double resPoints = resourcePoints(); 
+		double resWB = (resPoints - eCost)/
+				((pRemaining.getNumPoints() + 1) * avgCost);
+		return resWB;
 	}
 	
 	/**
@@ -125,55 +102,12 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	}
 	
 	/**
-	 * Calculates the average of the given integer array.
+	 * Checks whether the agent has enough resources in order to replan
 	 * 
-	 * @return						The average.
+	 * @author Mojtaba
 	 */
-	private double getAverage(int[] array) {
-		int sum = 0;
-		for (int i=0;i<array.length;i++)
-			sum+=array[i];
-		return (double)sum/array.length;
-	}
-	
-	/**
-	 * Calculates the disturbance level of the board.
-	 * 
-	 * This compares the current state of the board with the stored state
-	 * from the previous round.
-	 * 
-	 * @return				The level of disturbance.
-	 */
-	private double calcDistrubanceLevel() {
-		if (oldBoard == null)
-			return 0.0;
-		
-		int changeCount = 0;		
-		for (int i=0;i<theBoard().rows();i++)
-			for (int j=0;j<theBoard().cols();j++)
-				if (theBoard().getBoard()[i][j] != oldBoard[i][j])
-					changeCount++;	
-		
-		return (double)changeCount / (theBoard().rows() * theBoard().cols());
-	}
-	
-	/**
-	 * Keeps the current state of the board for calculating the disturbance
-	 * in the next round of the game.
-	 * 
-	 * This copied theBoard into oldBoard. 
-	 */
-	private void keepBoard() {
-		
-		int rows = theBoard().rows();
-		int cols = theBoard().cols();
-		
-		if (oldBoard == null) /* first round */
-			oldBoard = new int[rows][cols];
-		
-		for (int i=0;i<rows;i++)
-			for (int j=0;j<cols;j++)
-				oldBoard[i][j] = theBoard().getBoard()[i][j];	
+	private boolean canReplan() {
+		return (resourcePoints() >= planCost());
 	}
 	
 	
@@ -188,8 +122,6 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	protected void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[NoHelpRepAgent " + id() + "]: " + msg);
-		//Denish, 2014/03/30
-		super.logInf(msg);
 	}
 	
 	/**
@@ -205,3 +137,4 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	}
 
 }
+

@@ -7,7 +7,9 @@ import massim.Board;
 import massim.CommMedium;
 import massim.Message;
 import massim.Path;
+import massim.PolajnarPath2;
 import massim.RowCol;
+import massim.SimulationEngine;
 import massim.Team;
 import massim.TeamTask;
 
@@ -78,6 +80,7 @@ public class AdvActionMAPRepAgent extends Agent {
 	 * 								communication medium
 	 */
     public AdvActionMAPRepAgent(int id, CommMedium comMed) {
+    	
 		super(id, comMed);
 		replanCount=0;
 	}
@@ -106,7 +109,6 @@ public class AdvActionMAPRepAgent extends Agent {
 		logInf("My goal position: " + goalPos().toString());	
 		
 		oldBoard = null;
-		//replanCount = 0;
 	}
 	
 	/** 
@@ -557,8 +559,9 @@ public class AdvActionMAPRepAgent extends Agent {
 			for (int j=0;j<theBoard().cols();j++)
 				if (theBoard().getBoard()[i][j] != oldBoard[i][j])
 					changeCount++;	
-		
-		return (double)changeCount / (theBoard().rows() * theBoard().cols());
+		double change = (double)changeCount / (theBoard().rows() * theBoard().cols());
+		//Mojtaba, 2014/04/20
+		return change * (double)SimulationEngine.numOfColors/(SimulationEngine.numOfColors - 1);
 	}
 	
 	/**
@@ -581,7 +584,7 @@ public class AdvActionMAPRepAgent extends Agent {
 	}
 	
 	/**
-	 * Calculated the estimated cost for the agent to move through path p.
+	 * Calculates the estimated cost of a path p.
 	 * 
 	 * @param p						The agent's path
 	 * @return						The estimated cost
@@ -1143,4 +1146,64 @@ public class AdvActionMAPRepAgent extends Agent {
 							   "]: " + msg);
 	}
 	
+	/**
+	 * Finds the lowest cost path among shortest paths of a rectangular board
+	 * based on the Polajnar's algorithm V2.
+	 * 
+	 * The method uses the agents position as the starting point and the goal
+	 * position as the ending point of the path.
+	 * 
+	 * @author Mojtaba
+	 */
+	
+	@Override
+	protected void findPath() {
+		if (mySubtask() != -1)
+		{
+			PolajnarPath2 pp = new PolajnarPath2();
+			Path shortestPath = new Path(pp.findShortestPath(
+					estimBoardCosts(theBoard.getBoard()), 
+					currentPositions[mySubtask()], goalPos()));
+			path = new Path(shortestPath);
+			
+			decResourcePoints(planCost());
+		}
+		else 
+			path = null;
+	}
+	
+	/**
+	 * Returns a two dimensional array representing the estimated cost
+	 * of cells with i, j coordinates
+	 * 
+	 * @author Mojtaba
+	 */
+	private int[][] estimBoardCosts(int[][] board) {
+		
+		int[][] eCosts = new int[board.length][board[0].length];
+		
+		for (int i = 0; i < eCosts.length; i++)
+			for (int j = 0; j < eCosts[0].length; j++) {
+				
+				eCosts[i][j] = estimCellCost(i ,j);
+			}
+						
+		return eCosts;		
+	}
+	
+	/**
+	 * Returns estimated cost of a cell with k steps from current position
+	 * 
+	 * @param i				cell coordinate
+	 * @param j				cell coordinate
+	 * @author Mojtaba
+	 */	
+	private int estimCellCost(int i, int j) {
+		double sigma = 1 - disturbanceLevel;
+		double m = getAverage(actionCosts());
+		int k = Math.abs((currentPositions[mySubtask()].row - i)) + Math.abs((currentPositions[mySubtask()].col - j));
+		
+		int eCost = (int) (Math.pow(sigma, k) * actionCosts[theBoard.getBoard()[i][j]]  + (1 - Math.pow(sigma, k)) * m);
+		return eCost;		
+	}
 }

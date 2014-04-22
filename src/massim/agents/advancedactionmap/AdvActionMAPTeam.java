@@ -7,12 +7,12 @@ import massim.Team;
  * 
  * @author Omid Alemi
  */
-public class AdvActionMapTeam extends Team {
+public class AdvActionMAPTeam extends Team {
 	
 	/**
 	 * New team - RIAMAP
 	 */
-	public AdvActionMapTeam() {
+	public AdvActionMAPTeam() {
 		
 		super();		
 		AdvActionMAPAgent[] aaMAPAgents = new AdvActionMAPAgent[Team.teamSize];

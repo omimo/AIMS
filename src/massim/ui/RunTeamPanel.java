@@ -785,7 +785,7 @@ public class RunTeamPanel extends JScrollPane {
 					}
 					
 					//Add goal
-					JLabel lbl = new JLabel("  " + String.valueOf(iIndex + 1));
+					JLabel lbl = new JLabel("  " + String.valueOf(iIndex));
 		        	lbl.setHorizontalTextPosition(JLabel.CENTER);
 		    	    lbl.setVerticalTextPosition(JLabel.CENTER);
 		    	    lbl.setIcon(iconGray);
@@ -803,7 +803,7 @@ public class RunTeamPanel extends JScrollPane {
 						lbl.setText(lbl.getText().trim());
 					} 
 					else {
-						lbl = new JLabel(String.valueOf(iIndex + 1));
+						lbl = new JLabel(String.valueOf(iIndex));
 		            	lbl.setHorizontalTextPosition(JLabel.CENTER);
 		        	    lbl.setVerticalTextPosition(JLabel.CENTER);
 		        	    lbl.setIcon(iconWhite);

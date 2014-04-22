@@ -9,7 +9,7 @@ import massim.Team;
 import massim.TeamTask;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepAgent;
-import massim.agents.advancedactionmap.AdvActionMapTeam;
+import massim.agents.advancedactionmap.AdvActionMAPTeam;
 import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.helperinitactionmap.HelperInitActionMAPAgent;
@@ -31,7 +31,7 @@ public class WellBeingTester {
 	static String strMsg = "";
 	public static void main(String[] args) {
 			try {
-				runSimulation1(10000, 2);
+				//runSimulation1(10000, 2);
 				//Check no. of arguments
 				if(args.length < 2 || Integer.parseInt(args[0]) < 1)
 				{
@@ -41,27 +41,19 @@ public class WellBeingTester {
 				//run specific experiment based on input
 				if(Integer.parseInt(args[0]) == 1)
 				{
-					System.out.println(new Date());
 					runSimulation1(Integer.parseInt(args[1]), 2);
-					System.out.println(new Date());
 				}
 				else if(Integer.parseInt(args[0]) == 2)
 				{
-					System.out.println(new Date());
 					runSimulation2(Integer.parseInt(args[1]), 2);
-					System.out.println(new Date());
 				}
 				else if(Integer.parseInt(args[0]) == 3)
 				{
-					System.out.println(new Date());
 					runSimulation3(Integer.parseInt(args[1]), 2);
-					System.out.println(new Date());
 				}
 				else if(Integer.parseInt(args[0]) == 4)
 				{
-					System.out.println(new Date());
 					runSimulation4(Integer.parseInt(args[1]), 2);
-					System.out.println(new Date());
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -84,12 +76,12 @@ public class WellBeingTester {
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[8];
-		teams[0] = new AdvActionMapTeam();
+		teams[0] = new AdvActionMAPTeam();
 		teams[1] = new HelperInitActionMAPTeam();
 		teams[2] = new BasicActionMAPTeam();
 		teams[3] = new NoHelpTeam();
 
-		teams[4] = new AdvActionMapTeam();
+		teams[4] = new AdvActionMAPTeam();
 		teams[5] = new HelperInitActionMAPTeam();
 		teams[6] = new BasicActionMAPTeam();
 		teams[7] = new NoHelpTeam();
@@ -149,7 +141,7 @@ public class WellBeingTester {
 				logText(strMsg,1);
 			}
 		}		
-		logText("-----------------------------------------",1);
+		//logText("-----------------------------------------",1);
 	}
 	
 	/*
@@ -170,12 +162,12 @@ public class WellBeingTester {
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[8];
-		teams[0] = new AdvActionMapTeam();
+		teams[0] = new AdvActionMAPTeam();
 		teams[1] = new HelperInitActionMAPTeam();
 		teams[2] = new BasicActionMAPTeam();
 		teams[3] = new NoHelpTeam();
 		
-		teams[4] = new AdvActionMapTeam();
+		teams[4] = new AdvActionMAPTeam();
 		teams[5] = new HelperInitActionMAPTeam();
 		teams[6] = new BasicActionMAPTeam();
 		teams[7] = new NoHelpTeam();
@@ -234,7 +226,7 @@ public class WellBeingTester {
 			}
 		}
 		
-		logText("-----------------------------------------",initResCoeff);
+		//logText("-----------------------------------------",initResCoeff);
 	}
 	
 	/*
@@ -254,7 +246,7 @@ public class WellBeingTester {
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[4];
-		teams[0] = new AdvActionMapTeam();
+		teams[0] = new AdvActionMAPTeam();
 		teams[1] = new HelperInitActionMAPTeam();
 		teams[2] = new BasicActionMAPTeam();
 		teams[3] = new NoHelpTeam();
@@ -310,7 +302,7 @@ public class WellBeingTester {
 				logText(strMsg,3);
 			}
 		}
-		logText("-----------------------------------------",3);
+		//logText("-----------------------------------------",3);
 	}
 	
 	/*
@@ -332,7 +324,7 @@ public class WellBeingTester {
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[4];
-		teams[0] = new AdvActionMapTeam();
+		teams[0] = new AdvActionMAPTeam();
 		teams[1] = new HelperInitActionMAPTeam();
 		teams[2] = new BasicActionMAPTeam();
 		teams[3] = new NoHelpTeam();
@@ -379,7 +371,6 @@ public class WellBeingTester {
 				se.initializeExperiment(numberOfRuns);			
 				int[] teamScores = se.runExperiment();
 
-
 				/* Print the results */
 				strMsg =  Team.paramValues;
 				for (int i=0;i<teams.length;i++)
@@ -388,7 +379,7 @@ public class WellBeingTester {
 				logText(strMsg,4);
 			}
 		}
-		logText("-----------------------------------------",4);
+		//logText("-----------------------------------------",4);
 	}
 	
 	/*
@@ -396,13 +387,14 @@ public class WellBeingTester {
 	 */
 	public static void logText(String strMsg, int expID)
 	{
-		try {
-			System.out.println(strMsg);
-		    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("outfilename" + expID + ".txt", true)));
-		    out.println(strMsg);
-		    out.close();
-		} catch (IOException e) {
-			System.err.println("Error writing file.." + strMsg);
-		}
+		System.out.println(strMsg);
+//		try {
+//			System.out.println(strMsg);
+//		    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("outfilename" + expID + ".txt", true)));
+//		    out.println(strMsg);
+//		    out.close();
+//		} catch (IOException e) {
+//			System.err.println("Error writing file.." + strMsg);
+//		}
 	}
 }

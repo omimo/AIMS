@@ -3,7 +3,10 @@ package massim.agents.nohelp;
 import massim.Agent;
 import massim.Board;
 import massim.CommMedium;
+import massim.Path;
+import massim.PolajnarPath2;
 import massim.RowCol;
+import massim.SimulationEngine;
 import massim.TeamTask;
 
 /**
@@ -21,15 +24,18 @@ public class NoHelpAgent extends Agent {
 	
 	NoHelpAgentStates state;
 	
+	private int[][] oldBoard;
+	protected double disturbanceLevel;
+	
 	/**
 	 * The constructor
 	 * 
 	 * @param id			The given id of the agent
 	 */
 	public NoHelpAgent(int id, CommMedium comMed) {
+		
 		super(id, comMed);
 	}
-	
 	
 	/**
 	 * Initializes the agent for a new run.
@@ -52,7 +58,8 @@ public class NoHelpAgent extends Agent {
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
 		logInf("My goal position: " + goalPos().toString());
-				
+		
+		oldBoard = null;
 	}
 	
 	/** 
@@ -67,21 +74,25 @@ public class NoHelpAgent extends Agent {
 	 */
 	@Override
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
-		super.initializeRound(board, actionCostsMatrix);				
 		
+		super.initializeRound(board, actionCostsMatrix);				
 		logInf("Starting a new round ...");
 		
-		logInf("My current position: " + pos().toString());
 		if (path() == null)
 		{		
 			findPath();			
-			logInf("Chose this path: "+ path().toString());
+			logInf("Initial Planning: Chose this path: "+ path().toString());
 		}
+		
+		logInf("My current position: " + pos().toString());
 		
 		state = NoHelpAgentStates.S_INIT;
 		logInf("Set the inital state to +"+state.toString());
 		
 		setRoundAction(actionType.SKIP);
+		
+		disturbanceLevel = calcDistrubanceLevel();
+		logInf("The estimated disturbance level on the board is " + disturbanceLevel);
 	}
 	
 	/**
@@ -90,6 +101,7 @@ public class NoHelpAgent extends Agent {
 	 */
 	@Override
 	protected AgCommStatCode sendCycle() {
+		
 		AgCommStatCode returnCode = AgCommStatCode.DONE;
 		logInf("Send Cycle");		
 		
@@ -160,6 +172,8 @@ public class NoHelpAgent extends Agent {
 		
 		logInf("Finalizing the round ...");
 		
+		keepBoard();
+		
 		boolean succeed = act();
 		
 		if (reachedGoal())
@@ -178,7 +192,6 @@ public class NoHelpAgent extends Agent {
 			}
 		}					
 	}
-	
 		
 	/**
 	 * Prints the log message into the output if the information debugging 
@@ -189,8 +202,6 @@ public class NoHelpAgent extends Agent {
 	protected void logInf(String msg) {
 		if (dbgInf)
 			System.out.println("[NoHelpAgent " + id() + "]: " + msg);
-		//Denish, 2014/03/30
-		super.logInf(msg);
 	}
 	
 	/**
@@ -251,7 +262,123 @@ public class NoHelpAgent extends Agent {
 	 */
 	@Override
 	protected boolean doOwnAction() {
+		
 		return move();		
+	}
+	
+	/**
+	 * Calculates the average of the given integer array.
+	 * 
+	 * @return						The average.
+	 */
+	protected double getAverage(int[] array) {
+		int sum = 0;
+		for (int i=0;i<array.length;i++)
+			sum+=array[i];
+		return (double)sum/array.length;
+	}
+	
+	/**
+	 * Calculates the disturbance level of the board.
+	 * 
+	 * This compares the current state of the board with the stored state
+	 * from the previous round.
+	 * 
+	 * @return				The level of disturbance.
+	 */
+	private double calcDistrubanceLevel() {
+		
+		if (oldBoard == null)
+			return 0.0;
+		
+		int changeCount = 0;		
+		for (int i=0;i<theBoard().rows();i++)
+			for (int j=0;j<theBoard().cols();j++)
+				if (theBoard().getBoard()[i][j] != oldBoard[i][j])
+					changeCount++;	
+		double change = (double)changeCount / (theBoard().rows() * theBoard().cols());
+		//Mojtaba, 2014/04/20
+		return change * (double)SimulationEngine.numOfColors/(SimulationEngine.numOfColors - 1);
+	}
+	
+	/**
+	 * Keeps the current state of the board for calculating the disturbance
+	 * in the next round of the game.
+	 * 
+	 * This copied theBoard into oldBoard. 
+	 */
+	private void keepBoard() {
+		
+		int rows = theBoard().rows();
+		int cols = theBoard().cols();
+		
+		if (oldBoard == null) /* first round */
+			oldBoard = new int[rows][cols];
+		
+		for (int i=0;i<rows;i++)
+			for (int j=0;j<cols;j++)
+				oldBoard[i][j] = theBoard().getBoard()[i][j];	
+	}
+
+	/**
+	 * Finds the lowest cost path among shortest paths of a rectangular board
+	 * based on the Polajnar's algorithm V2.
+	 * 
+	 * The method uses the agents position as the starting point and the goal
+	 * position as the ending point of the path.
+	 * 
+	 * @author Mojtaba
+	 */
+	
+	@Override
+	protected void findPath() {
+		if (mySubtask() != -1)
+		{
+			PolajnarPath2 pp = new PolajnarPath2();
+			Path shortestPath = new Path(pp.findShortestPath(
+					estimBoardCosts(theBoard.getBoard()), 
+					currentPositions[mySubtask()], goalPos()));
+			path = new Path(shortestPath);
+			
+			decResourcePoints(planCost());
+		}
+		else 
+			path = null;
+	}
+
+	/**
+	 * Returns a two dimensional array representing the estimated cost
+	 * of cells with i, j coordinates
+	 * 
+	 * @author Mojtaba
+	 */
+	private int[][] estimBoardCosts(int[][] board) {
+		
+		int[][] eCosts = new int[board.length][board[0].length];
+		
+		for (int i = 0; i < eCosts.length; i++)
+			for (int j = 0; j < eCosts[0].length; j++) {
+				
+				eCosts[i][j] = estimCellCost(i ,j);
+			}
+						
+		return eCosts;		
+	}
+
+	/**
+	 * Returns estimated cost of a cell with k steps from current position
+	 * 
+	 * @param i				cell coordinate
+	 * @param j				cell coordinate
+	 * @author Mojtaba
+	 */	
+	private int estimCellCost(int i, int j) {
+		double sigma = 1 - disturbanceLevel;
+		double m = getAverage(actionCosts());
+		int k = Math.abs((currentPositions[mySubtask()].row - i)) + Math.abs((currentPositions[mySubtask()].col - j));
+		
+		int eCost = (int) (Math.pow(sigma, k) * actionCosts[theBoard.getBoard()[i][j]]  + (1 - Math.pow(sigma, k)) * m);
+		return eCost;		
 	}
 	
 }

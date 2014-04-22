@@ -132,7 +132,7 @@ public class SimulationEngine {
 		}
 		
 		for (int t = 0; t < numOfTeams; t++)
-			teams[t].initializeRun(tt,actionCostsMatrix);
+			teams[t].initializeRun(tt,actionCostsMatrix, mainBoard);
 	}
 
 	/**

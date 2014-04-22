@@ -27,7 +27,7 @@ import org.w3c.dom.Document;
 public class ConfigGenerator {
 	public static void main(String[] args)
 	{
-		//run();
+		run();
 		//runValues();
 	}
 	private static void run()
@@ -222,21 +222,25 @@ public class ConfigGenerator {
 			config.add(new ConfigProperty("Cell Reward", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Reward points for one step moved."));
 			config.add(new ConfigProperty("Achievement Reward", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Reward points for reaching the goal."));
 			config.add(new ConfigProperty("Initial Resource Coefficient", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Coefficient to calculate initial resource assigned by multiplication with number of steps to reach goal."));
+			config.add(new ConfigProperty("Additional Leader Resource", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Number of extra initial resource points for the leader (first) agent."));
+			config.add(new ConfigProperty("Plan Resource Coefficient", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Coefficient to calculate replanning cost."));
 			config.add(new ConfigProperty("Use Remaining Resources", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to add remaining resources in the final reward points."));
 			config.add("Number of Runs", "5");
 			config.add("Number of Colors", "6");
-			config.add("Action Costs", "10,40,70,100,300,400,450,500");
+			config.add("Action Costs", "10,40,100,150,250,300,350,500");
 			config.add("Team Size", "8");
 			config.add("Board Size", "10");
 			config.add("Unicast Cost", "1,1,5");
 			config.add("Calc Cost", "1");
-			config.add("Disturbance", "0.1,0.1,0.5");
-			config.add("Help Overhead", "30");
+			config.add("Disturbance", "0.1");
+			config.add("Help Overhead", "20");
 			config.add("Assignment Overhead", "10");
 			config.add("Cell Reward", "100");
 			config.add("Achievement Reward", "2000");
-			config.add("Initial Resource Coefficient", "150");
-			config.add("Use Remaining Resources", "Yes");
+			config.add("Initial Resource Coefficient", "160");
+			config.add("Plan Resource Coefficient", "0.03");
+			config.add("Additional Leader Resource", "0");
+			config.add("Use Remaining Resources", "No");
 			
 			TeamConfiguration teamConfig = new TeamConfiguration(TeamType.AdvActionMAP);
 			teamConfig.add(new ConfigProperty("Agent Type", ValueType.Single, DataType.Text, InputType.FixedChoices, strValues1, false, null, null, "Type of agent and team."));
@@ -246,15 +250,17 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Lowcost Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Request help in case cost is lower than Lowcost threshold"));
 			teamConfig.add(new ConfigProperty("Importance Version", ValueType.Single, DataType.Integer, InputType.FixedChoices, new String[] {"1", "2"}, false, null, null, "Which version of importance function to use."));
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null, ""));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Advanced Action MAP");
 			teamConfig.add("Team Name", "Advanced Action MAP");
-			teamConfig.add("WLL", "-0.5,0.1,0");
-			teamConfig.add("Request Threshold", "299");
+			teamConfig.add("WLL", "-0.1");
+			teamConfig.add("Request Threshold", "351");
 			teamConfig.add("Lowcost Threshold", "50");
 			teamConfig.add("Importance Version", "2");
-			teamConfig.add("Proximity Bias", "10,5,20");
+			teamConfig.add("Proximity Bias", "6");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9F9F9");
 			config.add(teamConfig);
@@ -268,16 +274,18 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Lowcost Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Request help in case cost is lower than Lowcost threshold"));
 			teamConfig.add(new ConfigProperty("Importance Version", ValueType.Single, DataType.Integer, InputType.FixedChoices, new String[] {"1", "2"}, false, null, null, "Which version of importance function to use."));
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null, ""));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Advanced Action MAP Replaning");
 			teamConfig.add("Team Name", "Advanced Action MAP Replaning");
-			teamConfig.add("WLL", "-0.5,0.1,0");
-			teamConfig.add("WREP", "1.0");
-			teamConfig.add("Request Threshold", "299");
+			teamConfig.add("WLL", "-0.1");
+			teamConfig.add("WREP", "-0.3");
+			teamConfig.add("Request Threshold", "351");
 			teamConfig.add("Lowcost Threshold", "50");
 			teamConfig.add("Importance Version", "2");
-			teamConfig.add("Proximity Bias", "10,5,20");
+			teamConfig.add("Proximity Bias", "6");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9D9D9");
 			config.add(teamConfig);
@@ -286,10 +294,12 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Agent Type", ValueType.Single, DataType.Text, InputType.FixedChoices, strValues1, false, null, null, "Type of agent and team."));
 			teamConfig.add(new ConfigProperty("Team Name", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, "Name of the team for simulation."));
 			teamConfig.add(new ConfigProperty("Request Threshold", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Request help in case cost is greater than Request Threshold."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Basic Action MAP");
 			teamConfig.add("Team Name", "Basic Action MAP");
-			teamConfig.add("Request Threshold", "299");
+			teamConfig.add("Request Threshold", "351");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			teamConfig.add("WindowColor", "#E9F9E9");
 			config.add(teamConfig);
 			
@@ -300,14 +310,16 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Request Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Do not offer help for action for which the cost is greater than Request Threshold."));
 			teamConfig.add(new ConfigProperty("Importance Version", ValueType.Single, DataType.Integer, InputType.FixedChoices, new String[] {"1", "2"}, false, null, null, "Which version of importance function to use."));
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "HIAMAP");
 			teamConfig.add("Team Name", "Helper Initiated Action MAP");
-			teamConfig.add("WHH", "0.1,0.3,0.5");
-			teamConfig.add("Request Threshold", "299");
+			teamConfig.add("WHH", "0.5");
+			teamConfig.add("Request Threshold", "351");
 			teamConfig.add("Importance Version", "2");
-			teamConfig.add("Proximity Bias", "10,5,20");
+			teamConfig.add("Proximity Bias", "6");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9E9E9");
 			config.add(teamConfig);
@@ -315,9 +327,24 @@ public class ConfigGenerator {
 			teamConfig = new TeamConfiguration(TeamType.NoHelp);
 			teamConfig.add(new ConfigProperty("Agent Type", ValueType.Single, DataType.Text, InputType.FixedChoices, strValues1, false, null, null, "Type of agent and team."));
 			teamConfig.add(new ConfigProperty("Team Name", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, "Name of the team for simulation."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "No Help");
 			teamConfig.add("Team Name", "No Help");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
+			teamConfig.add("WindowColor", "#E9E9F9");
+			config.add(teamConfig);
+			
+			teamConfig = new TeamConfiguration(TeamType.NoHelpRep);
+			teamConfig.add(new ConfigProperty("Agent Type", ValueType.Single, DataType.Text, InputType.FixedChoices, strValues1, false, null, null, "Type of agent and team."));
+			teamConfig.add(new ConfigProperty("Team Name", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, "Name of the team for simulation."));
+			teamConfig.add(new ConfigProperty("WREP", ValueType.Single, DataType.Decimal, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Low watermark value for replaning."));
+			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
+			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
+			teamConfig.add("Agent Type", "No Help Replaning");
+			teamConfig.add("Team Name", "No Help Replaning");
+			teamConfig.add("WREP", "-0.3");
+			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			teamConfig.add("WindowColor", "#E9E9F9");
 			config.add(teamConfig);
 		} catch (Exception e) {

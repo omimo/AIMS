@@ -137,6 +137,22 @@
         <valueType>Single</valueType>
     </configProperties>
     <configProperties>
+        <dataType>Integer</dataType>
+        <description>Number of extra initial resource points for the leader (first) agent.</description>
+        <inputType>FreeText</inputType>
+        <name>Additional Leader Resource</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Decimal</dataType>
+        <description>Coefficient to calculate replanning cost.</description>
+        <inputType>FreeText</inputType>
+        <name>Plan Resource Coefficient</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
         <dataItems>Yes</dataItems>
         <dataItems>No</dataItems>
         <dataType>Text</dataType>
@@ -149,7 +165,11 @@
     <configValues>
         <entry>
             <key>Action Costs</key>
-            <value>10,40,70,100,300,400,450,500</value>
+            <value>10,40,100,150,250,300,350,500</value>
+        </entry>
+        <entry>
+            <key>Additional Leader Resource</key>
+            <value>0</value>
         </entry>
         <entry>
             <key>Board Size</key>
@@ -158,6 +178,10 @@
         <entry>
             <key>Unicast Cost</key>
             <value>1,1,5</value>
+        </entry>
+        <entry>
+            <key>Plan Resource Coefficient</key>
+            <value>0.03</value>
         </entry>
         <entry>
             <key>Number of Runs</key>
@@ -177,7 +201,7 @@
         </entry>
         <entry>
             <key>Help Overhead</key>
-            <value>30</value>
+            <value>20</value>
         </entry>
         <entry>
             <key>Cell Reward</key>
@@ -185,11 +209,11 @@
         </entry>
         <entry>
             <key>Initial Resource Coefficient</key>
-            <value>150</value>
+            <value>160</value>
         </entry>
         <entry>
             <key>Use Remaining Resources</key>
-            <value>Yes</value>
+            <value>No</value>
         </entry>
         <entry>
             <key>Calc Cost</key>
@@ -197,7 +221,7 @@
         </entry>
         <entry>
             <key>Disturbance</key>
-            <value>0.1,0.1,0.5</value>
+            <value>0.1</value>
         </entry>
         <entry>
             <key>Achievement Reward</key>
@@ -283,6 +307,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -293,7 +327,7 @@
         <configValues>
             <entry>
                 <key>Proximity Bias</key>
-                <value>10,5,20</value>
+                <value>6</value>
             </entry>
             <entry>
                 <key>Importance Version</key>
@@ -301,11 +335,15 @@
             </entry>
             <entry>
                 <key>WLL</key>
-                <value>-0.5,0.1,0</value>
+                <value>-0.1</value>
             </entry>
             <entry>
                 <key>WindowColor</key>
                 <value>#F9F9F9</value>
+            </entry>
+            <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
             </entry>
             <entry>
                 <key>Agent Type</key>
@@ -321,7 +359,7 @@
             </entry>
             <entry>
                 <key>Request Threshold</key>
-                <value>299</value>
+                <value>351</value>
             </entry>
         </configValues>
         <teamType>AdvActionMAP</teamType>
@@ -422,6 +460,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -432,7 +480,7 @@
         <configValues>
             <entry>
                 <key>Proximity Bias</key>
-                <value>10,5,20</value>
+                <value>6</value>
             </entry>
             <entry>
                 <key>Importance Version</key>
@@ -440,15 +488,19 @@
             </entry>
             <entry>
                 <key>WLL</key>
-                <value>-0.5,0.1,0</value>
+                <value>-0.1</value>
             </entry>
             <entry>
                 <key>WindowColor</key>
                 <value>#F9D9D9</value>
             </entry>
             <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
+            </entry>
+            <entry>
                 <key>WREP</key>
-                <value>1.0</value>
+                <value>-0.3</value>
             </entry>
             <entry>
                 <key>Agent Type</key>
@@ -464,7 +516,7 @@
             </entry>
             <entry>
                 <key>Request Threshold</key>
-                <value>299</value>
+                <value>351</value>
             </entry>
         </configValues>
         <teamType>AdvActionMAPRep</teamType>
@@ -496,6 +548,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -509,6 +571,10 @@
                 <value>#E9F9E9</value>
             </entry>
             <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
+            </entry>
+            <entry>
                 <key>Agent Type</key>
                 <value>Basic Action MAP</value>
             </entry>
@@ -518,7 +584,7 @@
             </entry>
             <entry>
                 <key>Request Threshold</key>
-                <value>299</value>
+                <value>351</value>
             </entry>
         </configValues>
         <teamType>BasicActionMAP</teamType>
@@ -594,6 +660,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -604,7 +680,7 @@
         <configValues>
             <entry>
                 <key>Proximity Bias</key>
-                <value>10,5,20</value>
+                <value>6</value>
             </entry>
             <entry>
                 <key>Importance Version</key>
@@ -612,11 +688,15 @@
             </entry>
             <entry>
                 <key>WHH</key>
-                <value>0.1,0.3,0.5</value>
+                <value>0.5</value>
             </entry>
             <entry>
                 <key>WindowColor</key>
                 <value>#F9E9E9</value>
+            </entry>
+            <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
             </entry>
             <entry>
                 <key>Agent Type</key>
@@ -628,7 +708,7 @@
             </entry>
             <entry>
                 <key>Request Threshold</key>
-                <value>299</value>
+                <value>351</value>
             </entry>
         </configValues>
         <teamType>HIAMAP</teamType>
@@ -652,6 +732,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -665,6 +755,10 @@
                 <value>#E9E9F9</value>
             </entry>
             <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
+            </entry>
+            <entry>
                 <key>Agent Type</key>
                 <value>No Help</value>
             </entry>
@@ -674,5 +768,82 @@
             </entry>
         </configValues>
         <teamType>NoHelp</teamType>
+    </teams>
+    <teams>
+        <configProperties>
+            <dataItems></dataItems>
+            <dataType>Text</dataType>
+            <description>Type of agent and team.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Agent Type</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description>Name of the team for simulation.</description>
+            <inputType>FreeText</inputType>
+            <name>Team Name</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>1</dataItems>
+            <dataItems>2</dataItems>
+            <dataItems>3</dataItems>
+            <dataType>Decimal</dataType>
+            <description>Low watermark value for replaning.</description>
+            <incrDataItems>1</incrDataItems>
+            <incrDataItems>2</incrDataItems>
+            <incrDataItems>3</incrDataItems>
+            <inputType>OptionalDropDown</inputType>
+            <name>WREP</name>
+            <range>true</range>
+            <toDataItems>1</toDataItems>
+            <toDataItems>2</toDataItems>
+            <toDataItems>3</toDataItems>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use initial optimum assignment.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Initial Optimum Assignment</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Text</dataType>
+            <description></description>
+            <inputType>FreeText</inputType>
+            <name>WindowColor</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configValues>
+            <entry>
+                <key>WindowColor</key>
+                <value>#E9E9F9</value>
+            </entry>
+            <entry>
+                <key>Use Initial Optimum Assignment</key>
+                <value>Yes</value>
+            </entry>
+            <entry>
+                <key>WREP</key>
+                <value>-0.3</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>No Help Replaning</value>
+            </entry>
+            <entry>
+                <key>Team Name</key>
+                <value>No Help Replaning</value>
+            </entry>
+        </configValues>
+        <teamType>NoHelpRep</teamType>
     </teams>
 </experimentConfiguration>

@@ -11,11 +11,13 @@ import massim.ExperimentLogger.LogType;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepTeam;
-import massim.agents.advancedactionmap.AdvActionMapTeam;
+import massim.agents.advancedactionmap.AdvActionMAPTeam;
 import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.helperinitactionmap.HelperInitActionMAPAgent;
 import massim.agents.helperinitactionmap.HelperInitActionMAPTeam;
+import massim.agents.nohelp.NoHelpRepAgent;
+import massim.agents.nohelp.NoHelpRepTeam;
 import massim.agents.nohelp.NoHelpTeam;
 import massim.ui.config.Configuration;
 import massim.ui.config.ExperimentConfiguration;
@@ -162,7 +164,7 @@ public class Experiment {
 			for(TeamConfiguration teamConfig : expConfig.getTeams()) {
 				switch(teamConfig.getTeamType()) {
 					case AdvActionMAP:
-						getTeams()[iIndex] = new AdvActionMapTeam();
+						getTeams()[iIndex] = new AdvActionMAPTeam();
 						getTeams()[iIndex].setLogger(logger, iIndex);
 						validateAdvActionMapParams(teamConfig, iIndex + 1, 0);
 						break;
@@ -184,10 +186,28 @@ public class Experiment {
 					case NoHelp:
 						getTeams()[iIndex] = new NoHelpTeam();
 						getTeams()[iIndex].setLogger(logger, iIndex);
+						validateNoHelpParams(teamConfig, iIndex + 1,  0);
+						break;
+					case NoHelpRep:
+						getTeams()[iIndex] = new NoHelpRepTeam();
+						getTeams()[iIndex].setLogger(logger, iIndex);
+						validateNoHelpParams(teamConfig, iIndex + 1,  1);
 						break;
 					default:
 						strErrorMessage += "Invalid team type " + teamConfig.getTeamType() + "\n";
 						break;
+				}
+				
+				//Common team parameters
+				if(getTeams()[iIndex] != null) {
+					if(teamConfig.getPropertyValue("Use Initial Optimum Assignment") != null 
+							&& teamConfig.getPropertyValue("Use Initial Optimum Assignment").equalsIgnoreCase("Yes")) {
+						getTeams()[iIndex].setOptimumAssign(true);
+					}
+					if(expConfig.getPropertyValue("Use Remaining Resources") != null 
+							&& expConfig.getPropertyValue("Use Remaining Resources").equalsIgnoreCase("Yes")) {
+						getTeams()[iIndex].remainingResInRewards = true;
+					}
 				}
 				iIndex++;
 			}
@@ -520,6 +540,19 @@ public class Experiment {
 			lstSimRange.add(new SimulationRange("HIAMAP-Proximity Bias", proxBias[0], proxBias[1], proxBias[2]));
 	}
 	
+	private void validateNoHelpParams(TeamConfiguration teamConfig, int index, int childType)
+	{
+		//WREP
+		if(childType == 1) {
+			Double[] wrep = validateRangeValue(teamConfig, "WREP");
+			if(wrep.length == 1) {
+				NoHelpRepAgent.WREP = wrep[0];
+			}
+			else if(wrep.length == 3) {
+				lstSimRange.add(new SimulationRange("NOHELPREP-WREP", wrep[0], wrep[1], wrep[2]));
+			}
+		}
+	}
 	public class SimulationRange
 	{
 		private String property;

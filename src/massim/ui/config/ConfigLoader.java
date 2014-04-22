@@ -93,7 +93,7 @@ public class ConfigLoader {
 					if(value == null) continue;
 					config.add(value.getPropertyName(), value.getValue());
 				}
-				
+				List<TeamConfiguration> newTeams = new ArrayList<TeamConfiguration>();
 				Iterator<TeamConfiguration> iterator  = config.getTeams().iterator();
 				while(iterator.hasNext()) {
 					TeamConfiguration teamConfig = iterator.next();
@@ -102,16 +102,36 @@ public class ConfigLoader {
 					for(ConfigurationValues child : configValues.getConfigChildren()) {
 						if(teamConfig.getPropertyValue("Agent Type") != null 
 								&& teamConfig.getPropertyValue("Agent Type").equalsIgnoreCase(child.getKey())) {
-							bTeamFound = true;							
-							for(ConfigurationValue value : child.getConfigValues()) {
-								if(value == null) continue;
-								teamConfig.add(value.getPropertyName(), value.getValue());
+							if(bTeamFound) {
+								TeamConfiguration newTeamConfig = new TeamConfiguration(teamConfig.getTeamType());
+								newTeams.add(newTeamConfig);
+								for(ConfigProperty prop : teamConfig.getProperties()) {
+									try {
+										newTeamConfig.add(new ConfigProperty(prop.getName(), prop.getValueType(), 
+												prop.getDataType(), prop.getInputType(), 
+												prop.getDataItems(), prop.isRange(), prop.getToDataItems(), 
+												prop.getIncrDataItems(), prop.getDescription()));
+									} catch (Exception e) { e.printStackTrace(); }
+									for(ConfigurationValue value : child.getConfigValues()) {
+										if(value == null) continue;
+										newTeamConfig.add(value.getPropertyName(), value.getValue());
+									}
+								}
+							} else {
+								bTeamFound = true;
+								for(ConfigurationValue value : child.getConfigValues()) {
+									if(value == null) continue;
+									teamConfig.add(value.getPropertyName(), value.getValue());
+								}
 							}
 						}
 					}
 					if(!bTeamFound) {
 						iterator.remove();
 					}
+				}
+				for(TeamConfiguration newTeamConfig : newTeams) {
+					config.getTeams().add(newTeamConfig);
 				}
 			}
 		}

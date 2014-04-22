@@ -8,7 +8,7 @@ import massim.Team;
 import massim.TeamTask;
 import massim.agents.advancedactionmap.AdvActionMAPAgent;
 import massim.agents.advancedactionmap.AdvActionMAPRepAgent;
-import massim.agents.advancedactionmap.AdvActionMapTeam;
+import massim.agents.advancedactionmap.AdvActionMAPTeam;
 import massim.agents.basicactionmap.BasicActionMAPAgent;
 import massim.agents.basicactionmap.BasicActionMAPTeam;
 import massim.agents.helperinitactionmap.HelperInitActionMAPAgent;
@@ -52,7 +52,7 @@ public class HelpInitTester {
 		/* Create the teams involved in the simulation */
 		Team.teamSize = 8;
 		Team[] teams = new Team[2];		
-		teams[0] = new AdvActionMapTeam();
+		teams[0] = new AdvActionMAPTeam();
 		teams[1] = new HelperInitActionMAPTeam();
 		
 		/* Create the SimulationEngine */

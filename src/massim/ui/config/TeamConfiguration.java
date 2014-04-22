@@ -40,6 +40,7 @@ public class TeamConfiguration extends Configuration {
 		HIAMAP("HIAMAP"),
 		BasicActionMAP("Basic Action MAP"),
 		NoHelp("No Help"),
+		NoHelpRep("No Help Replaning"),
 		New("New Team");
 		private String fName;
 	    public String getFullName(){return fName;}

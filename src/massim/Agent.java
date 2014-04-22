@@ -28,8 +28,8 @@ public abstract class Agent {
 
 	private int id;
 
-	private int[] actionCosts;
-	private Path path;
+	protected int[] actionCosts;
+	protected Path path;
 
 	private int resourcePoints = 0;
 
@@ -40,7 +40,7 @@ public abstract class Agent {
 	
 	//private RowCol pos;
 	protected RowCol[] currentPositions;
-	private Board theBoard;
+	protected Board theBoard;
 	
 	private CommMedium communicationMedium; 
 
@@ -97,11 +97,19 @@ public abstract class Agent {
 		System.arraycopy(subtaskAssignments, 0, this.subtaskAssignments, 
 				0, subtaskAssignments.length);
 		
+		//Denish, replaced logic for subtask.
 		int i=0;
-		while (subtaskAssignments[i]!=id && i < subtaskAssignments.length)
+		/*while (subtaskAssignments[i]!=id && i < subtaskAssignments.length)
 			i++;
-		mySubtask = i;
-	   
+		mySubtask = i;*/
+		while(subtaskAssignments.length > i) {
+			if(subtaskAssignments[i] == id) {
+				mySubtask = i;
+				break;
+			}
+			i++;
+		}
+		
 		if (mySubtask != -1)
 			currentPos[mySubtask] = tt.startPos[mySubtask];
 		
@@ -289,6 +297,16 @@ public abstract class Agent {
 	protected RowCol goalPos() {
 		return tt.goalPos[mySubtask];
 	}
+	
+	//Denish, added due to mysubtask change
+	/**
+	 * Enables the agent to access its goal position.
+	 * 
+	 * @return 							The position of the goal
+	 */
+	protected RowCol startPos() {
+		return tt.startPos[mySubtask];
+	}
 
 	/**
 	 * Enables the agent to access its action costs vector.
@@ -366,7 +384,7 @@ public abstract class Agent {
 					currentPositions[mySubtask], goalPos()));
 			path = new Path(shortestPath);
 			
-			//Author: Mojtaba
+			//Mojtaba
 			decResourcePoints(planCost());
 		}
 		else 
@@ -555,6 +573,7 @@ public abstract class Agent {
 		if(logger != null)
 			logger.logEvent(LogType.Agent, agentIndex, "[Ag# " + id() + ", Round# " + roundNumber + "]: " + msg);
 	}
+	
 	/**
 	 * Calculates the cost of replanning (finding new path) based on the complexity of the PolajnarPath algorithm.
 	 * n,m are length and width of the remaining board.
@@ -565,8 +584,12 @@ public abstract class Agent {
 	protected int planCost() {
 	int n = Math.abs(goalPos().row - currentPositions[mySubtask].row);
 	int m = Math.abs(goalPos().col - currentPositions[mySubtask].col);
-	int cost = (int)Math.round(planCostCoeff * ((n+m) ^ 2));
-	
+	int cost = (int)Math.round(planCostCoeff * (n+m) * (n+m));
+	//Mojtaba, 2014/04/20
+	if (cost < 1)
+		return 1;
+	if (cost > 10)
+		return 10;
 	return cost;	
 	}
 }

@@ -15,10 +15,10 @@ public class NoHelpTeam extends Team {
 	public NoHelpTeam() {
 		super();		
 			
-		NoHelpAgent2[] selfishAgents = new NoHelpAgent2[Team.teamSize];
+		NoHelpAgent[] selfishAgents = new NoHelpAgent[Team.teamSize];
 		
 		for(int i=0;i<Team.teamSize;i++)
-			selfishAgents[i] = new NoHelpAgent2(i,commMedium());
+			selfishAgents[i] = new NoHelpAgent(i,commMedium());
 		
 		setAgents(selfishAgents);
 	}	

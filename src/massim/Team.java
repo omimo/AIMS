@@ -127,7 +127,7 @@ public class Team {
 	 * @param goals							Array of initial goals position
 	 * @param actionCostMatrix				Matrix of action costs
 	 */
-	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix) {
+	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix, Board board) {
 		logInf("******************");
 		logInf("Initilizing for a new run.");
 		commMedium.clear();
@@ -149,18 +149,30 @@ public class Team {
 		for(int i=0;i<Team.teamSize;i++)
 			subtaskAssignments[i]=i;
 		
-		//
+		//Denish, 2014/04/18
+		if(isOptimumAssign()) {
+			TeamInitAssign teamAssign = new TeamInitAssign();
+			teamAssign.setLogger(logger, teamIndex, bLoggerOn);
+			subtaskAssignments = teamAssign.getOptimumAssign(agents, board, tt, subtaskAssignments, actionCostsMatrix);
+		}
 		
 		int pathLength = calcDistance(tt.startPos[0], tt.goalPos[0]);
 		
 		agent(0).initializeRun(tt,subtaskAssignments,currentPos,
 				this.actionCostsMatrix[0], 
-				pathLength * TeamTask.initResCoef + 2000);
+				pathLength * TeamTask.initResCoef);
 		//
 		
-		for(int i=1;i<Team.teamSize;i++)
+		for(int i = 1;i < Team.teamSize; i++)
 		{
-			 pathLength = calcDistance(tt.startPos[i], tt.goalPos[i]);
+			int s = 0;
+			while (subtaskAssignments[s] != i && s < subtaskAssignments.length)
+				s++;
+
+			if(s < subtaskAssignments.length)
+				pathLength = calcDistance(tt.startPos[s], tt.goalPos[s]);
+			else
+				pathLength = 0;
 			
 			agent(i).initializeRun(tt,subtaskAssignments,currentPos,
 					this.actionCostsMatrix[i], 
@@ -412,9 +424,9 @@ public class Team {
 					path.add(new int[] { point.row, point.col });
 				}
 			}
-			stats.add(exp.new AgentStats(i, myTT.startPos[i].row, myTT.startPos[i].col
-					, myTT.goalPos[i].row, myTT.goalPos[i].col
-					, agent.currentPositions[i].row, agent.currentPositions[i].col,
+			stats.add(exp.new AgentStats(i, agent.startPos().row, agent.startPos().col
+					, agent.goalPos().row, agent.goalPos().col
+					, agent.pos().row, agent.startPos().col,
 					agent.initResourcePoints, agent.resourcePoints(), agent.getLastAction(), path));
 		}
 		return stats;
@@ -437,5 +449,15 @@ public class Team {
 				agIndex++;
 			}
 		}
+	}
+	
+	//Denish, 2014/04/18, for Intial optimum assignment
+	private boolean optimumAssign;
+	public boolean isOptimumAssign() {
+		return optimumAssign;
+	}
+
+	public void setOptimumAssign(boolean optimumAssign) {
+		this.optimumAssign = optimumAssign;
 	}
 }

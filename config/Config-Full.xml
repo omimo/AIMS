@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configurationValues>
+    <configValues>
+        <propertyName>Number of Runs</propertyName>
+        <value>100</value>
+    </configValues>
+    <configValues>
+        <propertyName>Number of Colors</propertyName>
+        <value>6</value>
+    </configValues>
+    <configValues>
+        <propertyName>Action Costs</propertyName>
+        <value>10,40,100,150,250,300,350,500</value>
+    </configValues>
+    <configValues>
+        <propertyName>Team Size</propertyName>
+        <value>8</value>
+    </configValues>
+    <configValues>
+        <propertyName>Board Size</propertyName>
+        <value>10</value>
+    </configValues>
+    <configValues>
+        <propertyName>Unicast Cost</propertyName>
+        <value>1,1,5</value>
+    </configValues>
+    <configValues>
+        <propertyName>Calc Cost</propertyName>
+        <value>1,,</value>
+    </configValues>
+    <configValues>
+        <propertyName>Disturbance</propertyName>
+        <value>0.1,,</value>
+    </configValues>
+    <configValues>
+        <propertyName>Help Overhead</propertyName>
+        <value>20</value>
+    </configValues>
+    <configValues>
+        <propertyName>Assignment Overhead</propertyName>
+        <value>10</value>
+    </configValues>
+    <configValues>
+        <propertyName>Cell Reward</propertyName>
+        <value>100</value>
+    </configValues>
+    <configValues>
+        <propertyName>Achievement Reward</propertyName>
+        <value>2000</value>
+    </configValues>
+    <configValues>
+        <propertyName>Initial Resource Coefficient</propertyName>
+        <value>160</value>
+    </configValues>
+    <configValues>
+        <propertyName>Additional Leader Resource</propertyName>
+        <value>0</value>
+    </configValues>
+    <configValues>
+        <propertyName>Plan Resource Coefficient</propertyName>
+        <value>0.03</value>
+    </configValues>
+    <configValues>
+        <propertyName>Use Remaining Resources</propertyName>
+        <value>No</value>
+    </configValues>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Advanced Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Advanced Action MAP Opt</value>
+        </configValues>
+        <configValues>
+            <propertyName>WLL</propertyName>
+            <value>-0.1,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>351</value>
+        </configValues>
+        <configValues>
+            <propertyName>Lowcost Threshold</propertyName>
+            <value>50</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>6,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>Yes</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#f9f9f9</value>
+        </configValues>
+        <key>Advanced Action MAP</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Advanced Action MAP Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Advanced Action MAP Replaning Opt</value>
+        </configValues>
+        <configValues>
+            <propertyName>WLL</propertyName>
+            <value>-0.1,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>WREP</propertyName>
+            <value>-0.3,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>351</value>
+        </configValues>
+        <configValues>
+            <propertyName>Lowcost Threshold</propertyName>
+            <value>50</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>6,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>Yes</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#f9d9d9</value>
+        </configValues>
+        <key>Advanced Action MAP Replaning</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>No Help</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>No Help Opt</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>Yes</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>No Help</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>No Help Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>No Help Replaning Opt</value>
+        </configValues>
+        <configValues>
+            <propertyName>WREP</propertyName>
+            <value>-0.3,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>Yes</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>No Help Replaning</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Advanced Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Advanced Action MAP</value>
+        </configValues>
+        <configValues>
+            <propertyName>WLL</propertyName>
+            <value>-0.1,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>351</value>
+        </configValues>
+        <configValues>
+            <propertyName>Lowcost Threshold</propertyName>
+            <value>50</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>6,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>No</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>Advanced Action MAP</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>Advanced Action MAP Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>Advanced Action MAP Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>WLL</propertyName>
+            <value>-0.1,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>WREP</propertyName>
+            <value>-0.3,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Request Threshold</propertyName>
+            <value>351</value>
+        </configValues>
+        <configValues>
+            <propertyName>Lowcost Threshold</propertyName>
+            <value>50</value>
+        </configValues>
+        <configValues>
+            <propertyName>Importance Version</propertyName>
+            <value>2</value>
+        </configValues>
+        <configValues>
+            <propertyName>Proximity Bias</propertyName>
+            <value>6,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>No</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>Advanced Action MAP Replaning</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>No Help</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>No Help</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>No</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>No Help</key>
+    </configChildren>
+    <configChildren>
+        <configValues>
+            <propertyName>Agent Type</propertyName>
+            <value>No Help Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>Team Name</propertyName>
+            <value>No Help Replaning</value>
+        </configValues>
+        <configValues>
+            <propertyName>WREP</propertyName>
+            <value>-0.3,,</value>
+        </configValues>
+        <configValues>
+            <propertyName>Use Initial Optimum Assignment</propertyName>
+            <value>No</value>
+        </configValues>
+        <configValues>
+            <propertyName>WindowColor</propertyName>
+            <value>#e9e9f9</value>
+        </configValues>
+        <key>No Help Replaning</key>
+    </configChildren>
+</configurationValues>
