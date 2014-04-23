@@ -160,7 +160,7 @@ public class Team {
 		
 		agent(0).initializeRun(tt,subtaskAssignments,currentPos,
 				this.actionCostsMatrix[0], 
-				pathLength * TeamTask.initResCoef);
+				pathLength * TeamTask.initResCoef + TeamTask.leaderResources);
 		//
 		
 		for(int i = 1;i < Team.teamSize; i++)

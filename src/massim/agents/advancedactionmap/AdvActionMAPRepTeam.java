@@ -35,5 +35,9 @@ public class AdvActionMAPRepTeam extends Team {
 		return sum;
 	}
 	
-	
+	//Denish, 2014/04/23
+	public void setUseHelp2Character(boolean useHelp2Character) {
+		for(int i=0;i<Team.teamSize;i++)
+			((AdvActionMAPRepAgent)agent(i)).useHelp2Character = useHelp2Character;
+	}	
 }

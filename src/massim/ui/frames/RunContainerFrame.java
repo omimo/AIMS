@@ -17,8 +17,11 @@ import java.awt.Robot;
 import java.awt.ScrollPane;
 import java.awt.TextField;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -34,6 +37,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -77,6 +81,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.metal.MetalBorders.ToolBarBorder;
 import javax.swing.ImageIcon;
 
@@ -104,7 +109,7 @@ public class RunContainerFrame extends JFrame {
 	ConfigConnector connector;
 	List<RunTeamPanel> lstTeamPanels;
 	JLabel lblSlider; JLabel lblDelayTimer, lblPauseStatus;
-	JSlider slider; JButton btnStopCancel, btnPause;
+	JSlider slider; JButton btnStopCancel, btnPause, btnDownload;
 	boolean bValidConfiguration = false;
 	List<JMenuItem> menuItems = new ArrayList<JMenuItem>();
 	long lastNextRun; JTextField textNumOfRuns;
@@ -243,6 +248,16 @@ public class RunContainerFrame extends JFrame {
 				}
 			});
 			panelTool.add(btnUpdate);
+			
+			btnDownload = new JButton("Save Results");
+			btnDownload.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					saveResultsFile();
+				}
+			});
+			btnDownload.setVisible(false);
+			panelToolR.add(btnDownload);
 			
 			JToggleButton tgbtnExperimentConfig = new JToggleButton("Simulation Configuration");
 			panelToolR.add(tgbtnExperimentConfig);
@@ -480,6 +495,42 @@ public class RunContainerFrame extends JFrame {
 		}
 	}
 	
+	protected void saveResultsFile() {
+		if(chartPanel != null) {
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
+			String strFileName = "Results-" + format.format(Calendar.getInstance().getTime());
+			JFileChooser fc = new JFileChooser();
+			fc.setFileFilter(new FileFilter() {
+				@Override
+				public String getDescription() {
+					return "CSV File (*.csv)";
+				}
+				
+				@Override
+				public boolean accept(File file) {
+					if (file.isDirectory()) {
+						return false;
+					}
+			        String ext = (file.getName() + "").toLowerCase();
+			        return ext.endsWith(".csv");
+				}
+			});
+			fc.setSelectedFile(new File(strFileName + ".csv"));
+			int returnVal = fc.showSaveDialog(this);
+			if (returnVal == JFileChooser.APPROVE_OPTION)
+			{
+				File file = fc.getSelectedFile();
+				try {
+					PrintWriter out = new PrintWriter(file);
+					out.println(chartPanel.getData());
+					out.close();
+				} catch (IOException ex) {
+					JOptionPane.showMessageDialog(this, "Error writing file.." + file.getName());
+				}
+			}
+		}
+	}
+
 	protected void updateNumOfRuns() {
 		if(textNumOfRuns != null) {
 			int numOfRuns = 0;
@@ -834,6 +885,9 @@ public class RunContainerFrame extends JFrame {
 				teamNames[index] = expConfig.getTeams().get(index).getPropertyValue("Team Name");
 			}
 			chartPanel.addData(connector.getCurrentSimulationParameters(), teamScores, teamNames);
+			if(btnDownload != null) {
+				btnDownload.setVisible(true);
+			}
 		}
 		else if(strPropertyName.equalsIgnoreCase("Log")) {
 			String detailLog = propValue + "";

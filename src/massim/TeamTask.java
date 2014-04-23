@@ -13,6 +13,7 @@ public class TeamTask {
 	public static int achievementReward;
 	public static int helpOverhead;
 	public static int assignmentOverhead;
+	public static int leaderResources;
 	
 	public RowCol[] goalPos;
 	public RowCol[] startPos;

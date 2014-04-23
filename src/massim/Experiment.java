@@ -155,6 +155,22 @@ public class Experiment {
 			TeamTask.initResCoef = iInitResCoeff;
 		}
 		
+		//Plan Resource Coeff
+		Double dPlanResCoeff = Utilities.getDouble(expConfig.getPropertyValue("Plan Cost Coefficient"), null);
+		if(dPlanResCoeff == null) {
+			strErrorMessage += "Invalid Plan Cost Coefficient.\n";
+		} else {
+			Agent.planCostCoeff = dPlanResCoeff;
+		}
+		
+		//Additional Leader Resource
+		Integer iAddLeadRes = Utilities.getInteger(expConfig.getPropertyValue("Additional Leader Resource"), null);
+		if(iAddLeadRes == null) {
+			strErrorMessage += "Invalid Additional Leader Resource.\n";
+		} else {
+			TeamTask.leaderResources = iAddLeadRes;
+		}
+		
 		Integer iNumOfTeams = expConfig.getTeams().size();
 		if(iNumOfTeams < 1) {
 			strErrorMessage += "Atleast one team is required.\n";
@@ -488,6 +504,16 @@ public class Experiment {
 			}
 			else if(wrep.length == 3) {
 				lstSimRange.add(new SimulationRange("ADVAMAPREP-WREP", wrep[0], wrep[1], wrep[2]));
+			}
+		}
+		
+		//Help2
+		if(teamConfig.getPropertyValue("Use Help2 Request") != null 
+				&& teamConfig.getPropertyValue("Use Help2 Request").equalsIgnoreCase("Yes")) {
+			if(childType == 1) {
+				((AdvActionMAPRepTeam)getTeams()[index - 1]).setUseHelp2Character(true);
+			} else {
+				((AdvActionMAPTeam)getTeams()[index - 1]).setUseHelp2Character(true);
 			}
 		}
 	}

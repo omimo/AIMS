@@ -148,7 +148,7 @@
         <dataType>Decimal</dataType>
         <description>Coefficient to calculate replanning cost.</description>
         <inputType>FreeText</inputType>
-        <name>Plan Resource Coefficient</name>
+        <name>Plan Cost Coefficient</name>
         <range>false</range>
         <valueType>Single</valueType>
     </configProperties>
@@ -176,12 +176,12 @@
             <value>10</value>
         </entry>
         <entry>
-            <key>Unicast Cost</key>
-            <value>1,1,5</value>
+            <key>Plan Cost Coefficient</key>
+            <value>0.03</value>
         </entry>
         <entry>
-            <key>Plan Resource Coefficient</key>
-            <value>0.03</value>
+            <key>Unicast Cost</key>
+            <value>1,1,5</value>
         </entry>
         <entry>
             <key>Number of Runs</key>
@@ -317,6 +317,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use frugal/help2 request in case of no direct team benefit.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Help2 Request</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -340,6 +350,10 @@
             <entry>
                 <key>WindowColor</key>
                 <value>#F9F9F9</value>
+            </entry>
+            <entry>
+                <key>Use Help2 Request</key>
+                <value>No</value>
             </entry>
             <entry>
                 <key>Use Initial Optimum Assignment</key>
@@ -470,6 +484,16 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use frugal/help2 request in case of no direct team benefit.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Help2 Request</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -493,6 +517,10 @@
             <entry>
                 <key>WindowColor</key>
                 <value>#F9D9D9</value>
+            </entry>
+            <entry>
+                <key>Use Help2 Request</key>
+                <value>No</value>
             </entry>
             <entry>
                 <key>Use Initial Optimum Assignment</key>

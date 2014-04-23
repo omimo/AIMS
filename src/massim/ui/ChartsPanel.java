@@ -128,4 +128,26 @@ public class ChartsPanel extends JScrollPane {
 	public void setParentFrame(JFrame parentFrame) {
 		this.parentFrame = parentFrame;
 	}
+
+	public String getData() {
+		StringBuffer buffer = new StringBuffer();
+		for(String strKeyName : map.keySet()) {
+			VisualBox vBox = map.get(strKeyName);
+			buffer.append(strKeyName + "\n");
+			buffer.append(vBox.getXAxisName() + ",");
+			for(String strSeries: vBox.getSeriesNames()) {
+				buffer.append(strSeries + ",");
+			}
+			buffer.append("\n");
+			double[][] data = vBox.getData();
+			for(int row = 0; row < data.length; row++) {
+				for(int col = 0; col < data[row].length; col++) {
+					buffer.append(data[row][col] + ",");
+				}
+				buffer.append("\n");
+			}
+			buffer.append("\n\n\n");
+		}
+		return buffer.toString();
+	}
 }

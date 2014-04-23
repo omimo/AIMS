@@ -70,6 +70,9 @@ public class AdvActionMAPAgent extends Agent {
 	
 	public int noOfBroadcasts;
 	
+	//Denish, 2014/04/23
+	public boolean useHelp2Character;
+	
 	/**
 	 * The Constructor
 	 * 
@@ -194,7 +197,9 @@ public class AdvActionMAPAgent extends Agent {
 						{
 							logInf("Broadcasting help");
 							logInf("Team benefit of help would be "+teamBenefit);
-							String helpReqMsg = prepareHelpReqMsg(teamBenefit,nextCell);					
+							
+							//Mojtaba, 2014/04/22, for frugal agent
+							String helpReqMsg = prepareHelpReqMsg(teamBenefit, nextCell, cost);					
 							broadcastMsg(helpReqMsg);
 							this.numOfHelpReq++;
 							setState(AAMAPState.R_IGNORE_HELP_REQ);
@@ -315,7 +320,8 @@ public class AdvActionMAPAgent extends Agent {
 			{
 				logInf("Received "+helpReqMsgs.size()+" help requests");
 				
-				int maxNetTeamBenefit = Integer.MIN_VALUE;				
+				int maxNetTeamBenefit = 0;				
+				int maxSaving = 0;
 				
 				for (Message msg : helpReqMsgs)
 				{
@@ -338,20 +344,35 @@ public class AdvActionMAPAgent extends Agent {
 					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
 							", NTB= "+netTeamBenefit);
 					
-					if (netTeamBenefit > 0 && 
-							netTeamBenefit > maxNetTeamBenefit &&
+					//Mojtaba, 2014/04/22, for frugal agent
+					int cost = msg.getIntValue("actionCost");
+					int saving = cost - helpActCost;
+					
+					if (netTeamBenefit > maxNetTeamBenefit &&
 							helpActCost < resourcePoints())
 					{
 						maxNetTeamBenefit = netTeamBenefit;
 						agentToHelp = requesterAgent;
 						helpeeNextCell = reqNextCell;
+						
+						//Denish, 2014/04/22, for frugal agent
+						maxSaving = 0;
+					}
+					//Mojtaba, 2014/04/22, for frugal agent
+					else if(useHelp2Character && maxNetTeamBenefit <= 0 && saving > maxSaving 
+							&& helpActCost < resourcePoints())
+					{	
+						maxSaving = saving;
+						agentToHelp = requesterAgent;
+						helpeeNextCell = reqNextCell;					
 					}
 				}
 				
 				if (agentToHelp != -1)
 				{					
 					logInf("Prepared to bid to help agent "+ agentToHelp);
-					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit);					
+					//Mojtaba, 2014/04/22, for frugal agent
+					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit, maxSaving);					
 					bidding = true;					
 				}									
 			}
@@ -390,15 +411,29 @@ public class AdvActionMAPAgent extends Agent {
 			else
 			{
 				logInf("Received "+bidMsgs.size()+" bids.");
-				int maxBid = Integer.MIN_VALUE;					
+				int maxBid = 0;					
+				//Mojtaba, 2014/04/22, for frugal agent
+				int maxS = 0;
+				
 				for (Message bid : bidMsgs)
 				{
 					int bidNTB = bid.getIntValue("NTB");
+					//Mojtaba, 2014/04/22, for frugal agent
+					int s = bid.getIntValue("Saving");
 					int offererAgent = bid.sender();
 					
 					if (bidNTB > maxBid)
 					{
 						maxBid = bidNTB;
+						helperAgent = offererAgent;
+						
+						//Denish, 2014/04/22, for frugal agent
+						maxS = 0;
+					}
+					//Mojtaba, 2014/04/22, for frugal agent
+					else if (useHelp2Character && maxBid <= 0 && s > maxS) 
+					{
+						maxS = s;
 						helperAgent = offererAgent;
 					}
 				}
@@ -735,12 +770,16 @@ public class AdvActionMAPAgent extends Agent {
 	 * 								the message.
 	 * @return						The message encoded in String
 	 */
-	private String prepareHelpReqMsg(int teamBenefit, RowCol helpCell) {
+	private String prepareHelpReqMsg(int teamBenefit, RowCol helpCell, int cost) {
 		
 		Message helpReq = new Message(id(),-1,MAP_HELP_REQ_MSG);
 		helpReq.putTuple("teamBenefit", Integer.toString(teamBenefit));
 		helpReq.putTuple("nextCellRow", helpCell.row);
 		helpReq.putTuple("nextCellCol", helpCell.col);
+		
+		//Mojtaba, 2014/04/22, for frugal agent
+		helpReq.putTuple("actionCost", cost); 
+		
 		if(useTeamWellbeing)
 		{
 			lastSentWellbeing = wellbeing();
@@ -773,9 +812,13 @@ public class AdvActionMAPAgent extends Agent {
 	 * @param NTB					The net team benefit
 	 * @return						The message encoded in String
 	 */
-	private String prepareBidMsg(int requester, int NTB) {
+	private String prepareBidMsg(int requester, int NTB, int costSaving) {
 		Message bidMsg = new Message(id(),requester,MAP_BID_MSG);
 		bidMsg.putTuple("NTB", NTB);
+		
+		//Mojtaba, 2014/04/22, for frugal agent
+		bidMsg.putTuple("Saving", costSaving);
+		
 		return bidMsg.toString();
 	}
 	

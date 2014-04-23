@@ -27,7 +27,7 @@ import org.w3c.dom.Document;
 public class ConfigGenerator {
 	public static void main(String[] args)
 	{
-		run();
+		//run();
 		//runValues();
 	}
 	private static void run()
@@ -223,7 +223,7 @@ public class ConfigGenerator {
 			config.add(new ConfigProperty("Achievement Reward", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Reward points for reaching the goal."));
 			config.add(new ConfigProperty("Initial Resource Coefficient", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Coefficient to calculate initial resource assigned by multiplication with number of steps to reach goal."));
 			config.add(new ConfigProperty("Additional Leader Resource", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Number of extra initial resource points for the leader (first) agent."));
-			config.add(new ConfigProperty("Plan Resource Coefficient", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Coefficient to calculate replanning cost."));
+			config.add(new ConfigProperty("Plan Cost Coefficient", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Coefficient to calculate replanning cost."));
 			config.add(new ConfigProperty("Use Remaining Resources", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to add remaining resources in the final reward points."));
 			config.add("Number of Runs", "5");
 			config.add("Number of Colors", "6");
@@ -238,7 +238,7 @@ public class ConfigGenerator {
 			config.add("Cell Reward", "100");
 			config.add("Achievement Reward", "2000");
 			config.add("Initial Resource Coefficient", "160");
-			config.add("Plan Resource Coefficient", "0.03");
+			config.add("Plan Cost Coefficient", "0.03");
 			config.add("Additional Leader Resource", "0");
 			config.add("Use Remaining Resources", "No");
 			
@@ -251,6 +251,7 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Importance Version", ValueType.Single, DataType.Integer, InputType.FixedChoices, new String[] {"1", "2"}, false, null, null, "Which version of importance function to use."));
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
 			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
+			teamConfig.add(new ConfigProperty("Use Help2 Request", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use frugal/help2 request in case of no direct team benefit."));
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null, ""));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Advanced Action MAP");
@@ -261,6 +262,7 @@ public class ConfigGenerator {
 			teamConfig.add("Importance Version", "2");
 			teamConfig.add("Proximity Bias", "6");
 			teamConfig.add("Use Initial Optimum Assignment", "Yes");
+			teamConfig.add("Use Help2 Request", "No");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9F9F9");
 			config.add(teamConfig);
@@ -275,6 +277,7 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Importance Version", ValueType.Single, DataType.Integer, InputType.FixedChoices, new String[] {"1", "2"}, false, null, null, "Which version of importance function to use."));
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
 			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
+			teamConfig.add(new ConfigProperty("Use Help2 Request", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use frugal/help2 request in case of no direct team benefit."));
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null, ""));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Advanced Action MAP Replaning");
@@ -286,6 +289,7 @@ public class ConfigGenerator {
 			teamConfig.add("Importance Version", "2");
 			teamConfig.add("Proximity Bias", "6");
 			teamConfig.add("Use Initial Optimum Assignment", "Yes");
+			teamConfig.add("Use Help2 Request", "No");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9D9D9");
 			config.add(teamConfig);
