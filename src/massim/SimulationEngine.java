@@ -31,6 +31,8 @@ public class SimulationEngine {
 	public static double disturbanceLevel;	
 	public static double pulseLevel;
 	public static double pulseProbability;
+	public static int[] pulseOccurrence;
+	public static int maximumNoOfPulses;
 	public static double stepProbability;
 
 	private Team[] teams;
@@ -151,9 +153,23 @@ public class SimulationEngine {
 		roundCounter++;
 		logInf("Round #" + roundCounter + " started ...");
 
-		logInf("Changing the board setting based on the disturbance level of "+
-				disturbanceLevel);
-		mainBoard.disturb(disturbanceLevel);
+		boolean pulse = false;
+		if(pulseOccurrence != null && pulseOccurrence.length > 0) {
+			for(int round : pulseOccurrence) {
+				if(roundCounter == round) {
+					mainBoard.disturb(pulseLevel);
+					logInf("Changing the board setting based on the pulse level of "+
+							pulseLevel);
+					pulse = true;
+					break;
+				}
+			}
+		} 
+		if(!pulse) {
+			mainBoard.disturb(disturbanceLevel);
+			logInf("Changing the board setting based on the disturbance level of "+
+					disturbanceLevel);
+		}
 
 		final TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
 		ArrayList<Thread> lstThread = new ArrayList<Thread>();

@@ -31,7 +31,7 @@ public class AssignmentExp {
 			} else if(args.length > 0) {
 				runSimulation1(Integer.parseInt(args[0]));
 			}
-			runSimulation2(1000);
+			runSimulation1(100);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -103,7 +103,9 @@ public class AssignmentExp {
 
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.05 * exp1;
-
+			SimulationEngine.pulseOccurrence = new int[] { 6 };
+			SimulationEngine.pulseLevel = 0.8;
+			
 			/* Initialize and run the experiment */
 			se.initializeExperiment(numberOfRuns);
 			int[] teamScores = se.runExperiment();
@@ -188,6 +190,9 @@ public class AssignmentExp {
 
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.05 * exp1;
+			SimulationEngine.pulseOccurrence = new int[] { 6 };
+			SimulationEngine.pulseLevel = 0.8;
+			SimulationEngine.maximumNoOfPulses = 2;
 
 			/* Initialize and run the experiment */
 			se.initializeExperiment(numberOfRuns);
