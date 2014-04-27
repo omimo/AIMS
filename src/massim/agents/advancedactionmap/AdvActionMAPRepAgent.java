@@ -34,7 +34,15 @@ public class AdvActionMAPRepAgent extends Agent {
 		R_GET_BIDS, R_BIDDING, R_DO_OWN_ACT,
 		R_BLOCKED, R_ACCEPT_HELP_ACT,R_GET_BID_CONF,
 		R_DO_HELP_ACT,
-		S_PRE_INIT, R_PRE_INIT
+		S_PRE_INIT, R_PRE_INIT,
+		
+		//Denish, 2014/04/26, for swap
+		R_INIT, S_INIT_SW, S_INIT_HP,
+		SW_R_GET_REQ, SW_S_AWAIT_RESPONSE,
+		SW_R_GET_BIDS, SW_S_RESPOND_TO_REQ,
+		SW_S_ANNOUNCE, SW_R_AWAIT_OUTCOME, SW_S_AWAIT_OUTCOME,
+		SW_R_COMPLETE_SWAP
+		
 	}
 	
     public static double WREP;
@@ -74,6 +82,28 @@ public class AdvActionMAPRepAgent extends Agent {
 	//Denish, 2014/04/23
 	public boolean useHelp2Character;
 	
+	//Denish, 2014/04/26, swap
+	public static int swapRequestThreshold;
+	public static int swapDeliberationThreshold;
+	public static int swapBidThreshold;
+	public static int swapResourceThreshold = 50;
+	public boolean useSwapProtocol;
+	
+	private final static int MAP_SWAP_REQ_MSG = 5;
+	private final static int MAP_SWAP_BID_MSG = 6;
+	private final static int MAP_SWAP_COMMIT_MSG = 7;
+	private final static int MAP_SWAP_ABORT_MSG = 8;
+	private boolean swapPriority;
+	private boolean swapRequest;
+	private boolean helpRequest;
+	private int topRequester;
+	private boolean swapCommit;
+	private String swapMsg;
+	private int swapAgent;
+	private boolean replanned;
+	private double tauFitness;
+	int swapCount;
+	
 	/**
 	 * The Constructor
 	 * 
@@ -85,7 +115,8 @@ public class AdvActionMAPRepAgent extends Agent {
     public AdvActionMAPRepAgent(int id, CommMedium comMed) {
     	
 		super(id, comMed);
-		replanCount=0;
+		replanCount = 0;
+		swapCount = 0;
 	}
 	
 	/**
@@ -101,10 +132,10 @@ public class AdvActionMAPRepAgent extends Agent {
 	 */
 	public void initializeRun(TeamTask tt, int[] subtaskAssignments ,
 			RowCol[] currentPos,
-			int[] actionCosts,int initResourcePoints) {
+			int[] actionCosts,int initResourcePoints, int[] actionCostsRange) {
 		
 		super.initializeRun(tt,subtaskAssignments,
-				currentPos,actionCosts,initResourcePoints);		
+				currentPos,actionCosts,initResourcePoints, actionCostsRange);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
@@ -112,6 +143,9 @@ public class AdvActionMAPRepAgent extends Agent {
 		logInf("My goal position: " + goalPos().toString());	
 		
 		oldBoard = null;
+		
+		//Denish, 2014/04/26, swap
+		replanned = false;
 	}
 	
 	/** 
@@ -151,6 +185,9 @@ public class AdvActionMAPRepAgent extends Agent {
 		agentsWellbeing = new double[Team.teamSize];
 		noOfBroadcasts = 0;
 		lastSentWellbeing = Double.MIN_VALUE;
+		
+		//Denish, 2014/04/26, swap
+		swapPriority = useSwapProtocol;
 	}
 	
 	/**
@@ -168,9 +205,10 @@ public class AdvActionMAPRepAgent extends Agent {
 		logInf("My wellbeing = " + wellbeing);
 		
 		if (wellbeing < AdvActionMAPRepAgent.WREP && canReplan()) {
-			findPath();
-			logInf("Replanning: Chose this path: " + path().toString());
-			replanCount++;
+			
+			//Denish, 2014/04/26, for swap, created replanning method
+			replan();
+			
 			wellbeing = wellbeing();
 			logInf("My wellbeing = " + wellbeing);
 		}
@@ -181,116 +219,229 @@ public class AdvActionMAPRepAgent extends Agent {
 				broadcastMsg(msg);
 			}
 		}
-		
-		switch(state) {
-		case S_PRE_INIT:
-			setState(AAMAPState.R_PRE_INIT);
-			break;
-		case S_INIT:		
-			if (reachedGoal())
-			{
-				setState(AAMAPState.R_GET_HELP_REQ);
-			}
-			else 
-			{
-				RowCol nextCell = path().getNextPoint(pos());			
-				int cost = getCellCost(nextCell);
-				
-				boolean needHelp = checkNeedHelp(cost, wellbeing);
-				if (needHelp)
-				{							
-					logInf("Need help!");
-					
-					if (canCalc())
-					{
-						int teamBenefit = calcTeamBenefit(nextCell);
-					
-						if (canBCast())
-						{
-							logInf("Broadcasting help");
-							logInf("Team benefit of help would be "+teamBenefit);
-							
-							//Mojtaba, 2014/04/22, for frugal agent
-							String helpReqMsg = prepareHelpReqMsg(teamBenefit, nextCell, cost);					
-							broadcastMsg(helpReqMsg);
-							this.numOfHelpReq++;
-							setState(AAMAPState.R_IGNORE_HELP_REQ);
-						}
-						else
-							setState(AAMAPState.R_BLOCKED);								
+		boolean subState;
+		do {
+			subState = false;
+			switch(state) {
+			case S_PRE_INIT:
+				setState(AAMAPState.R_PRE_INIT);
+				break;
+			case S_INIT:
+				if(useSwapProtocol) {
+					if(swapPriority) {
+						setState(AAMAPState.S_INIT_SW);
+					} else {
+						setState(AAMAPState.S_INIT_HP);
 					}
+					helpRequest = false;
+					swapRequest = false;
+					swapMsg = null; 
+				} else {
+					setState(AAMAPState.S_INIT_HP);
+				}
+				logInf("Moving to subState: " + state);
+				subState = true;
+				break;
+			case S_INIT_SW:
+				double estimatedCost = 0;
+				if(reachedGoal()) {
+					tauFitness = 0;
+				} else {
+					estimatedCost = estimatedCost(remainingPath(pos()));
+					tauFitness = estimatedCost - getAverage(actionCostsRange()) * (path().getNumPoints() - 1);
+				}
+				if(tauFitness >= swapRequestThreshold && resourcePoints() >= swapResourceThreshold && canReplan()) {
+					replan();
+					if(!reachedGoal()) {
+						estimatedCost = estimatedCost(remainingPath(pos()));
+						tauFitness = estimatedCost - getAverage(actionCostsRange()) * (path().getNumPoints() - 1);
+					}
+					
+					if(tauFitness >= swapRequestThreshold) {
+						if (canBCast()) {
+							logInf2("Broadcasting swap request");
+							logInf2("Tau Value for request is " + tauFitness + ", estimatedcost = " + estimatedCost + ", length = " + (path().getNumPoints() - 1));
+							
+							swapRequest = true;
+							swapMsg = prepareSwapReqMsg(mySubtask(), estimatedCost, tauFitness);
+							broadcastMsg(swapMsg);
+							if(swapPriority) {
+								setState(AAMAPState.SW_R_GET_REQ);
+								break;
+							}
+						}
+						else if(swapPriority) {
+							setState(AAMAPState.S_INIT_HP);
+							subState = true;
+							break;
+						}
+					} else {
+						logInf2("Did not send swap request. Tau Value = " + tauFitness + ", Resources = " + resourcePoints());
+					}
+				}
+				setState(AAMAPState.R_INIT);
+				break;
+			case SW_S_AWAIT_RESPONSE:
+				setState(AAMAPState.SW_R_GET_BIDS);
+				break;
+			case SW_S_RESPOND_TO_REQ:
+				if(bidding && canSend()) {
+					sendMsg(topRequester, bidMsg);
+					this.numOfSwapBids++;
+				}
+				setState(AAMAPState.SW_R_AWAIT_OUTCOME);
+				break;
+			case SW_S_AWAIT_OUTCOME:
+				setState(AAMAPState.SW_R_COMPLETE_SWAP);
+				break;
+			case SW_S_ANNOUNCE:
+				if(canBCast()) {
+					if(swapMsg != null) {
+						broadcastMsg(swapMsg);
+					}
+					setState(AAMAPState.SW_R_COMPLETE_SWAP);
+				} else {
+					int cost = getCellCost(path().getNextPoint(pos()));
+					if (cost <= resourcePoints())
+						setState(AAMAPState.R_DO_OWN_ACT);
 					else
 						setState(AAMAPState.R_BLOCKED);
 				}
+				break;
+			case S_INIT_HP:
+				if (reachedGoal())
+				{
+					//Denish, 2014/04/26, swap
+					if(useSwapProtocol) {
+						setState(AAMAPState.R_INIT);
+					} else {
+						setState(AAMAPState.R_GET_HELP_REQ);
+					}
+				}
+				else 
+				{
+					RowCol nextCell = path().getNextPoint(pos());			
+					int cost = getCellCost(nextCell);
+					
+					boolean needHelp = checkNeedHelp(cost, wellbeing);
+					if (needHelp)
+					{							
+						logInf("Need help!");
+						
+						if (canCalc())
+						{
+							int teamBenefit = calcTeamBenefit(nextCell);
+						
+							if (canBCast())
+							{
+								logInf("Broadcasting help");
+								logInf("Team benefit of help would be "+teamBenefit);
+								
+								//Mojtaba, 2014/04/22, for frugal agent
+								String helpReqMsg = prepareHelpReqMsg(teamBenefit, nextCell, cost);					
+								broadcastMsg(helpReqMsg);
+								this.numOfHelpReq++;
+								
+								//Denish, 2014/04/26, swap
+								helpRequest = true;
+								if(useSwapProtocol) {
+									if(!swapPriority) {
+										setState(AAMAPState.R_IGNORE_HELP_REQ);
+									}
+									else {
+										setState(AAMAPState.R_INIT);
+									}
+								} else {
+									setState(AAMAPState.R_IGNORE_HELP_REQ);
+								}
+							}
+							else
+								setState(AAMAPState.R_BLOCKED);								
+						}
+						else
+							setState(AAMAPState.R_BLOCKED);
+					}
+					else
+					{
+						//Denish, 2014/04/26, swap
+						if(useSwapProtocol) {
+							if(!swapPriority) {
+								setState(AAMAPState.S_INIT_SW);
+								subState = true;
+								break;
+							}
+							else {
+								setState(AAMAPState.R_INIT);
+							}
+						} else {
+							setState(AAMAPState.R_GET_HELP_REQ);
+						}
+					}
+				}
+				break;
+			case S_RESPOND_TO_REQ:
+				if(bidding && canSend())
+				{
+					logInf("Sending a bid to agent"+agentToHelp);
+					sendMsg(agentToHelp, bidMsg);
+					this.numOfBids++;
+					setState(AAMAPState.R_BIDDING);
+				}
+				/*  before
+				   else
+					setState(AAMAPState.R_DO_OWN_ACT);
+					
+					*/
+				
 				else
 				{
-					setState(AAMAPState.R_GET_HELP_REQ);
-				}
-			}
-						
-			break;
-		case S_RESPOND_TO_REQ:
-			if(bidding && canSend())
-			{
-				logInf("Sending a bid to agent"+agentToHelp);
-				sendMsg(agentToHelp, bidMsg);
-				this.numOfBids++;
-				setState(AAMAPState.R_BIDDING);
-			}
-			/*  before
-			   else
-				setState(AAMAPState.R_DO_OWN_ACT);
-				
-				*/
-			
-			else
-			{
-				int cost = getCellCost(path().getNextPoint(pos()));
+					int cost = getCellCost(path().getNextPoint(pos()));
+					if (cost <= resourcePoints())
+						setState(AAMAPState.R_DO_OWN_ACT);
+					else
+						setState(AAMAPState.R_BLOCKED);
+				}							
+				break;
+			case S_SEEK_HELP:
+				setState(AAMAPState.R_GET_BIDS);
+				break;
+			case S_BIDDING:
+				setState(AAMAPState.R_GET_BID_CONF);
+				break;
+			case S_DECIDE_OWN_ACT:
+				 setState(AAMAPState.R_DO_OWN_ACT);
+				/*int cost = getCellCost(path().getNextPoint(pos()));
 				if (cost <= resourcePoints())
 					setState(AAMAPState.R_DO_OWN_ACT);
 				else
 					setState(AAMAPState.R_BLOCKED);
-			}							
-			break;
-		case S_SEEK_HELP:
-			setState(AAMAPState.R_GET_BIDS);
-			break;
-		case S_BIDDING:
-			setState(AAMAPState.R_GET_BID_CONF);
-			break;
-		case S_DECIDE_OWN_ACT:
-			 setState(AAMAPState.R_DO_OWN_ACT);
-			/*int cost = getCellCost(path().getNextPoint(pos()));
-			if (cost <= resourcePoints())
-				setState(AAMAPState.R_DO_OWN_ACT);
-			else
+					*/		
+				break;
+			case S_DECIDE_HELP_ACT:
+				if (getCellCost(helpeeNextCell) <= resourcePoints())
+					setState(AAMAPState.R_DO_HELP_ACT);
+				else
+					setState(AAMAPState.R_BLOCKED);
+				break;
+			case S_RESPOND_BIDS:
+				if (canSend())
+				{
+					logInf("Confirming the help offer of agent "+ helperAgent);
+					String msg = prepareConfirmMsg(helperAgent);
+					sendMsg(helperAgent, msg);
+					setState(AAMAPState.R_ACCEPT_HELP_ACT); 
+				}
+				else
+					setState(AAMAPState.R_BLOCKED); 
+				/* should be checked if can not send ... */
+				break;
+			case S_BLOCKED:
 				setState(AAMAPState.R_BLOCKED);
-				*/		
-			break;
-		case S_DECIDE_HELP_ACT:
-			if (getCellCost(helpeeNextCell) <= resourcePoints())
-				setState(AAMAPState.R_DO_HELP_ACT);
-			else
-				setState(AAMAPState.R_BLOCKED);
-			break;
-		case S_RESPOND_BIDS:
-			if (canSend())
-			{
-				logInf("Confirming the help offer of agent "+ helperAgent);
-				String msg = prepareConfirmMsg(helperAgent);
-				sendMsg(helperAgent, msg);
-				setState(AAMAPState.R_ACCEPT_HELP_ACT); 
+				break;		
+			default:
+				logErr("Unimplemented send state: " + state.toString());
 			}
-			else
-				setState(AAMAPState.R_BLOCKED); 
-			/* should be checked if can not send ... */
-			break;
-		case S_BLOCKED:
-			setState(AAMAPState.R_BLOCKED);
-			break;		
-		default:
-			logErr("Unimplemented send state: " + state.toString());
-		}
+		} while(subState);
 		
 		return returnCode;
 	}
@@ -307,198 +458,417 @@ public class AdvActionMAPRepAgent extends Agent {
 		AgCommStatCode returnCode = AgCommStatCode.NEEDING_TO_SEND;		
 		logInf("Receive Cycle");		
 	
-		switch (state) {
-		case R_PRE_INIT:
-			setState(AAMAPState.S_INIT);
-			break;
-		case R_GET_HELP_REQ:			
-			ArrayList<Message> helpReqMsgs = new ArrayList<Message>();
-			
-			String msgStr = commMedium().receive(id());
-			while (!msgStr.equals(""))
-			{
-				logInf("Received a message: " + msgStr);
-				Message msg = new Message(msgStr);				
-				if (msg.isOfType(MAP_HELP_REQ_MSG))
-						helpReqMsgs.add(msg);
-				 msgStr = commMedium().receive(id());
-			}
-			saveWellBeingsOfAgents(helpReqMsgs);
-			
-			bidding = false;
-			agentToHelp = -1;
-			
-			if (helpReqMsgs.size() > 0)
-			{
-				logInf("Received "+helpReqMsgs.size()+" help requests");
-				
-				int maxNetTeamBenefit = 0;				
-				int maxSaving = 0;
-				
-				for (Message msg : helpReqMsgs)
+		//Denish, 2014/04/26, swap
+		ArrayList<Message> helpReqMsgs = new ArrayList<Message>();
+		ArrayList<Message> swapReqMsgs = new ArrayList<Message>();
+		
+		boolean subState;
+		do {
+			subState = false;
+			switch (state) {
+			case R_PRE_INIT:
+				setState(AAMAPState.S_INIT);
+				break;
+			//Denish, 2014/04/26, swap
+			case R_INIT:
+				String msgStr = commMedium().receive(id());
+				while (!msgStr.equals(""))
 				{
-					RowCol reqNextCell = 
-						new RowCol(msg.getIntValue("nextCellRow"), 
-								   msg.getIntValue("nextCellCol"));
-					
-					int teamBenefit = msg.getIntValue("teamBenefit");
-					int requesterAgent = msg.sender();
-					int helpActCost = getCellCost(reqNextCell) + TeamTask.helpOverhead;
-					int teamLoss = -1;
-					int netTeamBenefit = -1;
-					
-					if (canCalc())
-					{
-						teamLoss = calcTeamLoss(helpActCost);
-						netTeamBenefit = teamBenefit - teamLoss;
-					}					
-					
-					logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
-							", NTB= "+netTeamBenefit);
-					
-					//Mojtaba, 2014/04/22, for frugal agent
-					int cost = msg.getIntValue("actionCost");
-					int saving = cost - helpActCost;
-					
-					if (netTeamBenefit > maxNetTeamBenefit &&
-							helpActCost < resourcePoints())
-					{
-						maxNetTeamBenefit = netTeamBenefit;
-						agentToHelp = requesterAgent;
-						helpeeNextCell = reqNextCell;
-						
-						//Denish, 2014/04/22, for frugal agent
-						maxSaving = 0;
+					logInf("Received a message: " + msgStr);
+					Message msg = new Message(msgStr);				
+					if (msg.isOfType(MAP_HELP_REQ_MSG))
+							helpReqMsgs.add(msg);
+					else if(msg.isOfType(MAP_SWAP_REQ_MSG)) {
+						swapReqMsgs.add(msg);
 					}
-					//Mojtaba, 2014/04/22, for frugal agent
-					else if(useHelp2Character && maxNetTeamBenefit <= 0 && saving > maxSaving 
-							&& helpActCost < resourcePoints())
-					{	
-						maxSaving = saving;
-						agentToHelp = requesterAgent;
-						helpeeNextCell = reqNextCell;					
+					 msgStr = commMedium().receive(id());
+				}
+				if((swapPriority || helpReqMsgs.size() == 0) && swapReqMsgs.size() > 0) {
+					setState(AAMAPState.SW_R_GET_REQ);
+				} else if (helpReqMsgs.size() > 0) {
+					if(helpRequest) {
+						setState(AAMAPState.R_IGNORE_HELP_REQ);
+					} else {
+						setState(AAMAPState.R_GET_HELP_REQ);
+					}
+				} else {
+					int cost = getCellCost(path().getNextPoint(pos()));
+					if (cost <= resourcePoints())
+						setState(AAMAPState.R_DO_OWN_ACT);
+					else
+						setState(AAMAPState.R_BLOCKED);
+				}
+				subState = true;
+				break;
+			case SW_R_GET_REQ:
+				topRequester = -1;
+				int reqSubTask = -1;
+				double reqSubTaskECostForReq = 0;
+				double maxTauValue = Double.MIN_VALUE;
+				bidding = false;
+				
+				if(swapReqMsgs.size() == 0) {
+					msgStr = commMedium().receive(id());
+					while (!msgStr.equals("")) {
+						logInf("Received a message: " + msgStr);
+						Message msg = new Message(msgStr);				
+						if(msg.isOfType(MAP_SWAP_REQ_MSG)) {
+							swapReqMsgs.add(msg);
+						}
+						 msgStr = commMedium().receive(id());
 					}
 				}
-				
-				if (agentToHelp != -1)
-				{					
-					logInf("Prepared to bid to help agent "+ agentToHelp);
-					//Mojtaba, 2014/04/22, for frugal agent
-					bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit, maxSaving);					
-					bidding = true;					
-				}									
-			}
-			setState(AAMAPState.S_RESPOND_TO_REQ);
-			break;
-		case R_IGNORE_HELP_REQ:
-			setState(AAMAPState.S_SEEK_HELP);
-			break;
-		case R_BIDDING:
-			setState(AAMAPState.S_BIDDING);
-			break;
-		case R_GET_BIDS:
-			ArrayList<Message> bidMsgs = new ArrayList<Message>();
-			
-			msgStr = commMedium().receive(id());
-			while (!msgStr.equals(""))
-			{
-				logInf("Received a message: " + msgStr);
-				Message msg = new Message(msgStr);				
-				if (msg.isOfType(MAP_BID_MSG))
-					bidMsgs.add(msg);
-				 msgStr = commMedium().receive(id());
-			}
-			
-			helperAgent = -1;
-			
-			if (bidMsgs.size() == 0)
-			{							
-				this.numOfUnSucHelpReq++;
-				int cost = getCellCost(path().getNextPoint(pos()));
-				if (cost <= resourcePoints())
-					setState(AAMAPState.S_DECIDE_OWN_ACT);
-				else
-					setState(AAMAPState.S_BLOCKED);
-			}
-			else
-			{
-				logInf("Received "+bidMsgs.size()+" bids.");
-				int maxBid = 0;
-				//Mojtaba, 2014/04/22, for frugal agent
-				int maxS = 0;
-				for (Message bid : bidMsgs)
-				{
-					int bidNTB = bid.getIntValue("NTB");
-					//Mojtaba, 2014/04/22, for frugal agent
-					int s = bid.getIntValue("Saving");
-					int offererAgent = bid.sender();
-					
-					if (bidNTB > maxBid)
-					{
-						maxBid = bidNTB;
-						helperAgent = offererAgent;
-						
-						//Denish, 2014/04/22, for frugal agent
-						maxS = 0;
-					}
-					//Mojtaba, 2014/04/22, for frugal agent
-					else if (useHelp2Character && maxBid <= 0 && s > maxS) 
-					{
-						maxS = s;
-						helperAgent = offererAgent;
+				if(swapRequest && swapMsg != null) {
+					swapReqMsgs.add(new Message(swapMsg));
+				}
+				for (Message msg : swapReqMsgs) {
+					if(msg.getDoubleValue("tauValue") > maxTauValue ||
+							(msg.getDoubleValue("tauValue") == maxTauValue && msg.sender() < topRequester)) {
+						maxTauValue = msg.getDoubleValue("tauValue");
+						reqSubTask = msg.getIntValue("subTask");
+						reqSubTaskECostForReq = msg.getDoubleValue("eCost");
+						topRequester = msg.sender();
 					}
 				}
-				logInf("Agent "+ helperAgent+" won the bidding.");
-				setState(AAMAPState.S_RESPOND_BIDS);
-			}		
-			break;
-		case R_BLOCKED:
-			setRoundAction(actionType.FORFEIT);
-			break;
-		case R_GET_BID_CONF:
-			msgStr = commMedium().receive(id());
-			if (!msgStr.equals("") && 
-					(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
-			{
-				logInf("Received confirmation");
-				this.numOfSucOffers++;
-				setState(AAMAPState.S_DECIDE_HELP_ACT);
-			}
-			else
-			{
-				logInf("Didn't received confirmation");				
-				RowCol nextCell = path().getNextPoint(pos());			
-				int nextCost = getCellCost(nextCell);
-				if (nextCost <= resourcePoints())
-					setState(AAMAPState.S_DECIDE_OWN_ACT);
+				logInf2("Top requester is = " + topRequester + " with subtask = " + reqSubTask + " and subTaskCost = " + reqSubTaskECostForReq);
+				if(topRequester == id()) {
+					setState(AAMAPState.SW_S_AWAIT_RESPONSE);
+				} else {
+					double estimatedCost = 0;
+					if(reachedGoal()) {
+						tauFitness = 0;
+					} else {
+						estimatedCost = estimatedCost(remainingPath(pos())); 
+						tauFitness = estimatedCost - getAverage(actionCostsRange()) * (path().getNumPoints() - 1);
+					}
+					if(reqSubTask > -1 && tauFitness >= swapDeliberationThreshold && resourcePoints() >= swapResourceThreshold) {
+						if(!replanned && !reachedGoal() && canReplan()) {
+							logInf2("Replanning before bidding");
+							replan();
+							estimatedCost = estimatedCost(remainingPath(pos()));
+							tauFitness = estimatedCost - getAverage(actionCostsRange()) * (path().getNumPoints() - 1);
+						}
+						logInf2("Tau after replanning = " + tauFitness);
+						if(canSwap() && tauFitness >= swapDeliberationThreshold) {
+							Path reqSubtaskPathAg = findPath(currentPositions[reqSubTask], tt.goalPos[reqSubTask]);
+							double reqSubTaskECostForAg = estimatedCost(reqSubtaskPathAg.tail());
+							double delta = reqSubTaskECostForReq - reqSubTaskECostForAg;
+							if(delta >= swapBidThreshold) {
+								logInf2("Bidding for request with delta = " + delta + " to agent " + topRequester + ", eCostForReqST = " + reqSubTaskECostForAg + ", bidSubTask = " + mySubtask() + ", eCostBidSTask = " + estimatedCost);
+								bidMsg = prepareSwapBidMsg(topRequester, reqSubTaskECostForAg, mySubtask(), estimatedCost);
+								bidding = true;
+							}
+						}
+					} else {
+						logInf2("Ignoring request from agent " + topRequester + ", tau = " + tauFitness + ", resPoints = " + resourcePoints());
+					}
+					setState(AAMAPState.SW_S_RESPOND_TO_REQ);
+				}
+				break;
+			case SW_R_GET_BIDS:
+				ArrayList<Message> swapBidMsgs = new ArrayList<Message>();
+				swapCommit = false;
+				msgStr = commMedium().receive(id());
+				while (!msgStr.equals(""))
+				{
+					logInf("Received a message: " + msgStr);
+					Message msg = new Message(msgStr);				
+					if (msg.isOfType(MAP_SWAP_BID_MSG))
+						swapBidMsgs.add(msg);
+					 msgStr = commMedium().receive(id());
+				}
+				ArrayList<Message> lstBidsConsidered = new ArrayList<Message>();
+				if(swapBidMsgs.size() > 0 && canSwap()) {
+					Message lowestBidMsg; 
+					do {
+						lowestBidMsg = null;
+						double minECost = Double.MAX_VALUE;
+						for (int index = 0; index < swapBidMsgs.size(); index++)
+						{
+							Message msg = swapBidMsgs.get(index);
+							if(lstBidsConsidered.contains(msg)) continue;
+							
+							double eCost = msg.getDoubleValue("eCostReqSubTask");
+							if(eCost < minECost) {
+								lowestBidMsg = msg;
+								minECost = msg.getDoubleValue("eCostReqSubTask");
+							}
+						}
+						if(lowestBidMsg != null) {
+							int bidSubTask = lowestBidMsg.getIntValue("bidSubTask");
+							Path bidSubtaskPathAg = findPath(currentPositions[bidSubTask], tt.goalPos[bidSubTask]);
+							double bidSubTaskECostForAg = estimatedCost(bidSubtaskPathAg.tail());
+							logInf2("Lowest bid with eCost = " + minECost + ", bidTask = " + bidSubTask + ", bidTaskCostForAg = " + bidSubTaskECostForAg);
+							if(bidSubTaskECostForAg <= lowestBidMsg.getDoubleValue("eCostBidSubTask")) {
+								swapCommit = true;
+								swapAgent = lowestBidMsg.sender();
+								swapMsg = prepareSwapCommitMsg(id(), swapAgent);
+								logInf2("Commiting swap with agent = " + swapAgent);
+								break;
+							}
+							lstBidsConsidered.add(lowestBidMsg);
+						}
+					} while(lowestBidMsg != null && lstBidsConsidered.size() < swapBidMsgs.size());
+				}
+				if(!swapCommit) {
+					swapMsg = prepareSwapAbortMsg();
+					logInf2("Aborting swap.");
+				}
+				setState(AAMAPState.SW_S_ANNOUNCE);
+				break;
+			case SW_R_AWAIT_OUTCOME:
+				setState(AAMAPState.SW_S_AWAIT_OUTCOME);
+				break;
+			case SW_R_COMPLETE_SWAP:
+				if(topRequester != id()) {
+					swapCommit = false;
+					ArrayList<Message> swapCommitMsgs = new ArrayList<Message>();
+					msgStr = commMedium().receive(id());
+					while (!msgStr.equals(""))
+					{
+						logInf2("Received a message: " + msgStr);
+						Message msg = new Message(msgStr);				
+						if (msg.isOfType(MAP_SWAP_COMMIT_MSG))
+							swapCommitMsgs.add(msg);
+						 msgStr = commMedium().receive(id());
+					}
+					for(Message msg : swapCommitMsgs) {
+						if(msg.getIntValue("bidder") == id()) {
+							swapCommit = true;
+							swapAgent = id();
+						} else {
+							swapCommit = false;
+							int bidder = msg.getIntValue("bidder");
+							int requester = msg.getIntValue("requester");
+							swapSubTaskAssignment(requester, bidder);
+							logInf2("Updating subtask assignments of agents : " + requester + "," + bidder);
+						}
+					}
+				}
+				if(swapCommit) {
+					if(topRequester == id()) {
+						//logInf2("Old path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
+						logInf2("Old subtask = " + mySubtask());
+						swapSubTaskAssignment(swapAgent);
+						logInf2("New subtask = " + mySubtask());
+						logInf2("Swapping with agent = " + swapAgent);
+						decResourcePoints(TeamTask.swapOverhead);
+						swapCount++;
+						if(canReplan())
+							replan();
+						else {
+							System.out.println("Could not replan " + resourcePoints());
+						}
+						//logInf2("New path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
+					} 
+					else if(swapAgent == id()) {
+						//logInf2("Old path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
+						
+						logInf2("Old subtask = " + mySubtask());
+						swapSubTaskAssignment(topRequester);
+						logInf2("New subtask = " + mySubtask());
+						logInf2("Swapping with agent = " + topRequester);
+						decResourcePoints(TeamTask.swapOverhead);
+						if(canReplan())
+							replan();
+						else {
+							System.out.println("Could not replan " + resourcePoints());
+						}
+						//logInf2("New path = " + (path.getNumPoints() > 1 ? remainingPath(pos()) : pos()));
+					}
+				}
+				swapPriority = false;
+				setState(AAMAPState.S_INIT);
+				break;
+			case R_GET_HELP_REQ:
+				if(helpReqMsgs.size() == 0) {
+					msgStr = commMedium().receive(id());
+					while (!msgStr.equals(""))
+					{
+						logInf("Received a message: " + msgStr);
+						Message msg = new Message(msgStr);				
+						if (msg.isOfType(MAP_HELP_REQ_MSG))
+								helpReqMsgs.add(msg);
+						 msgStr = commMedium().receive(id());
+					}
+				}
+				saveWellBeingsOfAgents(helpReqMsgs);
+				
+				bidding = false;
+				agentToHelp = -1;
+				
+				if (helpReqMsgs.size() > 0)
+				{
+					logInf("Received "+helpReqMsgs.size()+" help requests");
+					
+					int maxNetTeamBenefit = 0;				
+					int maxSaving = 0;
+					
+					for (Message msg : helpReqMsgs)
+					{
+						RowCol reqNextCell = 
+							new RowCol(msg.getIntValue("nextCellRow"), 
+									   msg.getIntValue("nextCellCol"));
+						
+						int teamBenefit = msg.getIntValue("teamBenefit");
+						int requesterAgent = msg.sender();
+						int helpActCost = getCellCost(reqNextCell) + TeamTask.helpOverhead;
+						int teamLoss = -1;
+						int netTeamBenefit = -1;
+						
+						if (canCalc())
+						{
+							teamLoss = calcTeamLoss(helpActCost);
+							netTeamBenefit = teamBenefit - teamLoss;
+						}					
+						
+						logInf("For agent "+ requesterAgent+", team loss= "+teamLoss+
+								", NTB= "+netTeamBenefit);
+						
+						//Mojtaba, 2014/04/22, for frugal agent
+						int cost = msg.getIntValue("actionCost");
+						int saving = cost - helpActCost;
+						
+						if (netTeamBenefit > maxNetTeamBenefit &&
+								helpActCost < resourcePoints())
+						{
+							maxNetTeamBenefit = netTeamBenefit;
+							agentToHelp = requesterAgent;
+							helpeeNextCell = reqNextCell;
+							
+							//Denish, 2014/04/22, for frugal agent
+							maxSaving = 0;
+						}
+						//Mojtaba, 2014/04/22, for frugal agent
+						else if(useHelp2Character && maxNetTeamBenefit <= 0 && saving > maxSaving 
+								&& helpActCost < resourcePoints())
+						{	
+							maxSaving = saving;
+							agentToHelp = requesterAgent;
+							helpeeNextCell = reqNextCell;					
+						}
+					}
+					
+					if (agentToHelp != -1)
+					{					
+						logInf("Prepared to bid to help agent "+ agentToHelp);
+						//Mojtaba, 2014/04/22, for frugal agent
+						bidMsg = prepareBidMsg(agentToHelp, maxNetTeamBenefit, maxSaving);					
+						bidding = true;					
+					}									
+				}
+				setState(AAMAPState.S_RESPOND_TO_REQ);
+				break;
+			case R_IGNORE_HELP_REQ:
+				setState(AAMAPState.S_SEEK_HELP);
+				break;
+			case R_BIDDING:
+				setState(AAMAPState.S_BIDDING);
+				break;
+			case R_GET_BIDS:
+				ArrayList<Message> bidMsgs = new ArrayList<Message>();
+				
+				msgStr = commMedium().receive(id());
+				while (!msgStr.equals(""))
+				{
+					logInf("Received a message: " + msgStr);
+					Message msg = new Message(msgStr);				
+					if (msg.isOfType(MAP_BID_MSG))
+						bidMsgs.add(msg);
+					 msgStr = commMedium().receive(id());
+				}
+				
+				helperAgent = -1;
+				
+				if (bidMsgs.size() == 0)
+				{							
+					this.numOfUnSucHelpReq++;
+					int cost = getCellCost(path().getNextPoint(pos()));
+					if (cost <= resourcePoints())
+						setState(AAMAPState.S_DECIDE_OWN_ACT);
+					else
+						setState(AAMAPState.S_BLOCKED);
+				}
 				else
-					setState(AAMAPState.S_BLOCKED);								
+				{
+					logInf("Received "+bidMsgs.size()+" bids.");
+					int maxBid = 0;
+					//Mojtaba, 2014/04/22, for frugal agent
+					int maxS = 0;
+					for (Message bid : bidMsgs)
+					{
+						int bidNTB = bid.getIntValue("NTB");
+						//Mojtaba, 2014/04/22, for frugal agent
+						int s = bid.getIntValue("Saving");
+						int offererAgent = bid.sender();
+						
+						if (bidNTB > maxBid)
+						{
+							maxBid = bidNTB;
+							helperAgent = offererAgent;
+							
+							//Denish, 2014/04/22, for frugal agent
+							maxS = 0;
+						}
+						//Mojtaba, 2014/04/22, for frugal agent
+						else if (useHelp2Character && maxBid <= 0 && s > maxS) 
+						{
+							maxS = s;
+							helperAgent = offererAgent;
+						}
+					}
+					logInf("Agent "+ helperAgent+" won the bidding.");
+					setState(AAMAPState.S_RESPOND_BIDS);
+				}		
+				break;
+			case R_BLOCKED:
+				setRoundAction(actionType.FORFEIT);
+				break;
+			case R_GET_BID_CONF:
+				msgStr = commMedium().receive(id());
+				if (!msgStr.equals("") && 
+						(new Message(msgStr)).isOfType(MAP_HELP_CONF) )				
+				{
+					logInf("Received confirmation");
+					this.numOfSucOffers++;
+					setState(AAMAPState.S_DECIDE_HELP_ACT);
+				}
+				else
+				{
+					logInf("Didn't received confirmation");				
+					RowCol nextCell = path().getNextPoint(pos());			
+					int nextCost = getCellCost(nextCell);
+					if (nextCost <= resourcePoints())
+						setState(AAMAPState.S_DECIDE_OWN_ACT);
+					else
+						setState(AAMAPState.S_BLOCKED);								
+				}
+				break;
+			case R_DO_OWN_ACT:
+				int cost = getCellCost(path().getNextPoint(pos()));			
+				if (!reachedGoal() && cost <= resourcePoints())
+				{
+					logInf("Will do my own move.");
+					setRoundAction(actionType.OWN);
+				}
+				else
+				{
+					logInf("Nothing to do at this round.");
+					setRoundAction(actionType.SKIP);
+				}
+				break;
+			case R_DO_HELP_ACT:
+				logInf("Will help another agent");
+				setRoundAction(actionType.HELP_ANOTHER);
+				break;
+			case R_ACCEPT_HELP_ACT:
+				logInf("Will receive help");
+				setRoundAction(actionType.HAS_HELP);
+				break;
+			default:			
+				logErr("Unimplemented receive state: " + state.toString());
 			}
-			break;
-		case R_DO_OWN_ACT:
-			int cost = getCellCost(path().getNextPoint(pos()));			
-			if (!reachedGoal() && cost <= resourcePoints())
-			{
-				logInf("Will do my own move.");
-				setRoundAction(actionType.OWN);
-			}
-			else
-			{
-				logInf("Nothing to do at this round.");
-				setRoundAction(actionType.SKIP);
-			}
-			break;
-		case R_DO_HELP_ACT:
-			logInf("Will help another agent");
-			setRoundAction(actionType.HELP_ANOTHER);
-			break;
-		case R_ACCEPT_HELP_ACT:
-			logInf("Will receive help");
-			setRoundAction(actionType.HAS_HELP);
-			break;
-		default:			
-			logErr("Unimplemented receive state: " + state.toString());
-		}
+		} while(subState);
 		
 		//Read well being from unread messages
 		saveWellBeingsOfAgents(null);
@@ -673,9 +1043,13 @@ public class AdvActionMAPRepAgent extends Agent {
 		
 		Path rp = new Path(path());
 		
-		while (!rp.getStartPoint().equals(from))
+		while (rp.getNumPoints() > 0 && !rp.getStartPoint().equals(from))
 			rp = rp.tail();
 		
+		if(rp.getNumPoints() == 0) {
+			System.err.println(path() + " | " + from);
+			return new Path();
+		}
 		return rp.tail();
 	}
 	
@@ -846,6 +1220,60 @@ public class AdvActionMAPRepAgent extends Agent {
 	}
 	
 	/**
+	 * Prepares a swap request message and returns its String encoding.
+	 * 
+	 * @param tauValue				The tauValue to be included in
+	 * 								the message.
+	 * @return						The message encoded in String
+	 */
+	private String prepareSwapReqMsg(int subTask, double estimatedCost, double tauValue) {
+		
+		Message swapReq = new Message(id(),-1,MAP_SWAP_REQ_MSG);
+		swapReq.putTuple("subTask", Integer.toString(subTask));
+		swapReq.putTuple("eCost", Double.toString(estimatedCost));
+		swapReq.putTuple("tauValue", Double.toString(tauValue));
+		return swapReq.toString();
+	}
+	
+	/**
+	 * Prepares a swap bid message and returns its String encoding.
+	 * 
+	 * @return						The message encoded in String
+	 */
+	private String prepareSwapBidMsg(int reqAgent, double eCostReqSubTask, int bidSubTask, double eCost) {
+		
+		Message swapReq = new Message(id(),reqAgent,MAP_SWAP_BID_MSG);
+		swapReq.putTuple("eCostReqSubTask", Double.toString(eCostReqSubTask));
+		swapReq.putTuple("bidSubTask", Integer.toString(bidSubTask));
+		swapReq.putTuple("eCostBidSubTask", Double.toString(eCost));
+		return swapReq.toString();
+	}
+	
+	/**
+	 * Prepares a swap commit message and returns its String encoding.
+	 * 
+	 * @return						The message encoded in String
+	 */
+	private String prepareSwapCommitMsg(int requesterAgent, int bidderAgent) {
+		
+		Message swapReq = new Message(id(),-1,MAP_SWAP_COMMIT_MSG);
+		swapReq.putTuple("requester", Integer.toString(requesterAgent));
+		swapReq.putTuple("bidder", Integer.toString(bidderAgent));
+		return swapReq.toString();
+	}
+	
+	/**
+	 * Prepares a swap commit message and returns its String encoding.
+	 * 
+	 * @return						The message encoded in String
+	 */
+	private String prepareSwapAbortMsg() {
+		
+		Message swapReq = new Message(id(),-1,MAP_SWAP_ABORT_MSG);
+		return swapReq.toString();
+	}
+	
+	/**
 	 * Checks whether agent needs help using well being and thresholds.
 	 * 
 	 * @param cost					Cost of next action
@@ -854,8 +1282,8 @@ public class AdvActionMAPRepAgent extends Agent {
 	 */
 	private boolean checkNeedHelp(int cost, double wellbeing) {
 		
-		if (wellbeing < WLL) logInf2("Wellbeing = " + wellbeing);
-		if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf2("Trig!");
+		if (wellbeing < WLL) logInf("Wellbeing = " + wellbeing);
+		if ((wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold)) logInf("Trig!");
 		//TODO: logic for team wellbeing
 		return (cost > resourcePoints()) ||
 		   (wellbeing < WLL && cost > AdvActionMAPAgent.lowCostThreshold) ||
@@ -1174,6 +1602,8 @@ public class AdvActionMAPRepAgent extends Agent {
 	private void logInf2(String msg) {
 		if (dbgInf2)
 			System.err.println("[AdvActionMAPRep Agent " + id() + "]: " + msg);
+		//Denish, 2014/03/30
+		super.logInf(msg);
 	}
 	
 	/**
@@ -1186,6 +1616,17 @@ public class AdvActionMAPRepAgent extends Agent {
 		if (dbgErr)
 			System.out.println("[xxxxxxxxxxx][AdvActionMAPRep Agent " + id() + 
 							   "]: " + msg);
+	}
+	
+	/**
+	 * Does Replanning
+	 */
+	private void replan()
+	{
+		findPath();
+		logInf("Replanning: Chose this path: " + path().toString());
+		replanCount++;
+		replanned = true;
 	}
 	
 	/**
@@ -1207,7 +1648,9 @@ public class AdvActionMAPRepAgent extends Agent {
 					estimBoardCosts(theBoard.getBoard()), 
 					currentPositions[mySubtask()], goalPos()));
 			path = new Path(shortestPath);
-			
+//			if(!path.toString().contains(pos().toString())) {
+//				System.err.println(path() + " | " + pos());				
+//			}
 			decResourcePoints(planCost());
 		}
 		else 

@@ -39,5 +39,17 @@ public class AdvActionMAPRepTeam extends Team {
 	public void setUseHelp2Character(boolean useHelp2Character) {
 		for(int i=0;i<Team.teamSize;i++)
 			((AdvActionMAPRepAgent)agent(i)).useHelp2Character = useHelp2Character;
-	}	
+	}
+	
+	public void setUseSwap(boolean useSwap) {
+		for(int i=0;i<Team.teamSize;i++)
+			((AdvActionMAPRepAgent)agent(i)).useSwapProtocol = useSwap;
+	}
+	
+	public int getSwapCounts() {
+		int sum = 0;
+		for(int i=0;i<Team.teamSize;i++)
+			sum += ((AdvActionMAPRepAgent)agent(i)).swapCount;
+		return sum;
+	}
 }

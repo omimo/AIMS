@@ -127,7 +127,7 @@ public class Team {
 	 * @param goals							Array of initial goals position
 	 * @param actionCostMatrix				Matrix of action costs
 	 */
-	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix, Board board) {
+	public void initializeRun(TeamTask tt, int[][] actionCostsMatrix, Board board, int[] actionCostsRange) {
 		logInf("******************");
 		logInf("Initilizing for a new run.");
 		commMedium.clear();
@@ -160,7 +160,7 @@ public class Team {
 		
 		agent(0).initializeRun(tt,subtaskAssignments,currentPos,
 				this.actionCostsMatrix[0], 
-				pathLength * TeamTask.initResCoef + TeamTask.leaderResources);
+				pathLength * TeamTask.initResCoef + TeamTask.leaderResources, actionCostsRange);
 		//
 		
 		for(int i = 1;i < Team.teamSize; i++)
@@ -176,7 +176,7 @@ public class Team {
 			
 			agent(i).initializeRun(tt,subtaskAssignments,currentPos,
 					this.actionCostsMatrix[i], 
-					pathLength * TeamTask.initResCoef);
+					pathLength * TeamTask.initResCoef, actionCostsRange);
 		}
 	}
 

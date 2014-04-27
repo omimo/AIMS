@@ -1,6 +1,7 @@
 package massim;
 
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
@@ -132,7 +133,7 @@ public class SimulationEngine {
 		}
 		
 		for (int t = 0; t < numOfTeams; t++)
-			teams[t].initializeRun(tt,actionCostsMatrix, mainBoard);
+			teams[t].initializeRun(tt,actionCostsMatrix, mainBoard, actionCostsRange);
 	}
 
 	/**
@@ -154,14 +155,34 @@ public class SimulationEngine {
 				disturbanceLevel);
 		mainBoard.disturb(disturbanceLevel);
 
-		TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
+		final TeamRoundCode[] tsc = new TeamRoundCode[teams.length];
+		ArrayList<Thread> lstThread = new ArrayList<Thread>();
 		for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
 			//System.out.println(t+" hellllo!");
-			tsc[t] = teams[t].round(mainBoard);
-			
-			logInf(teams[t].getClass().getSimpleName()
-					+ " returned with the code: " + tsc[t].toString());
+
+			final int index = t;
+			Thread thread = new Thread() {
+				@Override
+				public void run() {
+					tsc[index] = teams[index].round(mainBoard);
+					//System.out.println("round complete " + index);
+				}
+			};
+			thread.run();
+			lstThread.add(thread);
 		}
+		
+		int index = 0;
+		for(Thread thread : lstThread) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) { e.printStackTrace();}
+			
+			logInf(teams[index].getClass().getSimpleName()
+					+ " returned with the code: " + tsc[index].toString());
+			index++;
+		}
+		//System.out.println("round complete all");
 
 		boolean allTeamsDone = true;
 		for (int t = 0; t < teams.length; t++) {

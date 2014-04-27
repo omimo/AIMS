@@ -98,10 +98,10 @@ public class AdvActionMAPAgent extends Agent {
 	 */
 	public void initializeRun(TeamTask tt, int[] subtaskAssignments ,
 			RowCol[] currentPos,
-			int[] actionCosts,int initResourcePoints) {
+			int[] actionCosts,int initResourcePoints, int[] actionCostsRange) {
 		
 		super.initializeRun(tt,subtaskAssignments,
-				currentPos,actionCosts,initResourcePoints);		
+				currentPos,actionCosts,initResourcePoints, actionCostsRange);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		

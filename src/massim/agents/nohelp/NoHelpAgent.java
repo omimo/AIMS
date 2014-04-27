@@ -20,7 +20,15 @@ public class NoHelpAgent extends Agent {
 	private boolean dbgInf = false;
 	private boolean dbgErr = true;
 
-	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP};
+	enum NoHelpAgentStates {S_INIT, R_MOVE, R_BLOCKED, R_SKIP,
+		
+		//Denish, 2014/04/26, swap
+		R_INIT, S_INIT_SW,
+		SW_R_GET_REQ, SW_S_AWAIT_RESPONSE,
+		SW_R_GET_BIDS, SW_S_RESPOND_TO_REQ,
+		SW_S_ANNOUNCE, SW_R_AWAIT_OUTCOME, SW_S_AWAIT_OUTCOME,
+		SW_R_COMPLETE_SWAP	
+	};
 	
 	NoHelpAgentStates state;
 	
@@ -50,10 +58,10 @@ public class NoHelpAgent extends Agent {
 	 */
 	public void initializeRun(TeamTask tt, int[] subtaskAssignments , 
 			RowCol[] currentPos,
-			int[] actionCosts,int initResourcePoints) {
+			int[] actionCosts,int initResourcePoints, int[] actionCostsRange) {
 		
 		super.initializeRun(tt,subtaskAssignments,
-				currentPos,actionCosts,initResourcePoints);		
+				currentPos,actionCosts,initResourcePoints, actionCostsRange);		
 		
 		logInf("Initialized for a new run.");
 		logInf("My initial resource points = "+resourcePoints());		
@@ -111,7 +119,7 @@ public class NoHelpAgent extends Agent {
 			{
 				RowCol nextCell = path().getNextPoint(pos());
 				int cost = getCellCost(nextCell);
-				if (cost  <= resourcePoints())
+				if (cost  <= resourcePoints() && !pos().equals(nextCell))
 					setState(NoHelpAgentStates.R_MOVE);
 				else
 					setState(NoHelpAgentStates.R_BLOCKED);				
@@ -221,7 +229,7 @@ public class NoHelpAgent extends Agent {
 	 * 
 	 * @param newState				The new state
 	 */
-	private void setState(NoHelpAgentStates newState) {
+	protected void setState(NoHelpAgentStates newState) {
 		logInf("In "+ state.toString() +" state");
 		state = newState;
 		logInf("Set the state to +"+state.toString());

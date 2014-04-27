@@ -37,6 +37,7 @@ public abstract class Agent {
 	protected TeamTask tt;
 	private int mySubtask;
 	int[] subtaskAssignments;
+	int[] actionCostsRange;
 	
 	//private RowCol pos;
 	protected RowCol[] currentPositions;
@@ -53,7 +54,7 @@ public abstract class Agent {
 	public int numOfSucOffers = 0;
 	public int numOfUnSucHelpReq = 0;
 	public boolean remainingResInRewards = false;
-
+	public int numOfSwapBids = 0;
 	
 	/**
 	 * The constructor.
@@ -85,7 +86,7 @@ public abstract class Agent {
 	 */
 	public void initializeRun(TeamTask tt, int[] subtaskAssignments ,
 			RowCol[] currentPos,
-			int[] actionCosts, int initResourcePoints) {
+			int[] actionCosts, int initResourcePoints, int[] actionCostsRange) {
 		
 		this.tt = null;
 		theBoard = null;
@@ -96,6 +97,10 @@ public abstract class Agent {
 		this.subtaskAssignments = new int[subtaskAssignments.length];
 		System.arraycopy(subtaskAssignments, 0, this.subtaskAssignments, 
 				0, subtaskAssignments.length);
+		
+		this.actionCostsRange = new int[actionCostsRange.length];
+		System.arraycopy(actionCostsRange, 0, this.actionCostsRange, 
+				0, actionCostsRange.length);
 		
 		//Denish, replaced logic for subtask.
 		int i=0;
@@ -318,6 +323,17 @@ public abstract class Agent {
 
 		return actionCosts;
 	}
+	
+	/**
+	 * Enables the agent to access full action costs vector.
+	 * 
+	 * @return 							The action costs vector 
+	 * 									of the agent
+	 */
+	protected int[] actionCostsRange() {
+
+		return actionCostsRange;
+	}
 
 	/**
 	 * Returns the cost of a given cell for this agent
@@ -383,7 +399,9 @@ public abstract class Agent {
 					boardToCosts(theBoard.getBoard(), actionCosts), 
 					currentPositions[mySubtask], goalPos()));
 			path = new Path(shortestPath);
-			
+			if(path.getNumPoints() == 0) {
+				System.err.println("Empty path" + currentPositions[mySubtask()] + " " + goalPos());
+			}
 			//Mojtaba
 			decResourcePoints(planCost());
 		}
@@ -591,5 +609,42 @@ public abstract class Agent {
 	if (cost > 10)
 		return 10;
 	return cost;	
+	}
+	
+	/**
+	 * Swaps subtask assignment of two agents.
+	 * 
+	 * @param agentId		Id of an agent to swap subtask with.
+	 */
+	protected void swapSubTaskAssignment(int agent1Id, int agent2Id)
+	{
+		for(int index = 0; index < subtaskAssignments.length; index++) {
+			if(subtaskAssignments[index] == agent2Id) {
+				subtaskAssignments[index] = agent1Id;
+			} else if(subtaskAssignments[index] == agent1Id) {
+				subtaskAssignments[index] = agent2Id;
+			}
+		}
+	}
+	
+	/**
+	 * Swaps subtask assignment with particular agent.
+	 * 
+	 * @param agentId		Id of an agent to swap subtask with.
+	 */
+	protected void swapSubTaskAssignment(int agentId)
+	{
+		for(int index = 0; index < subtaskAssignments.length; index++) {
+			if(subtaskAssignments[index] == agentId) {
+				subtaskAssignments[index] = id();
+				mySubtask(index);
+			} else if(subtaskAssignments[index] == id()) {
+				subtaskAssignments[index] = agentId;
+			}
+		}
+	}
+	
+	protected boolean canSwap() {
+		return (resourcePoints() >= (Team.broadcastCost + TeamTask.swapOverhead + planCost()));	
 	}
 }
