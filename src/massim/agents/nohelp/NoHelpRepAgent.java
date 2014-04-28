@@ -37,6 +37,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	private boolean swapCommit;
 	private String swapMsg;
 	private int swapAgent;
+	private int swapAgentRes;
 	private boolean replanned;
 	private double tauFitness;
 	private boolean bidding;
@@ -264,7 +265,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 							double delta = reqSubTaskECostForReq - reqSubTaskECostForAg;
 							if(delta >= swapBidThreshold) {
 								logInf2("Bidding for request with delta = " + delta + " to agent " + topRequester + ", eCostForReqST = " + reqSubTaskECostForAg + ", bidSubTask = " + mySubtask() + ", eCostBidSTask = " + estimatedCost);
-								bidMsg = prepareSwapBidMsg(topRequester, reqSubTaskECostForAg, mySubtask(), estimatedCost);
+								bidMsg = prepareSwapBidMsg(topRequester, reqSubTaskECostForAg, mySubtask(), estimatedCost, resourcePoints());
 								bidding = true;
 							}
 						}
@@ -309,7 +310,8 @@ public class NoHelpRepAgent extends NoHelpAgent {
 							if(bidSubTaskECostForAg <= lowestBidMsg.getDoubleValue("eCostBidSubTask")) {
 								swapCommit = true;
 								swapAgent = lowestBidMsg.sender();
-								swapMsg = prepareSwapCommitMsg(id(), swapAgent);
+								swapMsg = prepareSwapCommitMsg(id(), swapAgent, resourcePoints());
+								swapAgentRes = lowestBidMsg.getIntValue("bidderRes");
 								logInf2("Commiting swap with agent = " + swapAgent);
 								break;
 							}
@@ -343,6 +345,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 						if(msg.getIntValue("bidder") == id()) {
 							swapCommit = true;
 							swapAgent = id();
+							swapAgentRes = msg.getIntValue("reqRes");
 						} else {
 							swapCommit = false;
 							int bidder = msg.getIntValue("bidder");
@@ -357,7 +360,8 @@ public class NoHelpRepAgent extends NoHelpAgent {
 						//logInf2("Old path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
 						
 						swapSubTaskAssignment(swapAgent);
-						logInf2("Swapping with agent = " + swapAgent);
+						logInf2("Swapping with agent = " + swapAgent + ", ResPoints = " + swapAgentRes + ", OldRes = " + resourcePoints());
+						resourcePoints = swapAgentRes - Team.unicastCost;
 						decResourcePoints(TeamTask.swapOverhead);
 						swapCount++;
 						if(canReplan())
@@ -368,7 +372,8 @@ public class NoHelpRepAgent extends NoHelpAgent {
 						//logInf2("Old path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
 						
 						swapSubTaskAssignment(topRequester);
-						logInf2("Swapping with agent = " + topRequester);
+						logInf2("Swapping with agent = " + topRequester + ", ResPoints = " + swapAgentRes + ", OldRes = " + resourcePoints());
+						resourcePoints = swapAgentRes - Team.broadcastCost;
 						decResourcePoints(TeamTask.swapOverhead);
 						if(canReplan())
 							replan();
@@ -509,12 +514,13 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	 * 
 	 * @return						The message encoded in String
 	 */
-	private String prepareSwapBidMsg(int reqAgent, double eCostReqSubTask, int bidSubTask, double eCost) {
+private String prepareSwapBidMsg(int reqAgent, double eCostReqSubTask, int bidSubTask, double eCost, int resources) {
 		
 		Message swapReq = new Message(id(),reqAgent,MAP_SWAP_BID_MSG);
 		swapReq.putTuple("eCostReqSubTask", Double.toString(eCostReqSubTask));
 		swapReq.putTuple("bidSubTask", Integer.toString(bidSubTask));
 		swapReq.putTuple("eCostBidSubTask", Double.toString(eCost));
+		swapReq.putTuple("bidderRes", resourcePoints());
 		return swapReq.toString();
 	}
 	
@@ -523,11 +529,12 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	 * 
 	 * @return						The message encoded in String
 	 */
-	private String prepareSwapCommitMsg(int requesterAgent, int bidderAgent) {
+	private String prepareSwapCommitMsg(int requesterAgent, int bidderAgent, int resources) {
 		
 		Message swapReq = new Message(id(),-1,MAP_SWAP_COMMIT_MSG);
 		swapReq.putTuple("requester", Integer.toString(requesterAgent));
 		swapReq.putTuple("bidder", Integer.toString(bidderAgent));
+		swapReq.putTuple("reqRes", Integer.toString(resources));
 		return swapReq.toString();
 	}
 	

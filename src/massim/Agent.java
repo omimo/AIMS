@@ -31,7 +31,7 @@ public abstract class Agent {
 	protected int[] actionCosts;
 	protected Path path;
 
-	private int resourcePoints = 0;
+	protected int resourcePoints = 0;
 
 
 	protected TeamTask tt;

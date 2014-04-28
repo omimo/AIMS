@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import massim.ExperimentLogger.LogType;
 import massim.Team.TeamRoundCode;
+import massim.agents.advancedactionmap.AdvActionMAPRepAgent;
 
 /**
  * The main class of the simulator. 
@@ -236,6 +237,17 @@ public class SimulationEngine {
 		}
 		logInf("-- The run ended --");
 		//(new Scanner(System.in)).nextLine();
+		
+//		for (int t = 0; t < SimulationEngine.numOfTeams; t++) {
+//			for (int a = 0; a < Team.teamSize; a++) {
+//				Agent ag = teams[t].agent(a);
+//				System.out.println(ag.id() + ", " + ag.mySubtask() + ", " + tt.startPos[ag.mySubtask()] 
+//						+ ", " +  ag.pos() + ", " + ag.goalPos() + ", " + ag.resourcePoints() + ", " 
+//						+ (ag.reachedGoal() ? "" : ((AdvActionMAPRepAgent)ag).estimatedCost(((AdvActionMAPRepAgent)ag).path()))
+//						+ ", " + ag.reachedGoal());
+//			}
+//		}
+		
 		return src;
 	}
 

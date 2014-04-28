@@ -31,7 +31,7 @@ public class AssignmentExp {
 			} else if(args.length > 0) {
 				runSimulation1(Integer.parseInt(args[0]));
 			}
-			runSimulation1(100);
+			runSimulation2(100);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -142,16 +142,16 @@ public class AssignmentExp {
 		/* The experiments loop */
 		for (int exp1 = 0; exp1 < 11; exp1++) {
 			/* Create the teams involved in the simulation */		
-			Team[] teams = new Team[4];
+			Team[] teams = new Team[2];
 			
-			teams[0] = new AdvActionMAPTeam();
-			teams[0].setOptimumAssign(true);
-			teams[1] = new AdvActionMAPTeam();
+			//teams[0] = new AdvActionMAPTeam();
+			//teams[0].setOptimumAssign(true);
+			//teams[1] = new AdvActionMAPTeam();
 			
-			teams[2] = new AdvActionMAPRepTeam();
+			teams[0] = new AdvActionMAPRepTeam();
 			//teams[2].setOptimumAssign(true);
-			teams[3] = new AdvActionMAPRepTeam();
-			((AdvActionMAPRepTeam)teams[3]).setUseSwap(true);
+			teams[1] = new AdvActionMAPRepTeam();
+			((AdvActionMAPRepTeam)teams[1]).setUseSwap(true);
 			
 			/* Create the SimulationEngine */
 			SimulationEngine se = new SimulationEngine(teams);
@@ -184,9 +184,9 @@ public class AssignmentExp {
 			AdvActionMAPRepAgent.importanceVersion = 2;
 			
 			AdvActionMAPRepAgent.swapBidThreshold = 50;
-			AdvActionMAPRepAgent.swapRequestThreshold = 1;
-			AdvActionMAPRepAgent.swapResourceThreshold = 50;
-			AdvActionMAPRepAgent.swapDeliberationThreshold = -600;
+			AdvActionMAPRepAgent.swapRequestThreshold = 425;
+			AdvActionMAPRepAgent.swapResourceThreshold = 100;
+			AdvActionMAPRepAgent.swapDeliberationThreshold = 0;
 
 			/* vary the disturbance: */
 			SimulationEngine.disturbanceLevel = 0.05 * exp1;
@@ -198,17 +198,15 @@ public class AssignmentExp {
 			se.initializeExperiment(numberOfRuns);
 			int[] teamScores = se.runExperiment();
 			
-			int averageReplan1 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[2]).getReplanCounts()/numberOfRuns);
-			int averageReplan2 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[3]).getReplanCounts()/numberOfRuns);
-			int averageSwaps = (int)Math.round((double)((AdvActionMAPRepTeam)teams[3]).getSwapCounts()/numberOfRuns);
+			int averageReplan1 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[0]).getReplanCounts()/numberOfRuns);
+			int averageReplan2 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[1]).getReplanCounts()/numberOfRuns);
+			int averageSwaps = (int)Math.round((double)((AdvActionMAPRepTeam)teams[1]).getSwapCounts()/numberOfRuns);
 			
 			if (teamScores.length > 1) {
 				System.out.println(String.format("%.2f" +
-						"\t%d\t%d\t%d\t%d" +
-						"\t%d\t%d\t%d\t%d\t%d",
+						"\t%d\t%d\t%d\t%d\t%d\t%d",
 						SimulationEngine.disturbanceLevel, 
-						teamScores[0], teamScores[1], teamScores[0] - teamScores[1], teamScores[2], 
-						averageReplan1, teamScores[3], averageReplan2, averageSwaps, teamScores[2] - teamScores[3]));
+						teamScores[0], averageReplan1, teamScores[1], averageReplan2, averageSwaps, teamScores[0] - teamScores[1]));
 			} else
 				System.out.println("Score : 0");
 		}
