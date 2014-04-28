@@ -46,7 +46,6 @@ public class AdvActionMAPRepAgent extends Agent {
 	}
 	
     public static double WREP;
-	int replanCount;
 	
 	//Parameters for RIAMAP 
 	public static double WLL;
@@ -103,7 +102,6 @@ public class AdvActionMAPRepAgent extends Agent {
 	private int swapAgentRes;
 	private boolean replanned;
 	private double tauFitness;
-	int swapCount;
 	
 	/**
 	 * The Constructor
@@ -116,8 +114,6 @@ public class AdvActionMAPRepAgent extends Agent {
     public AdvActionMAPRepAgent(int id, CommMedium comMed) {
     	
 		super(id, comMed);
-		replanCount = 0;
-		swapCount = 0;
 	}
 	
 	/**
@@ -268,6 +264,7 @@ public class AdvActionMAPRepAgent extends Agent {
 							swapRequest = true;
 							swapMsg = prepareSwapReqMsg(mySubtask(), estimatedCost, tauFitness);
 							broadcastMsg(swapMsg);
+							numOfSwapReq++;
 							if(swapPriority) {
 								setState(AAMAPState.SW_R_GET_REQ);
 								break;
@@ -290,7 +287,7 @@ public class AdvActionMAPRepAgent extends Agent {
 			case SW_S_RESPOND_TO_REQ:
 				if(bidding && canSend()) {
 					sendMsg(topRequester, bidMsg);
-					this.numOfSwapBids++;
+					this.numOfSwapBid++;
 				}
 				setState(AAMAPState.SW_R_AWAIT_OUTCOME);
 				break;
@@ -615,6 +612,7 @@ public class AdvActionMAPRepAgent extends Agent {
 					} while(lowestBidMsg != null && lstBidsConsidered.size() < swapBidMsgs.size());
 				}
 				if(!swapCommit) {
+					numOfSwapAbort++;
 					swapMsg = prepareSwapAbortMsg();
 					logInf2("Aborting swap.");
 				}
@@ -659,7 +657,7 @@ public class AdvActionMAPRepAgent extends Agent {
 						logInf2("Swapping with agent = " + swapAgent + ", ResPoints = " + swapAgentRes + ", OldRes = " + resourcePoints());
 						resourcePoints = swapAgentRes - Team.unicastCost;
 						decResourcePoints(TeamTask.swapOverhead);
-						swapCount++;
+						numOfSwapSuccess++;
 						if(canReplan())
 							replan();
 						else {
@@ -1634,7 +1632,7 @@ public class AdvActionMAPRepAgent extends Agent {
 	{
 		findPath();
 		logInf("Replanning: Chose this path: " + path().toString());
-		replanCount++;
+		numOfReplans++;
 		replanned = true;
 	}
 	
@@ -1660,7 +1658,9 @@ public class AdvActionMAPRepAgent extends Agent {
 //			if(!path.toString().contains(pos().toString())) {
 //				System.err.println(path() + " | " + pos());				
 //			}
-			decResourcePoints(planCost());
+			int pCost = planCost();
+			replanCosts += pCost;
+			decResourcePoints(pCost);
 		}
 		else 
 			path = null;

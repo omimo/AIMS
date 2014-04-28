@@ -54,7 +54,12 @@ public abstract class Agent {
 	public int numOfSucOffers = 0;
 	public int numOfUnSucHelpReq = 0;
 	public boolean remainingResInRewards = false;
-	public int numOfSwapBids = 0;
+	public int numOfSwapSuccess = 0;
+	public int numOfSwapReq = 0;
+	public int numOfSwapBid = 0;
+	public int numOfSwapAbort = 0;
+	public int numOfReplans = 0;
+	public int replanCosts = 0;
 	
 	/**
 	 * The constructor.

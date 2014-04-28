@@ -670,7 +670,7 @@ public class RunContainerFrame extends JFrame {
 	{
 		JInternalFrame frame = createInternalFrameInstance(teamConfig.getPropertyValue("Team Name"), iIndex);		
 		int width = desktop.getBounds().width;
-		int height = desktop.getBounds().height - 70;
+		int height = desktop.getBounds().height - 30;
 		frame.setSize((width - 50) / 2, height/ 2);
 		frame.setLocation(getFrameLocation(iIndex, width, height));
 		
@@ -771,7 +771,7 @@ public class RunContainerFrame extends JFrame {
 		logFrame.setBorder(new LineBorder(new Color(70, 70, 70), 2));
 		logFrame.setFrameIcon(new ImageIcon(RunContainerFrame.class.getResource("/massim/ui/images/Recording-ico.png")));		
 		int width = screenSize.width;
-		int height = desktop.getBounds().height - 70;
+		int height = desktop.getBounds().height - 30;
 		logFrame.setSize((width - 50) / 2, height/ 2);
 		logFrame.setLocation(getFrameLocation(3, width, height));
 		
@@ -799,7 +799,7 @@ public class RunContainerFrame extends JFrame {
 			chartFrame.add(chartPanel);
 			chartPanel.setParentIntFrame(chartFrame);
 			int width = desktop.getBounds().width;
-			int height = desktop.getBounds().height - 70;
+			int height = desktop.getBounds().height - 30;
 			desktop.setPreferredSize(new Dimension(width- 5, height));
 		} else {
 			JFrame chartFrame = new JFrame();

@@ -347,8 +347,10 @@ public class NoHelpAgent extends Agent {
 					estimBoardCosts(theBoard.getBoard()), 
 					currentPositions[mySubtask()], goalPos()));
 			path = new Path(shortestPath);
-			
-			decResourcePoints(planCost());
+
+			int pCost = planCost();
+			replanCosts += pCost;
+			decResourcePoints(pCost);
 		}
 		else 
 			path = null;

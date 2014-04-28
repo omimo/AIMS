@@ -314,7 +314,7 @@ public class RunTeamPanel extends JScrollPane {
 		pnlTopRight = new JPanel();
 		pnlTopRight.setLayout(new BoxLayout(pnlTopRight, BoxLayout.Y_AXIS));
 		StyleSet.setBorder(pnlTopRight, 1);
-		pnlTop.add(pnlTopRight, new GridBagConstraints(1, 0, 1, 1, 0.9, 1.0, GridBagConstraints.FIRST_LINE_END, GridBagConstraints.HORIZONTAL, new Insets(10, 0, 0, 0), 0, 0));
+		pnlTop.add(pnlTopRight, new GridBagConstraints(1, 0, 1, 1, 0.9, 1.0, GridBagConstraints.FIRST_LINE_END, GridBagConstraints.BOTH, new Insets(10, 0, 0, 0), 0, 0));
 		
 		JTextArea textArea = new JTextArea();
 		textArea.setPreferredSize(new Dimension(200, 160));

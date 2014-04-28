@@ -112,7 +112,7 @@ public class AssignmentExp {
 			
 			int averageReplan1 = (int)Math.round((double)((NoHelpRepTeam)teams[2]).getReplanCounts()/numberOfRuns);
 			int averageReplan2 = (int)Math.round((double)((NoHelpRepTeam)teams[3]).getReplanCounts()/numberOfRuns);
-			int averageSwaps = (int)Math.round((double)((NoHelpRepTeam)teams[3]).getSwapCounts()/numberOfRuns);
+			int averageSwaps = (int)Math.round((double)teams[3].getSwapCounts()/numberOfRuns);
 			
 			if (teamScores.length > 1) {
 				System.out.println(String.format("%.2f" +
@@ -200,7 +200,7 @@ public class AssignmentExp {
 			
 			int averageReplan1 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[0]).getReplanCounts()/numberOfRuns);
 			int averageReplan2 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[1]).getReplanCounts()/numberOfRuns);
-			int averageSwaps = (int)Math.round((double)((AdvActionMAPRepTeam)teams[1]).getSwapCounts()/numberOfRuns);
+			int averageSwaps = (int)Math.round((double)teams[1].getSwapCounts()/numberOfRuns);
 			
 			if (teamScores.length > 1) {
 				System.out.println(String.format("%.2f" +

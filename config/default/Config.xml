@@ -153,6 +153,22 @@
         <valueType>Single</valueType>
     </configProperties>
     <configProperties>
+        <dataType>Decimal</dataType>
+        <description>Disturbance level of pulse.</description>
+        <inputType>FreeText</inputType>
+        <name>Pulse Level</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
+        <description>Comma separated Round values to trigger pulse on.</description>
+        <inputType>FreeText</inputType>
+        <name>Pulse Occurrence</name>
+        <range>false</range>
+        <valueType>Multiple</valueType>
+    </configProperties>
+    <configProperties>
         <dataItems>Yes</dataItems>
         <dataItems>No</dataItems>
         <dataType>Text</dataType>
@@ -166,6 +182,14 @@
         <entry>
             <key>Action Costs</key>
             <value>10,40,100,150,250,300,350,500</value>
+        </entry>
+        <entry>
+            <key>Pulse Occurrence</key>
+            <value></value>
+        </entry>
+        <entry>
+            <key>Pulse Level</key>
+            <value>0.8</value>
         </entry>
         <entry>
             <key>Additional Leader Resource</key>
@@ -494,6 +518,48 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use swap protocol.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Swap</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send swap request in case tau is greater than Swap Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send swap request only if resources are greater than Swap Resource Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Resource Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send bid for swap request in case cost difference is greater than Swap Bid Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Bid Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Commit to bid if cost difference is greater than Swap Deliberation Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Deliberation Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -503,36 +569,60 @@
         </configProperties>
         <configValues>
             <entry>
-                <key>Proximity Bias</key>
-                <value>6</value>
+                <key>WLL</key>
+                <value>-0.1</value>
             </entry>
             <entry>
                 <key>Importance Version</key>
                 <value>2</value>
             </entry>
             <entry>
-                <key>WLL</key>
-                <value>-0.1</value>
+                <key>Swap Bid Threshold</key>
+                <value>50</value>
+            </entry>
+            <entry>
+                <key>Agent Type</key>
+                <value>Advanced Action MAP Replaning</value>
+            </entry>
+            <entry>
+                <key>Swap Resource Threshold</key>
+                <value>100</value>
+            </entry>
+            <entry>
+                <key>Request Threshold</key>
+                <value>351</value>
+            </entry>
+            <entry>
+                <key>Swap Deliberation Threshold</key>
+                <value>0</value>
+            </entry>
+            <entry>
+                <key>Proximity Bias</key>
+                <value>6</value>
             </entry>
             <entry>
                 <key>WindowColor</key>
                 <value>#F9D9D9</value>
             </entry>
             <entry>
-                <key>Use Help2 Request</key>
-                <value>No</value>
-            </entry>
-            <entry>
                 <key>Use Initial Optimum Assignment</key>
                 <value>Yes</value>
+            </entry>
+            <entry>
+                <key>Use Help2 Request</key>
+                <value>No</value>
             </entry>
             <entry>
                 <key>WREP</key>
                 <value>-0.3</value>
             </entry>
             <entry>
-                <key>Agent Type</key>
-                <value>Advanced Action MAP Replaning</value>
+                <key>Swap Request Threshold</key>
+                <value>150</value>
+            </entry>
+            <entry>
+                <key>Use Swap</key>
+                <value>No</value>
             </entry>
             <entry>
                 <key>Lowcost Threshold</key>
@@ -541,10 +631,6 @@
             <entry>
                 <key>Team Name</key>
                 <value>Advanced Action MAP Replaning</value>
-            </entry>
-            <entry>
-                <key>Request Threshold</key>
-                <value>351</value>
             </entry>
         </configValues>
         <teamType>AdvActionMAPRep</teamType>
@@ -843,6 +929,48 @@
             <valueType>Single</valueType>
         </configProperties>
         <configProperties>
+            <dataItems>Yes</dataItems>
+            <dataItems>No</dataItems>
+            <dataType>Text</dataType>
+            <description>Whether to use swap protocol.</description>
+            <inputType>FixedChoices</inputType>
+            <name>Use Swap</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send swap request in case tau is greater than Swap Request Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Request Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send swap request only if resources are greater than Swap Resource Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Resource Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Send bid for swap request in case cost difference is greater than Swap Bid Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Bid Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
+            <dataType>Decimal</dataType>
+            <description>Commit to bid if cost difference is greater than Swap Deliberation Threshold.</description>
+            <inputType>FreeText</inputType>
+            <name>Swap Deliberation Threshold</name>
+            <range>false</range>
+            <valueType>Single</valueType>
+        </configProperties>
+        <configProperties>
             <dataType>Text</dataType>
             <description></description>
             <inputType>FreeText</inputType>
@@ -852,12 +980,24 @@
         </configProperties>
         <configValues>
             <entry>
+                <key>Swap Deliberation Threshold</key>
+                <value>0</value>
+            </entry>
+            <entry>
+                <key>Swap Bid Threshold</key>
+                <value>50</value>
+            </entry>
+            <entry>
                 <key>WindowColor</key>
                 <value>#E9E9F9</value>
             </entry>
             <entry>
                 <key>Use Initial Optimum Assignment</key>
                 <value>Yes</value>
+            </entry>
+            <entry>
+                <key>Swap Request Threshold</key>
+                <value>150</value>
             </entry>
             <entry>
                 <key>WREP</key>
@@ -868,8 +1008,16 @@
                 <value>No Help Replaning</value>
             </entry>
             <entry>
+                <key>Use Swap</key>
+                <value>No</value>
+            </entry>
+            <entry>
                 <key>Team Name</key>
                 <value>No Help Replaning</value>
+            </entry>
+            <entry>
+                <key>Swap Resource Threshold</key>
+                <value>100</value>
             </entry>
         </configValues>
         <teamType>NoHelpRep</teamType>

@@ -28,13 +28,6 @@ public class AdvActionMAPRepTeam extends Team {
 		return code;
 	}
 	
-	public int getReplanCounts() {
-		int sum = 0;
-		for(int i=0;i<Team.teamSize;i++)
-			sum += ((AdvActionMAPRepAgent)agent(i)).replanCount;
-		return sum;
-	}
-	
 	//Denish, 2014/04/23
 	public void setUseHelp2Character(boolean useHelp2Character) {
 		for(int i=0;i<Team.teamSize;i++)
@@ -44,12 +37,5 @@ public class AdvActionMAPRepTeam extends Team {
 	public void setUseSwap(boolean useSwap) {
 		for(int i=0;i<Team.teamSize;i++)
 			((AdvActionMAPRepAgent)agent(i)).useSwapProtocol = useSwap;
-	}
-	
-	public int getSwapCounts() {
-		int sum = 0;
-		for(int i=0;i<Team.teamSize;i++)
-			sum += ((AdvActionMAPRepAgent)agent(i)).swapCount;
-		return sum;
 	}
 }

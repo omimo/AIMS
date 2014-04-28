@@ -17,7 +17,6 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	boolean dbgErr = true;
 	
 	public static double WREP; 
-	int replanCount;
 	
 	
 	//Denish, 2014/04/26, swap
@@ -42,13 +41,10 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	private double tauFitness;
 	private boolean bidding;
 	private String bidMsg;
-	int swapCount;
 	
 	public NoHelpRepAgent(int id, CommMedium comMed) {
 		
 		super(id, comMed);
-		replanCount=0;
-		swapCount = 0;
 	}
 	
 	@Override
@@ -129,6 +125,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 							swapRequest = true;
 							swapMsg = prepareSwapReqMsg(mySubtask(), estimatedCost, tauFitness);
 							broadcastMsg(swapMsg);
+							numOfSwapReq++;
 							if(swapPriority) {
 								setState(NoHelpAgentStates.SW_R_GET_REQ);
 								break;
@@ -150,7 +147,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 			case SW_S_RESPOND_TO_REQ:
 				if(bidding && canSend()) {
 					sendMsg(topRequester, bidMsg);
-					this.numOfSwapBids++;
+					this.numOfSwapBid++;
 				}
 				setState(NoHelpAgentStates.SW_R_AWAIT_OUTCOME);
 				break;
@@ -320,6 +317,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 					} while(lowestBidMsg != null && lstBidsConsidered.size() < swapBidMsgs.size());
 				}
 				if(!swapCommit) {
+					numOfSwapAbort++;
 					swapMsg = prepareSwapAbortMsg();
 					logInf2("Aborting swap.");
 				}
@@ -363,7 +361,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 						logInf2("Swapping with agent = " + swapAgent + ", ResPoints = " + swapAgentRes + ", OldRes = " + resourcePoints());
 						resourcePoints = swapAgentRes - Team.unicastCost;
 						decResourcePoints(TeamTask.swapOverhead);
-						swapCount++;
+						numOfSwapSuccess++;
 						if(canReplan())
 							replan();
 						//logInf2("New path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
@@ -395,7 +393,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	private void replan() {
 		findPath();
 		logInf2("Replanning: Chose this path: " + path().toString());
-		replanCount++;	
+		numOfReplans++;	
 		replanned = true;
 	}
 

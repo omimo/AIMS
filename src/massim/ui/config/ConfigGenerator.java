@@ -224,6 +224,8 @@ public class ConfigGenerator {
 			config.add(new ConfigProperty("Initial Resource Coefficient", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Coefficient to calculate initial resource assigned by multiplication with number of steps to reach goal."));
 			config.add(new ConfigProperty("Additional Leader Resource", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Number of extra initial resource points for the leader (first) agent."));
 			config.add(new ConfigProperty("Plan Cost Coefficient", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Coefficient to calculate replanning cost."));
+			config.add(new ConfigProperty("Pulse Level", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Disturbance level of pulse."));
+			config.add(new ConfigProperty("Pulse Occurrence", ValueType.Multiple, DataType.Integer, InputType.FreeText, null, false, null, null, "Comma separated Round values to trigger pulse on."));
 			config.add(new ConfigProperty("Use Remaining Resources", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to add remaining resources in the final reward points."));
 			config.add("Number of Runs", "5");
 			config.add("Number of Colors", "6");
@@ -241,6 +243,8 @@ public class ConfigGenerator {
 			config.add("Plan Cost Coefficient", "0.03");
 			config.add("Additional Leader Resource", "0");
 			config.add("Use Remaining Resources", "No");
+			config.add("Pulse Level", "0.8");
+			config.add("Pulse Occurrence", "");
 			
 			TeamConfiguration teamConfig = new TeamConfiguration(TeamType.AdvActionMAP);
 			teamConfig.add(new ConfigProperty("Agent Type", ValueType.Single, DataType.Text, InputType.FixedChoices, strValues1, false, null, null, "Type of agent and team."));
@@ -278,6 +282,11 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Proximity Bias", ValueType.Single, DataType.Integer, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Factor to calculate importance of hel action."));
 			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
 			teamConfig.add(new ConfigProperty("Use Help2 Request", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use frugal/help2 request in case of no direct team benefit."));
+			teamConfig.add(new ConfigProperty("Use Swap", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use swap protocol."));
+			teamConfig.add(new ConfigProperty("Swap Request Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send swap request in case tau is greater than Swap Request Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Resource Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send swap request only if resources are greater than Swap Resource Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Bid Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send bid for swap request in case cost difference is greater than Swap Bid Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Deliberation Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Commit to bid if cost difference is greater than Swap Deliberation Threshold."));			
 			//teamConfig.add(new ConfigProperty("Epsilon", ValueType.Single, DataType.Decimal, InputType.FreeText, null, "0", false, null, null, ""));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "Advanced Action MAP Replaning");
@@ -290,6 +299,11 @@ public class ConfigGenerator {
 			teamConfig.add("Proximity Bias", "6");
 			teamConfig.add("Use Initial Optimum Assignment", "Yes");
 			teamConfig.add("Use Help2 Request", "No");
+			teamConfig.add("Use Swap", "No");
+			teamConfig.add("Swap Request Threshold", "150");
+			teamConfig.add("Swap Resource Threshold", "100");
+			teamConfig.add("Swap Bid Threshold", "50");
+			teamConfig.add("Swap Deliberation Threshold", "0");
 			//teamConfig.add("Epsilon", "0");
 			teamConfig.add("WindowColor", "#F9D9D9");
 			config.add(teamConfig);
@@ -344,11 +358,21 @@ public class ConfigGenerator {
 			teamConfig.add(new ConfigProperty("Team Name", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, "Name of the team for simulation."));
 			teamConfig.add(new ConfigProperty("WREP", ValueType.Single, DataType.Decimal, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Low watermark value for replaning."));
 			teamConfig.add(new ConfigProperty("Use Initial Optimum Assignment", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use initial optimum assignment."));
+			teamConfig.add(new ConfigProperty("Use Swap", ValueType.Single, DataType.Text, InputType.FixedChoices, new String[] {"Yes", "No"}, false, null, null, "Whether to use swap protocol."));
+			teamConfig.add(new ConfigProperty("Swap Request Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send swap request in case tau is greater than Swap Request Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Resource Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send swap request only if resources are greater than Swap Resource Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Bid Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Send bid for swap request in case cost difference is greater than Swap Bid Threshold."));
+			teamConfig.add(new ConfigProperty("Swap Deliberation Threshold", ValueType.Single, DataType.Decimal, InputType.FreeText, null, false, null, null, "Commit to bid if cost difference is greater than Swap Deliberation Threshold."));
 			teamConfig.add(new ConfigProperty("WindowColor", ValueType.Single, DataType.Text, InputType.FreeText, null, false, null, null, ""));
 			teamConfig.add("Agent Type", "No Help Replaning");
 			teamConfig.add("Team Name", "No Help Replaning");
 			teamConfig.add("WREP", "-0.3");
 			teamConfig.add("Use Initial Optimum Assignment", "Yes");
+			teamConfig.add("Use Swap", "No");
+			teamConfig.add("Swap Request Threshold", "150");
+			teamConfig.add("Swap Resource Threshold", "100");
+			teamConfig.add("Swap Bid Threshold", "50");
+			teamConfig.add("Swap Deliberation Threshold", "0");
 			teamConfig.add("WindowColor", "#E9E9F9");
 			config.add(teamConfig);
 		} catch (Exception e) {

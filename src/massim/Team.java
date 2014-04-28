@@ -411,6 +411,48 @@ public class Team {
 		return sum;
 	}
 	
+	public int getReplanCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.numOfReplans;
+		return sum;
+	}
+	
+	public int getReplanCosts() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.replanCosts;
+		return sum;
+	}
+	
+	public int getSwapRequests() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.numOfSwapReq;
+		return sum;
+	}
+	
+	public int getSwapCounts() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.numOfSwapSuccess;
+		return sum;
+	}
+	
+	public int getSwapAborts() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.numOfSwapAbort;
+		return sum;
+	}
+	
+	public int getSwapBids() {
+		int sum = 0;
+		for (Agent a: agents)
+			   sum += a.numOfSwapBid;
+		return sum;
+	}
+	
 	//Denish, 2014/03/26
 	public ArrayList<AgentStats> getAgentStatistics(Experiment exp) {
 		ArrayList<AgentStats> stats = new ArrayList<AgentStats>();
