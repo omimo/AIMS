@@ -102,7 +102,7 @@ public class AdvActionMAPRepAgent extends Agent {
 	private int swapAgentRes;
 	private boolean replanned;
 	private double tauFitness;
-	
+	private int roundCount = 0, repRound = 0;
 	/**
 	 * The Constructor
 	 * 
@@ -143,6 +143,8 @@ public class AdvActionMAPRepAgent extends Agent {
 		
 		//Denish, 2014/04/26, swap
 		replanned = false;
+		roundCount = 0;
+		repRound = 0;
 	}
 	
 	/** 
@@ -186,7 +188,8 @@ public class AdvActionMAPRepAgent extends Agent {
 		//Denish, 2014/04/26, swap
 		swapPriority = useSwapProtocol;
 		
-		//dbgInf = dbgInf2 = useSwapProtocol; 
+		//dbgInf = dbgInf2 = useSwapProtocol;
+		roundCount++;
 	}
 	
 	/**
@@ -203,7 +206,8 @@ public class AdvActionMAPRepAgent extends Agent {
 		double wellbeing = wellbeing();
 		logInf("My wellbeing = " + wellbeing);
 		
-		if (wellbeing < AdvActionMAPRepAgent.WREP && canReplan()) {
+		if (wellbeing < AdvActionMAPRepAgent.WREP && canReplan() 
+				&& (roundCount > (repRound + 1) || (roundCount != repRound && disturbanceLevel >= 0.5))) {
 			
 			//Denish, 2014/04/26, for swap, created replanning method
 			replan();
@@ -274,11 +278,11 @@ public class AdvActionMAPRepAgent extends Agent {
 						logInf2("Did not send swap request. Tau Value = " + tauFitness + ", Resources = " + resourcePoints());
 					}
 				}
-				if(swapPriority) {
-					setState(AAMAPState.S_INIT_HP);
-					subState = true;
-					break;
-				}
+//				if(swapPriority) {
+//					setState(AAMAPState.S_INIT_HP);
+//					subState = true;
+//					break;
+//				}
 				setState(AAMAPState.R_INIT);
 				break;
 			case SW_S_AWAIT_RESPONSE:
@@ -296,7 +300,7 @@ public class AdvActionMAPRepAgent extends Agent {
 				break;
 			case SW_S_ANNOUNCE:
 				if(canBCast()) {
-					if(swapMsg != null) {
+					if(swapCommit && swapMsg != null) {
 						broadcastMsg(swapMsg);
 					}
 					setState(AAMAPState.SW_R_COMPLETE_SWAP);
@@ -365,14 +369,14 @@ public class AdvActionMAPRepAgent extends Agent {
 					{
 						//Denish, 2014/04/26, swap
 						if(useSwapProtocol) {
-							if(!swapPriority) {
-								setState(AAMAPState.S_INIT_SW);
-								subState = true;
-								break;
-							}
-							else {
-								setState(AAMAPState.R_INIT);
-							}
+//							if(!swapPriority) {
+//								setState(AAMAPState.S_INIT_SW);
+//								subState = true;
+//								break;
+//							}
+//							else {
+							setState(AAMAPState.R_INIT);
+							//}
 						} else {
 							setState(AAMAPState.R_GET_HELP_REQ);
 						}
@@ -483,8 +487,16 @@ public class AdvActionMAPRepAgent extends Agent {
 					}
 					 msgStr = commMedium().receive(id());
 				}
-				if((swapPriority || (helpReqMsgs.size() == 0 && !helpRequest)) && swapReqMsgs.size() > 0) {
-					setState(AAMAPState.SW_R_GET_REQ);
+				if(swapPriority) {
+					if(swapReqMsgs.size() > 0) {
+						setState(AAMAPState.SW_R_GET_REQ);
+					} else {
+						swapPriority = false;
+						setState(AAMAPState.S_INIT);
+						break;
+					}
+//				if((swapPriority || (helpReqMsgs.size() == 0 && !helpRequest)) && swapReqMsgs.size() > 0) {
+//					setState(AAMAPState.SW_R_GET_REQ);
 				} else if (helpReqMsgs.size() > 0 || helpRequest) {
 					if(helpRequest) {
 						setState(AAMAPState.R_IGNORE_HELP_REQ);
@@ -1631,6 +1643,7 @@ public class AdvActionMAPRepAgent extends Agent {
 	private void replan()
 	{
 		findPath();
+		repRound = roundCount;
 		logInf("Replanning: Chose this path: " + path().toString());
 		numOfReplans++;
 		replanned = true;

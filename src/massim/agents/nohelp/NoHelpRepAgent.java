@@ -41,6 +41,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 	private double tauFitness;
 	private boolean bidding;
 	private String bidMsg;
+	private int roundCount = 0, repRound = 0;
 	
 	public NoHelpRepAgent(int id, CommMedium comMed) {
 		
@@ -55,6 +56,8 @@ public class NoHelpRepAgent extends NoHelpAgent {
 		
 		//Denish, 2014/04/26, swap
 		replanned = false;
+		roundCount = 0;
+		repRound = 0;
 	}
 	
 	@Override
@@ -63,6 +66,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 		
 		//Denish, 2014/04/26, swap
 		swapPriority = useSwapProtocol;
+		roundCount++;
 	}
 	
 	/**
@@ -77,7 +81,8 @@ public class NoHelpRepAgent extends NoHelpAgent {
 		double wellbeing = wellbeing();
 		logInf("My wellbeing = " + wellbeing);
 		
-		if (wellbeing < NoHelpRepAgent.WREP && canReplan()) {
+		if (wellbeing < WREP && canReplan() 
+				&& (roundCount > (repRound + 1) || (roundCount != repRound && disturbanceLevel >= 0.5))) {
 			//Denish, 2014/04/26, for swap, created replanning method
 			replan();
 			
@@ -130,10 +135,6 @@ public class NoHelpRepAgent extends NoHelpAgent {
 								setState(NoHelpAgentStates.SW_R_GET_REQ);
 								break;
 							}
-						}
-						else if(swapPriority) {
-							setState(NoHelpAgentStates.S_INIT);
-							break;
 						}
 					} else {
 						logInf2("Did not send swap request. Tau Value = " + tauFitness + ", Resources = " + resourcePoints() + ", length = " + (path.getNumPoints() - 1));
@@ -392,6 +393,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 
 	private void replan() {
 		findPath();
+		repRound = roundCount;
 		logInf2("Replanning: Chose this path: " + path().toString());
 		numOfReplans++;	
 		replanned = true;

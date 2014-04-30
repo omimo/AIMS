@@ -157,6 +157,18 @@ public abstract class Agent {
 	 */
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
 		this.theBoard = board;
+		
+		logInf("Total number of total help requests = " + numOfHelpReq);
+		logInf("Total number of bids = " + numOfBids);
+		logInf("Total successful offers = " + numOfSucOffers);
+		logInf("Total unsuccessful help requests = " + numOfUnSucHelpReq);
+		logInf("Total number of swap requests = " + numOfSwapReq);
+		logInf("Total number of swap bids = " + numOfSwapBid);
+		logInf("Total number of unsuccessful swaps = " + numOfSwapAbort);
+		logInf("Total number of swaps = " + numOfSwapSuccess);
+		logInf("Total number of replans = " + numOfReplans);
+		logInf("Total replan costs = " + replanCosts);
+		logInf("Resource points = " + resourcePoints());
 		//Denish, 2014/04/13
 		roundNumber++;
 	}

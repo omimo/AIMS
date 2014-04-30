@@ -156,7 +156,10 @@ public class Team {
 			subtaskAssignments = teamAssign.getOptimumAssign(agents, board, tt, subtaskAssignments, actionCostsMatrix);
 		}
 		
-		int pathLength = calcDistance(tt.startPos[0], tt.goalPos[0]);
+		int s = 0;
+		while (subtaskAssignments[s] != 0 && s < subtaskAssignments.length)
+			s++;
+		int pathLength = calcDistance(tt.startPos[s], tt.goalPos[s]); 
 		
 		agent(0).initializeRun(tt,subtaskAssignments,currentPos,
 				this.actionCostsMatrix[0], 
@@ -165,7 +168,7 @@ public class Team {
 		
 		for(int i = 1;i < Team.teamSize; i++)
 		{
-			int s = 0;
+			s = 0;
 			while (subtaskAssignments[s] != i && s < subtaskAssignments.length)
 				s++;
 
@@ -465,11 +468,11 @@ public class Team {
 					RowCol point = iter.next();
 					path.add(new int[] { point.row, point.col });
 				}
-			}
+			} 
 			stats.add(exp.new AgentStats(i, agent.startPos().row, agent.startPos().col
 					, agent.goalPos().row, agent.goalPos().col
-					, agent.pos().row, agent.startPos().col,
-					agent.initResourcePoints, agent.resourcePoints(), agent.getLastAction(), path));
+					, agent.pos().row, agent.pos().col,
+					agent.initResourcePoints, agent.resourcePoints(), agent.getLastAction(), path, agent.mySubtask()));
 		}
 		return stats;
 	}

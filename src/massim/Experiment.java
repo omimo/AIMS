@@ -131,6 +131,14 @@ public class Experiment {
 			TeamTask.assignmentOverhead = iAssignOverhead;
 		}
 		
+		//Swap Overhead
+		Integer iSwapOverhead = Utilities.getInteger(expConfig.getPropertyValue("Swap Overhead"), null);
+		if(iSwapOverhead == null) {
+			strErrorMessage += "Invalid Swap Overhead.\n";
+		} else {
+			TeamTask.swapOverhead = iSwapOverhead;
+		}
+		
 		//Cell Reward
 		Integer iCellReward = Utilities.getInteger(expConfig.getPropertyValue("Cell Reward"), null);
 		if(iCellReward == null) {
@@ -193,7 +201,12 @@ public class Experiment {
 				}
 			}
 		}
-		
+		populateTeams();
+		return strErrorMessage == null || strErrorMessage.trim().length() == 0;
+	}
+	
+	private void populateTeams()
+	{
 		Integer iNumOfTeams = expConfig.getTeams().size();
 		if(iNumOfTeams < 1) {
 			strErrorMessage += "Atleast one team is required.\n";
@@ -251,7 +264,6 @@ public class Experiment {
 				iIndex++;
 			}
 		}
-		return strErrorMessage == null || strErrorMessage.trim().length() == 0;
 	}
 	
 	private Double[] validateRangeValue(Configuration config, String strPropertyName)
@@ -546,41 +558,40 @@ public class Experiment {
 			//Swap
 			if(teamConfig.getPropertyValue("Use Swap") != null 
 					&& teamConfig.getPropertyValue("Use Swap").equalsIgnoreCase("Yes")) {
-					team.setUseSwap(true);
+				team.setUseSwap(true);
+				//Swap Request Threshold
+				Integer iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Request Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Request Threshold " + suffix;
+				} else {
+					AdvActionMAPRepAgent.swapRequestThreshold = iThreshold;
+				}
+				
+				//Swap Resource Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Resource Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Resource Threshold " + suffix;
+				} else {
+					AdvActionMAPRepAgent.swapResourceThreshold = iThreshold;
+				}
+				
+				//Swap Bid Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Bid Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Bid Threshold " + suffix;
+				} else {
+					AdvActionMAPRepAgent.swapBidThreshold = iThreshold;
+				}
+				
+				//Swap Deliberation Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Deliberation Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Deliberation Threshold " + suffix;
+				} else {
+					AdvActionMAPRepAgent.swapDeliberationThreshold = iThreshold;
+				}
 			} else {
 				team.setUseSwap(false);
-			}
-			
-			//Swap Request Threshold
-			Integer iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Request Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Request Threshold " + suffix;
-			} else {
-				AdvActionMAPRepAgent.swapRequestThreshold = iThreshold;
-			}
-			
-			//Swap Resource Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Resource Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Resource Threshold " + suffix;
-			} else {
-				AdvActionMAPRepAgent.swapResourceThreshold = iThreshold;
-			}
-			
-			//Swap Bid Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Bid Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Bid Threshold " + suffix;
-			} else {
-				AdvActionMAPRepAgent.swapBidThreshold = iThreshold;
-			}
-			
-			//Swap Deliberation Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Deliberation Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Deliberation Threshold " + suffix;
-			} else {
-				AdvActionMAPRepAgent.swapDeliberationThreshold = iThreshold;
 			}
 		}
 	}
@@ -651,41 +662,41 @@ public class Experiment {
 			//Swap
 			if(teamConfig.getPropertyValue("Use Swap") != null 
 					&& teamConfig.getPropertyValue("Use Swap").equalsIgnoreCase("Yes")) {
-					team.setUseSwap(true);
+				team.setUseSwap(true);
+				
+				//Swap Request Threshold
+				Integer iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Request Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Request Threshold " + suffix;
+				} else {
+					NoHelpRepAgent.swapRequestThreshold = iThreshold;
+				}
+				
+				//Swap Resource Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Resource Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Resource Threshold " + suffix;
+				} else {
+					NoHelpRepAgent.swapResourceThreshold = iThreshold;
+				}
+				
+				//Swap Bid Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Bid Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Bid Threshold " + suffix;
+				} else {
+					NoHelpRepAgent.swapBidThreshold = iThreshold;
+				}
+				
+				//Swap Deliberation Threshold
+				iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Deliberation Threshold"), null);
+				if(iThreshold == null) {
+					strErrorMessage += "Invalid Swap Deliberation Threshold " + suffix;
+				} else {
+					NoHelpRepAgent.swapDeliberationThreshold = iThreshold;
+				}
 			} else {
 				team.setUseSwap(false);
-			}
-			
-			//Swap Request Threshold
-			Integer iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Request Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Request Threshold " + suffix;
-			} else {
-				NoHelpRepAgent.swapRequestThreshold = iThreshold;
-			}
-			
-			//Swap Resource Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Resource Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Resource Threshold " + suffix;
-			} else {
-				NoHelpRepAgent.swapResourceThreshold = iThreshold;
-			}
-			
-			//Swap Bid Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Bid Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Bid Threshold " + suffix;
-			} else {
-				NoHelpRepAgent.swapBidThreshold = iThreshold;
-			}
-			
-			//Swap Deliberation Threshold
-			iThreshold = Utilities.getInteger(teamConfig.getPropertyValue("Swap Deliberation Threshold"), null);
-			if(iThreshold == null) {
-				strErrorMessage += "Invalid Swap Deliberation Threshold " + suffix;
-			} else {
-				NoHelpRepAgent.swapDeliberationThreshold = iThreshold;
 			}
 		}
 	}
@@ -741,10 +752,11 @@ public class Experiment {
 		int currY;
 		int initResources;
 		int remainResources;
+		int subTask;
 		String lastAction;
 		List<int[]> path;
 		
-		public AgentStats(int id, int initX, int initY, int goalX, int goalY, int currX, int currY, int initResources, int remainResources, String lastAction, List<int[]> path)
+		public AgentStats(int id, int initX, int initY, int goalX, int goalY, int currX, int currY, int initResources, int remainResources, String lastAction, List<int[]> path, int subTask)
 		{
 			this.id = id;
 			this.initX = initX;
@@ -757,6 +769,7 @@ public class Experiment {
 			this.remainResources = remainResources;
 			this.lastAction = lastAction;
 			this.path = path;
+			this.subTask = subTask;
 		}
 		public int getId() {
 			return id;
@@ -791,5 +804,12 @@ public class Experiment {
 		public List<int[]> getPath() {
 			return path;
 		}
+		public int getSubTask() {
+			return subTask;
+		}
+	}
+
+	public void initForNewRun() {
+		populateTeams();
 	}
 }

@@ -292,6 +292,9 @@ public class ConfigConnector extends SwingWorker<Void, Void> {
 						bContinue = experiment.setNewParamsForSimulation(true);
 					}
 				}
+				if(bContinue) {
+					experiment.initForNewRun();
+				}
 			}
 			isActive = false;
 			if(!isStopped())

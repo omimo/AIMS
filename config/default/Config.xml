@@ -114,6 +114,14 @@
     </configProperties>
     <configProperties>
         <dataType>Integer</dataType>
+        <description>Overhead in case agent performs swap.</description>
+        <inputType>FreeText</inputType>
+        <name>Swap Overhead</name>
+        <range>false</range>
+        <valueType>Single</valueType>
+    </configProperties>
+    <configProperties>
+        <dataType>Integer</dataType>
         <description>Reward points for one step moved.</description>
         <inputType>FreeText</inputType>
         <name>Cell Reward</name>
@@ -225,6 +233,10 @@
         </entry>
         <entry>
             <key>Help Overhead</key>
+            <value>20</value>
+        </entry>
+        <entry>
+            <key>Swap Overhead</key>
             <value>20</value>
         </entry>
         <entry>

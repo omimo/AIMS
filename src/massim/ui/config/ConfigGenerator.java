@@ -219,6 +219,7 @@ public class ConfigGenerator {
 			config.add(new ConfigProperty("Disturbance", ValueType.Single, DataType.Decimal, InputType.OptionalDropDown, strValues, true, strValues, strValues, "Probability of change of colors on the board. Put any value between 0 to 1.0"));
 			config.add(new ConfigProperty("Help Overhead", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Overhead in case agent offers help"));
 			config.add(new ConfigProperty("Assignment Overhead", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Overhead in case agent performs action for other."));
+			config.add(new ConfigProperty("Swap Overhead", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Overhead in case agent performs swap."));
 			config.add(new ConfigProperty("Cell Reward", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Reward points for one step moved."));
 			config.add(new ConfigProperty("Achievement Reward", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Reward points for reaching the goal."));
 			config.add(new ConfigProperty("Initial Resource Coefficient", ValueType.Single, DataType.Integer, InputType.FreeText, null, false, null, null, "Coefficient to calculate initial resource assigned by multiplication with number of steps to reach goal."));
@@ -237,6 +238,7 @@ public class ConfigGenerator {
 			config.add("Disturbance", "0.1");
 			config.add("Help Overhead", "20");
 			config.add("Assignment Overhead", "10");
+			config.add("Swap Overhead", "20");
 			config.add("Cell Reward", "100");
 			config.add("Achievement Reward", "2000");
 			config.add("Initial Resource Coefficient", "160");

@@ -399,6 +399,7 @@ public class RunTeamPanel extends JScrollPane {
 		List<String> lstLastAction = new ArrayList<String>();
 		List<int[]> lstCurrPos = new ArrayList<int[]>();
 		List<List<int[]>> lstPath = new ArrayList<List<int[]>>();
+		List<Integer> lstSubTask = new ArrayList<Integer>();
 		for(AgentStats stat : lstAgentStats) {
 			if(stat == null) continue;
 			
@@ -409,12 +410,13 @@ public class RunTeamPanel extends JScrollPane {
 			lstRemResPoints.add(stat.getRemainResources());
 			lstLastAction.add(stat.getLastAction());
 			lstPath.add(stat.getPath());
+			lstSubTask.add(stat.getSubTask());
 		}
 		
 		Timer timer = new Timer();
 		timer.schedule(new UpdateAgentTask(lstInitPos, lstGoalPos, lstCurrPos, lstPath), bNewRun? 0 : (threadDelay * 1000 / 2));
 		bNewRun = false;
-		table.updateData(lstCurrPos, lstInitPos, lstGoalPos, lstInitResPoints, lstRemResPoints, lstLastAction);
+		table.updateData(lstCurrPos, lstInitPos, lstGoalPos, lstInitResPoints, lstRemResPoints, lstLastAction, lstSubTask);
 	}
 	
 	public void updateBoard(int[][] boardColors) {
@@ -600,8 +602,9 @@ public class RunTeamPanel extends JScrollPane {
 	class CustomTable extends JTable
 	{
 		private JTableHeader header;
-		private String[] columnNames = {"Ag#","Ini > Curr > Goal","Steps Moved","Steps Remain","Init Resources","Res. Remain","Last Action"};
+		private String[] columnNames = {"Ag#","Ini > Curr > Goal","Steps Moved","Steps Remain","Init Resources","Res. Remain","Last Action", "SubTask"};
 		DefaultTableCellRenderer tableRender;
+		List<Integer> lstPrevSubTask;
 		
 		public CustomTable(JPanel pnlContainer)
 		{
@@ -647,9 +650,9 @@ public class RunTeamPanel extends JScrollPane {
 		}
 		
 		public void updateData(List<int[]> currentPos, List<int[]> initPos, List<int[]> goalPos, 
-				List<Integer> initResPoints, List<Integer> remResPoints, List<String> lstLastAction)
+				List<Integer> initResPoints, List<Integer> remResPoints, List<String> lstLastAction, List<Integer> lstSubTask)
 		{
-			Object[][] data = new Object[teamSize][7];
+			Object[][] data = new Object[teamSize][8];
 			
 			for(int iIndex = 0; iIndex < teamSize; iIndex++)
 			{
@@ -662,7 +665,12 @@ public class RunTeamPanel extends JScrollPane {
 				data[iIndex][4] = initResPoints.get(iIndex);
 				data[iIndex][5] = remResPoints.get(iIndex);
 				data[iIndex][6] = lstLastAction.get(iIndex); //strValues[randm.nextInt(3)];
+				if(lstPrevSubTask != null && lstPrevSubTask.get(iIndex) != lstSubTask.get(iIndex))
+					data[iIndex][7] = lstSubTask.get(iIndex) + " (Prev: " + lstPrevSubTask.get(iIndex) + ")";
+				else
+					data[iIndex][7] = lstSubTask.get(iIndex);
 			}
+			lstPrevSubTask = lstSubTask;
 			
 			((DefaultTableModel)getModel()).setDataVector(data, columnNames);
 			for(int iCol = 0; iCol < columnNames.length; iCol++)
@@ -677,6 +685,7 @@ public class RunTeamPanel extends JScrollPane {
 		public void clearData()
 		{
 			((DefaultTableModel)getModel()).setDataVector(null, columnNames);
+			lstPrevSubTask = null;
 			this.revalidate();
 		}
 		
