@@ -149,8 +149,10 @@ public class AssignmentExp {
 			//teams[1] = new AdvActionMAPTeam();
 			
 			teams[0] = new AdvActionMAPRepTeam();
-			//teams[2].setOptimumAssign(true);
+			teams[0].setOptimumAssign(true);
+			((AdvActionMAPRepTeam)teams[0]).setUseHelp2Character(true);
 			teams[1] = new AdvActionMAPRepTeam();
+			teams[1].setOptimumAssign(true);
 			((AdvActionMAPRepTeam)teams[1]).setUseSwap(true);
 			
 			/* Create the SimulationEngine */
@@ -159,7 +161,7 @@ public class AssignmentExp {
 			/* Set the experiment-wide parameters: */
 			/* teams-wide, SimulationEngine, etc params */
 
-			Team.unicastCost = 1;
+			Team.unicastCost = 1 + 2 * exp1;
 			Team.broadcastCost = Team.unicastCost * (Team.teamSize - 1);
 			Agent.calculationCost = 1;
 			Agent.planCostCoeff = 0.03;
@@ -167,10 +169,10 @@ public class AssignmentExp {
 			TeamTask.helpOverhead = 20;
 			TeamTask.cellReward = 100;
 			TeamTask.achievementReward = 2000;
-			TeamTask.initResCoef = 160;
+			TeamTask.initResCoef = 110;
 			TeamTask.swapOverhead = 20;
 			
-			NoHelpRepAgent.WREP = -0.3;
+			NoHelpRepAgent.WREP = -0.25;
 			
 			AdvActionMAPAgent.WLL = -0.1;
 			AdvActionMAPAgent.requestThreshold = 351;
@@ -178,19 +180,19 @@ public class AssignmentExp {
 			AdvActionMAPAgent.importanceVersion = 2;
 			
 			AdvActionMAPRepAgent.WLL = -0.1;
-			AdvActionMAPRepAgent.WREP = -0.3;
+			AdvActionMAPRepAgent.WREP = -0.25;
 			AdvActionMAPRepAgent.requestThreshold = 351;
 			AdvActionMAPRepAgent.lowCostThreshold = 50;
 			AdvActionMAPRepAgent.importanceVersion = 2;
 			
 			AdvActionMAPRepAgent.swapBidThreshold = 50;
-			AdvActionMAPRepAgent.swapRequestThreshold = 425;
+			AdvActionMAPRepAgent.swapRequestThreshold = 100;
 			AdvActionMAPRepAgent.swapResourceThreshold = 100;
 			AdvActionMAPRepAgent.swapDeliberationThreshold = 0;
 
 			/* vary the disturbance: */
-			SimulationEngine.disturbanceLevel = 0.05 * exp1;
-			SimulationEngine.pulseOccurrence = new int[] { 6 };
+			SimulationEngine.disturbanceLevel = 0.1;
+			SimulationEngine.pulseOccurrence = new int[] { 4 };
 			SimulationEngine.pulseLevel = 0.8;
 			SimulationEngine.maximumNoOfPulses = 2;
 

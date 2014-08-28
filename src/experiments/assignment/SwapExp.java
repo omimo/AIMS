@@ -34,7 +34,7 @@ public class SwapExp {
 				else if(Integer.parseInt(args[1]) == 5)
 					runSimulation5(Integer.parseInt(args[0]));
 			}
-			runSimulation1(100);
+			runSimulation3(100);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -328,34 +328,14 @@ public class SwapExp {
 			/* The experiments loop */
 			for (int exp3 = 0; exp3 < 11; exp3++) {
 				/* Create the teams involved in the simulation */		
-				Team[] teams = new Team[7];
+				Team[] teams = new Team[2];
 				
-				teams[0] = new AdvActionMAPTeam();
-				teams[0].setOptimumAssign(true);
-				((AdvActionMAPTeam)teams[0]).setUseHelp2Character(true);
+				teams[0] = new NoHelpRepTeam();
+				//teams[0].setOptimumAssign(true);
 				
-				teams[1] = new AdvActionMAPRepTeam();
-				teams[1].setOptimumAssign(true);
-				((AdvActionMAPRepTeam)teams[1]).setUseHelp2Character(true);
-				
-				teams[2] = new NoHelpRepTeam();
-				teams[2].setOptimumAssign(true);
-				((NoHelpRepTeam)teams[2]).setUseSwap(true);
-				
-				teams[3] = new AdvActionMAPRepTeam();
-				teams[3].setOptimumAssign(true);
-				((AdvActionMAPRepTeam)teams[3]).setUseHelp2Character(true);
-				((AdvActionMAPRepTeam)teams[3]).setUseSwap(true);
-				
-				teams[4] = new NoHelpRepTeam();
-				teams[4].setOptimumAssign(true);
-				
-				teams[5] = new NoHelpRepTeam();
-				((NoHelpRepTeam)teams[2]).setUseSwap(true);
-				
-				teams[6] = new AdvActionMAPRepTeam();
-				((AdvActionMAPRepTeam)teams[6]).setUseHelp2Character(true);
-				((AdvActionMAPRepTeam)teams[6]).setUseSwap(true);
+				teams[1] = new NoHelpRepTeam();
+				//teams[1].setOptimumAssign(true);
+				((NoHelpRepTeam)teams[1]).setUseSwap(true);
 				
 				/* Create the SimulationEngine */
 				SimulationEngine se = new SimulationEngine(teams);
@@ -407,31 +387,18 @@ public class SwapExp {
 				se.initializeExperiment(numberOfRuns);
 				int[] teamScores = se.runExperiment();
 				
-				int averageHelp0 = (int)Math.round((double)(teams[0]).getSucOffersCounts()/numberOfRuns);
-				int averageHelp1 = (int)Math.round((double)(teams[1]).getSucOffersCounts()/numberOfRuns);
-				int averageHelp3 = (int)Math.round((double)(teams[3]).getSucOffersCounts()/numberOfRuns);
-				int averageHelp6 = (int)Math.round((double)(teams[6]).getSucOffersCounts()/numberOfRuns);
-				
-				int averageReplan1 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[1]).getReplanCounts()/numberOfRuns);
-				int averageReplan2 = (int)Math.round((double)((NoHelpRepTeam)teams[2]).getReplanCounts()/numberOfRuns);
-				int averageReplan3 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[3]).getReplanCounts()/numberOfRuns);
-				int averageReplan4 = (int)Math.round((double)((NoHelpRepTeam)teams[4]).getReplanCounts()/numberOfRuns);
-				int averageReplan5 = (int)Math.round((double)((NoHelpRepTeam)teams[5]).getReplanCounts()/numberOfRuns);
-				int averageReplan6 = (int)Math.round((double)((AdvActionMAPRepTeam)teams[6]).getReplanCounts()/numberOfRuns);
-				
-				int averageSwap2 = (int)Math.round((double)(teams[2]).getSwapCounts()/numberOfRuns);
-				int averageSwap3 = (int)Math.round((double)(teams[3]).getSwapCounts()/numberOfRuns);
-				int averageSwap5 = (int)Math.round((double)(teams[5]).getSwapCounts()/numberOfRuns);
-				int averageSwap6 = (int)Math.round((double)(teams[6]).getSwapCounts()/numberOfRuns);
-				
-				if (teamScores.length > 1) {
+				if (teamScores.length > 0) {
+//					System.out.println(String.format("%d" +
+//							",%d,%d",
+//							Team.unicastCost, 
+//							teamScores[0], teamScores[1]));
 					System.out.println(String.format("%d" +
-							"\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
+							",%d,%d,%d,%d" +
+							",%d,%d,%d",
 							Team.unicastCost, 
-							teamScores[0], averageHelp0, teamScores[1], averageHelp1, averageReplan1, teamScores[2], 
-							averageReplan2, averageSwap2, teamScores[3], averageHelp3, averageReplan3, averageSwap3,
-							teamScores[4], averageReplan4, teamScores[5], averageReplan5, averageSwap5,
-							teamScores[6], averageHelp6, averageReplan6, averageSwap6));
+							teamScores[0], teams[0].getReplanCounts() / numberOfRuns, teamScores[1], 
+							teams[1].getReplanCounts() / numberOfRuns, teams[1].getSwapRequests() / numberOfRuns, 
+							teams[1].getSwapAborts() / numberOfRuns, teams[1].getSwapCounts() / numberOfRuns));
 				} else
 					System.out.println("Score : 0");
 			}
