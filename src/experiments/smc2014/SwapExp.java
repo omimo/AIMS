@@ -34,7 +34,7 @@ public class SwapExp {
 				else if (Integer.parseInt(args[1]) == 5)
 					runSimulation5(Integer.parseInt(args[0]));
 			}
-			// runSimulation1(100);
+			runSimulation1(10);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

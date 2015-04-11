@@ -22,8 +22,9 @@ public abstract class Agent {
 		DONE, NEEDING_TO_SEND, NEEDING_TO_REC 
 	}
 	
+	//Mojtaba, 2014/06/27, added HELP_GET_HELP
 	protected static enum actionType {
-		OWN, HELP_ANOTHER, HAS_HELP, SKIP, FORFEIT  
+		OWN, HELP_ANOTHER, HAS_HELP, SKIP, FORFEIT, HELP_GET_HELP  
 	}
 
 	private int id;
@@ -50,6 +51,7 @@ public abstract class Agent {
 	
 	/* TODO: make these private! */
 	public int numOfHelpReq = 0;
+	public int numOfHelpOffer = 0;	//Mojtaba, 2014/07/07
 	public int numOfBids = 0;
 	public int numOfSucOffers = 0;
 	public int numOfUnSucHelpReq = 0;
@@ -158,16 +160,16 @@ public abstract class Agent {
 	protected void initializeRound(Board board, int[][] actionCostsMatrix) {
 		this.theBoard = board;
 		
-		logInf("Total number of total help requests = " + numOfHelpReq);
-		logInf("Total number of bids = " + numOfBids);
-		logInf("Total successful offers = " + numOfSucOffers);
-		logInf("Total unsuccessful help requests = " + numOfUnSucHelpReq);
-		logInf("Total number of swap requests = " + numOfSwapReq);
-		logInf("Total number of swap bids = " + numOfSwapBid);
-		logInf("Total number of unsuccessful swaps = " + numOfSwapAbort);
-		logInf("Total number of swaps = " + numOfSwapSuccess);
-		logInf("Total number of replans = " + numOfReplans);
-		logInf("Total replan costs = " + replanCosts);
+		//logInf("Total number of help requests = " + numOfHelpReq);
+		//logInf("Total number of bids = " + numOfBids);
+		//logInf("Total successful offers = " + numOfSucOffers);
+		//logInf("Total unsuccessful help requests = " + numOfUnSucHelpReq);
+		//logInf("Total number of swap requests = " + numOfSwapReq);
+		//logInf("Total number of swap bids = " + numOfSwapBid);
+		//logInf("Total number of unsuccessful swaps = " + numOfSwapAbort);
+		//logInf("Total number of swaps = " + numOfSwapSuccess);
+		//logInf("Total number of replans = " + numOfReplans);
+		//logInf("Total replan costs = " + replanCosts);
 		logInf("Resource points = " + resourcePoints());
 		//Denish, 2014/04/13
 		roundNumber++;
@@ -233,7 +235,7 @@ public abstract class Agent {
 
 	/**
 	 * Calculates the agent's reward points based on the given 
-	 * resources and position.
+	 * resource points and position.
 	 * 
 	 * If the agent has reached the goal, then it will be rewarded
 	 * the amount specified by 'achievementReward' plus the amount
@@ -529,6 +531,20 @@ public abstract class Agent {
 	}
 	
 	/**
+	 * Enables the agent to perform an action on behalf of another 
+	 * agent (Help) and to do any bookkeeping while receiving help (GetHelp).
+	 * 
+	 * To be overriden by the agent if necessary.
+	 * 
+	 * @return						true
+	 */
+	//Mojtaba, 2014/06/27
+	protected boolean doHelpGetHelp() {
+		
+		return true;
+	}
+	
+	/**
 	 * Checks whether the agent has reached the goal or not.
 	 * 
 	 * @return				true if has reached the goal /
@@ -560,6 +576,10 @@ public abstract class Agent {
 		case HELP_ANOTHER:
 			result = doHelpAnother();
 			break;
+		//Mojtaba, 2014/06/27
+		case HELP_GET_HELP:
+			result = doHelpGetHelp();
+			break;			
 		case SKIP:
 			setLastAction("Skipped");
 			result = true;

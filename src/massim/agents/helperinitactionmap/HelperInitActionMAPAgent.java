@@ -1,5 +1,9 @@
 package massim.agents.helperinitactionmap;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -29,7 +33,7 @@ public class HelperInitActionMAPAgent extends Agent {
 	//public static double WHL;
 	public static double EPSILON;
 	public static int importanceVersion = 1;
-	public static double requestThreshold;
+	public static double offerThreshold;
 	public static int impFactor = 6;
 	public static boolean useTeamWellbeing = false;
 	
@@ -354,7 +358,7 @@ public class HelperInitActionMAPAgent extends Agent {
 			else
 			{
 				logInf("Received "+bidMsgs.size()+" bids.");
-				int maxBid = Integer.MIN_VALUE;
+				int maxBid = 0;
 				agentToHelp = -1;
 				for (Message bid : bidMsgs)
 				{
@@ -726,7 +730,7 @@ public class HelperInitActionMAPAgent extends Agent {
 		{
 			int costOfAction = actionCosts[i];
 			
-			if(costOfAction > requestThreshold)//if cost is above request threshold
+			if(costOfAction > offerThreshold)//if cost is above request threshold
 				continue;
 			
 			costOfAction += TeamTask.helpOverhead + Team.broadcastCost + Team.unicastCost;//two messages: first for offer and second for confirmation
@@ -1086,10 +1090,20 @@ public class HelperInitActionMAPAgent extends Agent {
 	 * @param msg					The desired message to be printed
 	 */
 	protected void logInf(String msg) {
-		if (dbgInf)
-			System.out.println("[Helper-Init ActionMAP Agent " + id() + "]: " + msg);
-		//Denish, 2014/03/30
-		super.logInf(msg);
+		if (dbgInf)	{
+			System.out.println("[Helper-Init Agent " + id() + "]: " + msg);
+		
+			//Denish, 2014/03/30
+			//super.logInf(msg);
+			
+			try {
+				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("myLog2" + ".txt", true)));
+			    out.println("[Helper-Init Agent " + id() + "]: " + msg);
+			    out.close();
+			} catch (IOException e) {
+				System.err.println("Error writing file..." + msg);
+			}
+		}
 	}
 	
 	/**

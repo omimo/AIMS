@@ -673,7 +673,7 @@ public class AdvActionMAPRepAgent extends Agent {
 						if(canReplan())
 							replan();
 						else {
-							logErr("Could not replan " + resourcePoints());
+							System.out.println("Could not replan " + resourcePoints());
 						}
 						//logInf2("New path = " + (path.getNumPoints() > 0 ? remainingPath(pos()) : pos()));
 					} 
@@ -689,7 +689,7 @@ public class AdvActionMAPRepAgent extends Agent {
 						if(canReplan())
 							replan();
 						else {
-							logErr("Could not replan " + resourcePoints());
+							System.out.println("Could not replan " + resourcePoints());
 						}
 						//logInf2("New path = " + (path.getNumPoints() > 1 ? remainingPath(pos()) : pos()));
 					}

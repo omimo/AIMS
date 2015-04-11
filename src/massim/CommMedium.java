@@ -72,7 +72,7 @@ public class CommMedium {
 	 */
 	public String receive(int receiver) {
 		
-		String out="";
+		String out = "";
 		
 		for(int i=0;i<channels.length;i++)
 		{			

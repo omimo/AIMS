@@ -618,7 +618,7 @@ public class Experiment {
 		if(iRequestThreshold == null) {
 			strErrorMessage += "Invalid Request Threshold " + suffix;
 		} else {
-			HelperInitActionMAPAgent.requestThreshold = iRequestThreshold;
+			HelperInitActionMAPAgent.offerThreshold = iRequestThreshold;
 		}
 		
 		//Importance Version

@@ -27,7 +27,7 @@ public class Help2Exp {
 				else if (Integer.parseInt(args[1]) == 3)
 					runSimulation3(Integer.parseInt(args[0]));
 			}
-			// runSimulation1(100);
+			runSimulation1(10);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

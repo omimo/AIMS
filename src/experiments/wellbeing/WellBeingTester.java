@@ -120,7 +120,7 @@ public class WellBeingTester {
 				AdvActionMAPAgent.lowCostThreshold = 50;
 				AdvActionMAPAgent.importanceVersion = HelperInitActionMAPAgent.importanceVersion = impVersion;
 				
-				HelperInitActionMAPAgent.requestThreshold = 299;
+				HelperInitActionMAPAgent.offerThreshold = 299;
 				HelperInitActionMAPAgent.EPSILON = 0.1;
 				
 				BasicActionMAPAgent.requestThreshold = 489;
@@ -203,7 +203,7 @@ public class WellBeingTester {
 				AdvActionMAPAgent.lowCostThreshold = 50;
 				AdvActionMAPAgent.importanceVersion = HelperInitActionMAPAgent.importanceVersion = impVersion;
 				
-				HelperInitActionMAPAgent.requestThreshold = 299;
+				HelperInitActionMAPAgent.offerThreshold = 299;
 				HelperInitActionMAPAgent.EPSILON = 0.1;
 				
 				BasicActionMAPAgent.requestThreshold = 489;
@@ -279,7 +279,7 @@ public class WellBeingTester {
 				AdvActionMAPAgent.lowCostThreshold = 50;
 				AdvActionMAPAgent.importanceVersion = HelperInitActionMAPAgent.importanceVersion = impVersion;
 				
-				HelperInitActionMAPAgent.requestThreshold = 299;
+				HelperInitActionMAPAgent.offerThreshold = 299;
 				HelperInitActionMAPAgent.EPSILON = 0.1;
 				
 				BasicActionMAPAgent.requestThreshold = 489;
@@ -358,7 +358,7 @@ public class WellBeingTester {
 				AdvActionMAPAgent.lowCostThreshold = 50;
 				AdvActionMAPAgent.importanceVersion = HelperInitActionMAPAgent.importanceVersion = impVersion;
 				
-				HelperInitActionMAPAgent.requestThreshold = 299;
+				HelperInitActionMAPAgent.offerThreshold = 299;
 				HelperInitActionMAPAgent.EPSILON = 0.1;
 				
 				BasicActionMAPAgent.requestThreshold = 489;

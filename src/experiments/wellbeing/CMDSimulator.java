@@ -131,7 +131,7 @@ public class CMDSimulator {
 				AdvActionMAPAgent.lowCostThreshold = 50;
 				AdvActionMAPAgent.importanceVersion = HelperInitActionMAPAgent.importanceVersion = impVersion;
 				
-				HelperInitActionMAPAgent.requestThreshold = 289;
+				HelperInitActionMAPAgent.offerThreshold = 289;
 				HelperInitActionMAPAgent.EPSILON = 0.1;
 				
 				BasicActionMAPAgent.requestThreshold = 489;

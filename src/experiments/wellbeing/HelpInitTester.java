@@ -79,7 +79,7 @@ public class HelpInitTester {
 			AdvActionMAPAgent.lowCostThreshold = 100;
 			AdvActionMAPAgent.importanceVersion = importanceVersion;
 			
-			HelperInitActionMAPAgent.requestThreshold = 299;
+			HelperInitActionMAPAgent.offerThreshold = 299;
 			HelperInitActionMAPAgent.WHH = 0.3;
 			//HelperInitActionMAPAgent.WHL = -0.5;
 			HelperInitActionMAPAgent.EPSILON = 0.1;

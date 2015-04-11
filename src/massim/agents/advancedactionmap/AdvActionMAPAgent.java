@@ -359,7 +359,7 @@ public class AdvActionMAPAgent extends Agent {
 						maxSaving = 0;
 					}
 					//Mojtaba, 2014/04/22, for frugal agent
-					else if(useHelp2Character && maxNetTeamBenefit <= 0 && saving > maxSaving 
+					else if(useHelp2Character && maxNetTeamBenefit == 0 && saving > maxSaving 
 							&& helpActCost < resourcePoints())
 					{	
 						maxSaving = saving;
@@ -431,7 +431,7 @@ public class AdvActionMAPAgent extends Agent {
 						maxS = 0;
 					}
 					//Mojtaba, 2014/04/22, for frugal agent
-					else if (useHelp2Character && maxBid <= 0 && s > maxS) 
+					else if (useHelp2Character && maxBid == 0 && s > maxS) 
 					{
 						maxS = s;
 						helperAgent = offererAgent;

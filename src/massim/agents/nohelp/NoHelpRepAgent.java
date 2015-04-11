@@ -119,6 +119,7 @@ public class NoHelpRepAgent extends NoHelpAgent {
 				}
 				if(tauFitness >= swapRequestThreshold && resourcePoints() >= swapResourceThreshold && canReplan()) {
 					if(!reachedGoal()) {
+						// replan();
 						estimatedCost = estimatedCost(remainingPath(pos()));
 						tauFitness = estimatedCost - getAverage(actionCostsRange()) * (path().getNumPoints() - 1);
 					}
